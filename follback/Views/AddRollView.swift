@@ -38,6 +38,7 @@ struct AddRollView: View {
     @State private var newCustomType = "COLOR_NEGATIVE"
     @State private var newCustomCoverItem: PhotosPickerItem?
     @State private var newCustomCoverData: Data?
+    @State private var showCoverPicker = false
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -485,7 +486,9 @@ struct AddRollView: View {
                                 .kerning(0.8)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            PhotosPicker(selection: $newCustomCoverItem, matching: .images) {
+                            Button {
+                                showCoverPicker = true
+                            } label: {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                                         .fill(Color.filmSurface)
@@ -513,13 +516,7 @@ struct AddRollView: View {
                                     }
                                 }
                             }
-                            .onChange(of: newCustomCoverItem) { _, item in
-                                Task {
-                                    if let data = try? await item?.loadTransferable(type: Data.self) {
-                                        newCustomCoverData = data
-                                    }
-                                }
-                            }
+                            .buttonStyle(.plain)
                         }
 
                         // Film name
@@ -663,6 +660,14 @@ struct AddRollView: View {
                         resetCustomForm()
                     }
                     .foregroundColor(Color.filmAccent)
+                }
+            }
+            .photosPicker(isPresented: $showCoverPicker, selection: $newCustomCoverItem, matching: .images)
+            .onChange(of: newCustomCoverItem) { _, item in
+                Task {
+                    if let data = try? await item?.loadTransferable(type: Data.self) {
+                        newCustomCoverData = data
+                    }
                 }
             }
         }
