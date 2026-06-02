@@ -63,10 +63,10 @@ struct AddRollView: View {
         }
         .navigationTitle("")
         .navigationBarHidden(true)
-        .sheet(isPresented: $showCameraPicker) {
+        .fullScreenCover(isPresented: $showCameraPicker) {
             CameraPickerView(selectedCameraName: $selectedCameraModelName)
         }
-        .sheet(isPresented: $showLocationPicker) {
+        .fullScreenCover(isPresented: $showLocationPicker) {
             LocationPickerView(
                 locationName: $locationName,
                 latitude: $locationLatitude,
