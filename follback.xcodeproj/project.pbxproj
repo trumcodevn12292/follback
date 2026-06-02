@@ -283,6 +283,7 @@
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "FilmVault uses your location to tag where you shot your film rolls.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "FilmVault needs access to your photo library to attach images to film frames.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -317,6 +318,7 @@
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "FilmVault uses your location to tag where you shot your film rolls.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "FilmVault needs access to your photo library to attach images to film frames.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
