@@ -50,7 +50,6 @@ struct AddRollView: View {
                 TabView(selection: $step) {
                     filmSelectionStep.tag(0)
                     settingsStep.tag(1)
-                    reviewStep.tag(2)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.spring(response: 0.4, dampingFraction: 0.85), value: step)
@@ -95,7 +94,7 @@ struct AddRollView: View {
 
             Spacer()
 
-            if step < 2 && canAdvance {
+            if step == 0 && canAdvance {
                 Button {
                     withAnimation(.spring(response: 0.35)) { step += 1 }
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
@@ -122,8 +121,7 @@ struct AddRollView: View {
     private var stepTitle: String {
         switch step {
         case 0: return "Choose Film"
-        case 1: return "Settings"
-        case 2: return "Review"
+        case 1: return "Confirm"
         default: return ""
         }
     }
@@ -139,7 +137,7 @@ struct AddRollView: View {
     // MARK: - Progress
     private var progressIndicator: some View {
         HStack(spacing: 6) {
-            ForEach(0..<3) { i in
+            ForEach(0..<2) { i in
                 Capsule()
                     .fill(i <= step
                           ? LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing)
@@ -361,91 +359,112 @@ struct AddRollView: View {
         .padding(.horizontal, 16)
     }
 
-    // MARK: - Step 2: Settings
+    // MARK: - Step 2: Settings (Filmer confirmation style)
     private var settingsStep: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 16) {
-                // Selected film preview
-                if let stock = selectedFilmStock {
-                    selectedFilmPreview(stock)
-                } else if !customFilmName.isEmpty {
-                    customFilmPreview
-                }
+            VStack(alignment: .leading, spacing: 20) {
+                // Basic Info section
+                Text("Basic Info")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .padding(.horizontal, 4)
 
-                // Format & Capacity
-                VStack(alignment: .leading, spacing: 16) {
-                    sectionLabel("Film Format")
+                VStack(spacing: 0) {
+                    // Camera Model
+                    settingsRow(label: "Camera Model",
+                                value: selectedCamera?.name ?? "None")
+                    settingsDivider
 
-                    HStack(spacing: 10) {
-                        ForEach(FilmFormat.allCases, id: \.self) { f in
-                            formatButton(f)
-                        }
-                    }
+                    // Film
+                    settingsRow(label: "Film", value: filmDisplayName)
+                    settingsDivider
 
-                    Divider().background(Color.filmBorder)
-
-                    sectionLabel("Exposures")
-
-                    HStack(spacing: 12) {
-                        capacityButton(24)
-                        capacityButton(36)
-                    }
-                }
-                .padding(18)
-                .filmCard(cornerRadius: 20)
-
-                // Camera
-                VStack(alignment: .leading, spacing: 16) {
-                    sectionLabel("Camera")
-
-                    if cameras.isEmpty {
-                        HStack(spacing: 10) {
-                            Image(systemName: "camera")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color.filmTertiary)
-                            Text("No cameras added yet")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.filmSecondary)
-                        }
-                        .padding(.vertical, 8)
-                    } else {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(cameras) { camera in
-                                    cameraChip(camera)
-                                }
+                    // Format
+                    HStack {
+                        Text("Format")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        Picker("", selection: $format) {
+                            ForEach(FilmFormat.allCases, id: \.self) { f in
+                                Text(f.displayName).tag(f)
                             }
                         }
+                        .tint(Color.filmSecondary)
                     }
-                }
-                .padding(18)
-                .filmCard(cornerRadius: 20)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
 
-                // ISO (if custom film)
-                if selectedFilmStock == nil {
-                    VStack(alignment: .leading, spacing: 16) {
-                        sectionLabel("ISO")
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 6) {
+                    settingsDivider
+
+                    // Exposures
+                    HStack {
+                        Text("Exposures")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        Picker("", selection: $capacity) {
+                            Text("24").tag(24)
+                            Text("36").tag(36)
+                        }
+                        .tint(Color.filmSecondary)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+
+                    if selectedFilmStock == nil {
+                        settingsDivider
+
+                        // ISO (custom film only)
+                        HStack {
+                            Text("ISO")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Picker("", selection: $iso) {
                                 ForEach(isoOptions, id: \.self) { option in
-                                    isoButton(option)
+                                    Text("\(option)").tag(option)
                                 }
                             }
+                            .tint(Color.filmSecondary)
                         }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
                     }
-                    .padding(18)
-                    .filmCard(cornerRadius: 20)
                 }
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                )
 
-                // Exposure adjustments
-                VStack(alignment: .leading, spacing: 16) {
-                    sectionLabel("Exposure Adjustments")
+                // Shot Info section
+                Text("Shot Info")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .padding(.horizontal, 4)
 
-                    VStack(spacing: 14) {
+                VStack(spacing: 0) {
+                    // Start Date
+                    HStack {
+                        Text("Start Date")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        DatePicker("", selection: $startDate, displayedComponents: .date)
+                            .labelsHidden()
+                            .tint(Color.filmAccent)
+                    }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
+
+                    settingsDivider
+
+                    // EV Compensation
+                    VStack(spacing: 10) {
                         HStack {
                             Text("EV Compensation")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.filmSecondary)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
                             Spacer()
                             Text(String(format: "%+.1f", evCompensation))
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
@@ -454,14 +473,17 @@ struct AddRollView: View {
                         Slider(value: $evCompensation, in: -3...3, step: 0.5)
                             .tint(Color.filmAccent)
                     }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
 
-                    Divider().background(Color.filmBorder)
+                    settingsDivider
 
-                    VStack(spacing: 14) {
+                    // Push/Pull
+                    VStack(spacing: 10) {
                         HStack {
                             Text("Push/Pull")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color.filmSecondary)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
                             Spacer()
                             Text(String(format: "%+.1f", pushPull))
                                 .font(.system(size: 14, weight: .bold, design: .monospaced))
@@ -470,50 +492,60 @@ struct AddRollView: View {
                         Slider(value: $pushPull, in: -3...3, step: 0.5)
                             .tint(Color.filmGold)
                     }
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
                 }
-                .padding(18)
-                .filmCard(cornerRadius: 20)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                )
 
-                // Notes
-                VStack(alignment: .leading, spacing: 12) {
-                    sectionLabel("Notes")
-                    TextEditor(text: $notes)
-                        .font(.system(size: 15))
-                        .foregroundColor(Color.filmText)
-                        .frame(minHeight: 80)
-                        .scrollContentBackground(.hidden)
-                        .padding(12)
-                        .background(
-                            RoundedRectangle(cornerRadius: 12)
-                                .fill(Color.filmSurfaceSecondary)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12)
-                                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                                )
-                        )
+                // Notes section
+                Text("Notes")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .padding(.horizontal, 4)
+
+                TextEditor(text: $notes)
+                    .font(.system(size: 15))
+                    .foregroundColor(Color.filmText)
+                    .frame(minHeight: 80)
+                    .scrollContentBackground(.hidden)
+                    .padding(14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.filmSurface)
+                    )
+
+                // Camera selection (if cameras exist)
+                if !cameras.isEmpty {
+                    Text("Camera")
+                        .font(.system(size: 14, weight: .medium))
+                        .foregroundColor(Color.filmTertiary)
+                        .padding(.horizontal, 4)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            ForEach(cameras) { camera in
+                                cameraChip(camera)
+                            }
+                        }
+                    }
                 }
-                .padding(18)
-                .filmCard(cornerRadius: 20)
-
-                // Next button
+                // Confirm button
                 Button {
-                    withAnimation(.spring(response: 0.35)) { step = 2 }
+                    saveRoll()
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                 } label: {
-                    HStack(spacing: 10) {
-                        Text("Review")
-                            .font(.system(size: 17, weight: .bold))
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 14, weight: .bold))
-                    }
-                    .foregroundColor(Color.filmBackground)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
-                    .background(
-                        Capsule()
-                            .fill(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                            .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
-                    )
+                    Text("Confirm")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color.filmText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.filmSurface)
+                        )
                 }
                 .buttonStyle(.plain)
             }
@@ -521,6 +553,26 @@ struct AddRollView: View {
             .padding(.top, 8)
             .padding(.bottom, 40)
         }
+    }
+
+    private func settingsRow(label: String, value: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(value)
+                .font(.system(size: 16))
+                .foregroundColor(Color.filmSecondary)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+    }
+
+    private var settingsDivider: some View {
+        Divider()
+            .background(Color.filmBorder.opacity(0.3))
+            .padding(.horizontal, 18)
     }
 
     // MARK: - Step 3: Review & Create
@@ -565,24 +617,19 @@ struct AddRollView: View {
                 .padding(18)
                 .filmCard(cornerRadius: 20)
 
-                // Create button
+                // Confirm button
                 Button {
                     saveRoll()
                 } label: {
-                    HStack(spacing: 10) {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                        Text("Create Roll")
-                            .font(.system(size: 18, weight: .bold))
-                    }
-                    .foregroundColor(Color.filmBackground)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 20)
-                    .background(
-                        Capsule()
-                            .fill(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                            .shadow(color: Color.filmAccent.opacity(0.4), radius: 16, x: 0, y: 6)
-                    )
+                    Text("Confirm")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundColor(Color.filmText)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 18)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.filmSurface)
+                        )
                 }
                 .buttonStyle(.plain)
             }
@@ -705,61 +752,6 @@ struct AddRollView: View {
         .filmCard(cornerRadius: 18)
     }
 
-    private func formatButton(_ f: FilmFormat) -> some View {
-        let isSelected = format == f
-        return Button {
-            withAnimation(.spring(response: 0.25)) { format = f }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        } label: {
-            Text(f.displayName)
-                .font(.system(size: 14, weight: isSelected ? .bold : .medium))
-                .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(isSelected
-                              ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                              : AnyShapeStyle(Color.filmSurfaceSecondary))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5)
-                )
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func capacityButton(_ value: Int) -> some View {
-        let isSelected = capacity == value
-        return Button {
-            withAnimation(.spring(response: 0.25)) { capacity = value }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        } label: {
-            VStack(spacing: 4) {
-                Text("\(value)")
-                    .font(.system(size: 22, weight: .bold, design: .monospaced))
-                Text("frames")
-                    .font(.system(size: 11, weight: .medium))
-            }
-            .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 16)
-            .background(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(isSelected
-                          ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                          : AnyShapeStyle(Color.filmSurfaceSecondary))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5)
-            )
-            .shadow(color: isSelected ? Color.filmAccent.opacity(0.2) : .clear, radius: 8, x: 0, y: 3)
-        }
-        .buttonStyle(.plain)
-    }
-
     private func cameraChip(_ camera: Camera) -> some View {
         let isSelected = selectedCamera?.id == camera.id
         return Button {
@@ -784,28 +776,6 @@ struct AddRollView: View {
                           : AnyShapeStyle(Color.filmSurface))
             )
             .overlay(Capsule().stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5))
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func isoButton(_ value: Int) -> some View {
-        let isSelected = iso == value
-        return Button {
-            withAnimation(.spring(response: 0.25)) { iso = value }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        } label: {
-            Text("\(value)")
-                .font(.system(size: 13, weight: isSelected ? .bold : .medium, design: .monospaced))
-                .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(isSelected
-                              ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                              : AnyShapeStyle(Color.filmSurfaceSecondary))
-                )
-                .overlay(Capsule().stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5))
         }
         .buttonStyle(.plain)
     }

@@ -173,7 +173,7 @@ struct RollsView: View {
     // MARK: - Empty State
 
     private var emptyState: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 16) {
             Image(systemName: "film")
                 .font(.system(size: 44, weight: .thin))
                 .foregroundColor(Color.filmTertiary)
@@ -186,21 +186,6 @@ struct RollsView: View {
                     .font(.system(size: 15))
                     .foregroundColor(Color.filmTertiary)
             }
-
-            Button {
-                showAddSheet = true
-                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-            } label: {
-                Text("Create Roll")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color.filmBackground)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 12)
-                    .background(
-                        Capsule().fill(Color.filmAccent)
-                    )
-            }
-            .buttonStyle(.plain)
         }
         .padding(.top, 80)
     }
