@@ -745,6 +745,18 @@ private struct PhotoPageView: View {
 
     private func loadImage() {
         guard let assetID = frame.photoAssetID else { return }
+
+        // Local file
+        if assetID.contains("_frame_") {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(assetID)
+            if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
+                self.image = img
+            }
+            return
+        }
+
+        // PHAsset
         let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
         guard let asset = result.firstObject else { return }
         let manager = PHImageManager.default()
@@ -1279,12 +1291,23 @@ struct ContactSheetView: View {
 
     private func loadAllImages() {
         let frames = photoFrames
-        let fetchOptions = PHFetchOptions()
 
         Task {
             for frame in frames {
                 guard let assetID = frame.photoAssetID else { continue }
-                let results = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: fetchOptions)
+
+                // Local file (saved by import)
+                if assetID.contains("_frame_") {
+                    let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                        .appendingPathComponent(assetID)
+                    if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
+                        await MainActor.run { loadedImages[frame.number] = img }
+                    }
+                    continue
+                }
+
+                // PHAsset identifier
+                let results = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
                 guard let asset = results.firstObject else { continue }
 
                 let options = PHImageRequestOptions()
@@ -1301,9 +1324,7 @@ struct ContactSheetView: View {
                     }
                 }
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                isLoading = false
-            }
+            await MainActor.run { isLoading = false }
         }
     }
 
