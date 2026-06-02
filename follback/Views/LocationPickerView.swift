@@ -36,13 +36,24 @@ struct LocationPickerView: View {
                 .padding(.top, 12)
 
                 // Map
-                Map(position: $cameraPosition) {
-                    if let pin = selectedPin {
-                        Marker("", coordinate: pin)
-                            .tint(Color.filmAccent)
+                MapReader { reader in
+                    Map(position: $cameraPosition) {
+                        if let pin = selectedPin {
+                            Marker("", coordinate: pin)
+                                .tint(Color.filmAccent)
+                        }
+                    }
+                    .mapStyle(.standard(elevation: .realistic))
+                    .onTapGesture { position in
+                        if let coord = reader.convert(position, from: .local) {
+                            withAnimation {
+                                selectedPin = coord
+                            }
+                            reverseGeocode(coord)
+                            searchResults = []
+                        }
                     }
                 }
-                .mapStyle(.standard(elevation: .realistic))
                 .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .padding(.horizontal, 16)
                 .padding(.top, 8)

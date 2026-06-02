@@ -117,3 +117,67 @@ struct FilmStock: Identifiable, Hashable, Codable {
         return popular + others
     }
 }
+
+// MARK: - Custom Film
+
+struct CustomFilm: Identifiable, Codable, Hashable {
+    let id: String
+    var name: String
+    var iso: Int
+    var filmType: String  // "COLOR_NEGATIVE", "BW_NEGATIVE", "COLOR_POSITIVE"
+    var coverImageData: Data?
+
+    var displayName: String { name }
+
+    var type: FilmStock.FilmStockType {
+        switch filmType {
+        case "COLOR_NEGATIVE": return .colorNegative
+        case "BW_NEGATIVE": return .blackAndWhite
+        case "COLOR_POSITIVE": return .colorPositive
+        default: return .colorNegative
+        }
+    }
+
+    var typeDisplayName: String {
+        switch filmType {
+        case "COLOR_NEGATIVE": return "Color Negative"
+        case "BW_NEGATIVE": return "Black & White"
+        case "COLOR_POSITIVE": return "Color Positive"
+        default: return "Color Negative"
+        }
+    }
+
+    static let filmTypes = ["COLOR_NEGATIVE", "BW_NEGATIVE", "COLOR_POSITIVE"]
+    static let filmTypeNames = ["Color Negative", "Black & White", "Color Positive"]
+}
+
+class CustomFilmStore: ObservableObject {
+    static let shared = CustomFilmStore()
+    @Published var films: [CustomFilm] = []
+
+    private let key = "customFilms"
+
+    init() { load() }
+
+    func load() {
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let decoded = try? JSONDecoder().decode([CustomFilm].self, from: data) else { return }
+        films = decoded
+    }
+
+    func save() {
+        if let data = try? JSONEncoder().encode(films) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+    }
+
+    func add(_ film: CustomFilm) {
+        films.append(film)
+        save()
+    }
+
+    func remove(_ film: CustomFilm) {
+        films.removeAll { $0.id == film.id }
+        save()
+    }
+}
