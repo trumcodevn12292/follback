@@ -1,0 +1,94 @@
+name: Build iOS App
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: |
+          # List available Xcode versions and pick the latest
+          ls /Applications/ | grep Xcode
+          LATEST_XCODE=$(ls -d /Applications/Xcode*.app 2>/dev/null | sort -V | tail -1)
+          echo "Using: $LATEST_XCODE"
+          sudo xcode-select -s "$LATEST_XCODE/Contents/Developer"
+          xcodebuild -version
+
+      - name: Resolve SPM Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -project follback.xcodeproj \
+            -scheme follback
+
+      - name: Build for iOS Simulator
+        run: |
+          xcodebuild build \
+            -project follback.xcodeproj \
+            -scheme follback \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | tee build.log | tail -50
+
+      - name: Build Archive (unsigned)
+        run: |
+          xcodebuild archive \
+            -project follback.xcodeproj \
+            -scheme follback \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/follback.xcarchive \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            SKIP_INSTALL=NO \
+            | tee archive.log | tail -50
+
+      - name: Export unsigned IPA
+        run: |
+          mkdir -p build/ipa/Payload
+          if [ -d "build/follback.xcarchive/Products/Applications/follback.app" ]; then
+            cp -r "build/follback.xcarchive/Products/Applications/follback.app" build/ipa/Payload/
+          else
+            # Find the .app wherever it ended up
+            APP_PATH=$(find build/follback.xcarchive -name "*.app" -type d | head -1)
+            if [ -n "$APP_PATH" ]; then
+              cp -r "$APP_PATH" build/ipa/Payload/
+            else
+              echo "ERROR: No .app found in archive"
+              find build/follback.xcarchive -type d | head -30
+              exit 1
+            fi
+          fi
+          cd build/ipa
+          zip -r ../follback-unsigned.ipa Payload
+          echo "IPA created: $(du -h ../follback-unsigned.ipa | cut -f1)"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: follback-unsigned-ipa
+          path: build/follback-unsigned.ipa
+          retention-days: 30
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            build.log
+            archive.log

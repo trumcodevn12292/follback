@@ -151,7 +151,7 @@ struct FrameEditorView: View {
                 Text("Aperture")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(Color.filmTertiary)
-                DialPicker(items: Aperture.allCases, selected: $selectedAperture) { $0.rawValue }
+                DialPicker(items: Aperture.allCases, selected: $selectedAperture) { $0.displayName }
             }
 
             Divider().background(Color.filmBorder)

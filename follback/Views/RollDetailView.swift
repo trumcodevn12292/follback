@@ -348,7 +348,7 @@ struct RollDetailView: View {
     private var apertureChart: some View {
         let frames = roll.frames ?? []
         let grouped = Dictionary(grouping: frames.compactMap { $0.aperture }) { $0 }
-        let chartData = grouped.mapValues { Double($0.count) }
+        let chartData = Dictionary(uniqueKeysWithValues: grouped.map { (Aperture(rawValue: $0.key)?.displayName ?? "f/\($0.key)", Double($0.value.count)) })
 
         return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
