@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Kingfisher
 
 struct AddCameraView: View {
     @Environment(\.modelContext) private var modelContext
@@ -12,11 +13,15 @@ struct AddCameraView: View {
     @State private var fixedFocalLength = ""
     @State private var notes = ""
     @State private var cardAppeared = false
+    @State private var showModelPicker = false
+    @State private var selectedModel: CameraModel?
+    @State private var cameraSearchText = ""
 
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 20) {
                 headerCard
+                modelPickerCard
                 detailsCard
                 notesCard
                 saveButton
@@ -40,6 +45,9 @@ struct AddCameraView: View {
                 cardAppeared = true
             }
         }
+        .sheet(isPresented: $showModelPicker) {
+            cameraModelPickerSheet
+        }
     }
 
     private var headerCard: some View {
@@ -55,15 +63,26 @@ struct AddCameraView: View {
                         )
                     )
                     .frame(width: 72, height: 72)
-                Image(systemName: "camera")
-                    .font(.system(size: 30, weight: .light))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+
+                if let model = selectedModel,
+                   let coverUrlString = model.fullCoverUrl,
+                   let coverURL = URL(string: coverUrlString) {
+                    KFImage(coverURL)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 72, height: 72)
+                        .clipShape(Circle())
+                } else {
+                    Image(systemName: "camera")
+                        .font(.system(size: 30, weight: .light))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.filmAccent, Color.filmGold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
+                }
             }
             Text("New Camera")
                 .font(.system(size: 22, weight: .bold, design: .serif))
@@ -72,6 +91,227 @@ struct AddCameraView: View {
         .frame(maxWidth: .infinity)
         .opacity(cardAppeared ? 1 : 0)
         .offset(y: cardAppeared ? 0 : -15)
+    }
+
+    // MARK: - Camera Model Picker Card
+
+    private var modelPickerCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            sectionLabel("Browse Camera Database")
+
+            Button {
+                showModelPicker = true
+            } label: {
+                HStack(spacing: 12) {
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(Color.filmAccent.opacity(0.1))
+                            .frame(width: 44, height: 44)
+
+                        if let model = selectedModel,
+                           let coverUrlString = model.fullCoverUrl,
+                           let coverURL = URL(string: coverUrlString) {
+                            KFImage(coverURL)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 44, height: 44)
+                                .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+                        } else {
+                            Image(systemName: "camera.viewfinder")
+                                .font(.system(size: 20))
+                                .foregroundColor(Color.filmAccent)
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 2) {
+                        if let model = selectedModel {
+                            Text(model.displayName)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(Color.filmText)
+                            Text("Tap to change")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color.filmTertiary)
+                        } else {
+                            Text("Choose from 930+ cameras")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(Color.filmText)
+                            Text("Browse the full camera database")
+                                .font(.system(size: 12))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(Color.filmTertiary)
+                }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.filmSurface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .stroke(selectedModel != nil ? Color.filmAccent.opacity(0.3) : Color.filmBorder, lineWidth: 0.5)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.02), value: cardAppeared)
+    }
+
+    // MARK: - Camera Model Picker Sheet
+
+    private var cameraModelPickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                HStack(spacing: 12) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 15))
+                        .foregroundColor(Color.filmTertiary)
+                    TextField("Search cameras...", text: $cameraSearchText)
+                        .font(.system(size: 16))
+                        .foregroundColor(Color.filmText)
+                }
+                .padding(14)
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                        )
+                )
+                .padding(.horizontal, 16)
+                .padding(.top, 8)
+
+                ScrollView(showsIndicators: false) {
+                    LazyVStack(spacing: 12, pinnedViews: .sectionHeaders) {
+                        ForEach(filteredCameraModels, id: \.brand) { group in
+                            Section {
+                                ForEach(group.models) { model in
+                                    cameraModelRow(model)
+                                }
+                            } header: {
+                                HStack {
+                                    Text(group.brand)
+                                        .font(.system(size: 13, weight: .bold))
+                                        .foregroundColor(Color.filmSecondary)
+                                        .textCase(.uppercase)
+                                        .tracking(1)
+                                    Spacer()
+                                    Text("\(group.models.count)")
+                                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                                .padding(.horizontal, 20)
+                                .padding(.vertical, 8)
+                                .background(Color.filmBackground)
+                            }
+                        }
+                    }
+                    .padding(.bottom, 40)
+                    .padding(.top, 8)
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Camera Database")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") { showModelPicker = false }
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color.filmAccent)
+                }
+            }
+        }
+    }
+
+    private var filteredCameraModels: [(brand: String, models: [CameraModel])] {
+        if cameraSearchText.isEmpty {
+            return CameraModel.groupedByBrandPopularFirst
+        }
+        let query = cameraSearchText.lowercased()
+        return CameraModel.groupedByBrandPopularFirst.compactMap { group in
+            let filtered = group.models.filter {
+                $0.displayName.lowercased().contains(query) ||
+                $0.brand.lowercased().contains(query)
+            }
+            return filtered.isEmpty ? nil : (brand: group.brand, models: filtered)
+        }
+    }
+
+    private func cameraModelRow(_ model: CameraModel) -> some View {
+        let isSelected = selectedModel?.id == model.id
+        return Button {
+            withAnimation(.spring(response: 0.3)) {
+                selectedModel = model
+                name = model.name
+                brand = model.brand
+            }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.filmSurface)
+                        .frame(width: 50, height: 50)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                        )
+
+                    if let coverUrlString = model.fullCoverUrl,
+                       let coverURL = URL(string: coverUrlString) {
+                        KFImage(coverURL)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    } else {
+                        Image(systemName: "camera")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(model.name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+                    Text(model.brand)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(Color.filmTertiary)
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .top, endPoint: .bottom)
+                        )
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(isSelected ? Color.filmAccent.opacity(0.06) : Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(isSelected ? Color.filmAccent.opacity(0.3) : Color.filmBorder, lineWidth: isSelected ? 1 : 0.5)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
     }
 
     private var detailsCard: some View {
