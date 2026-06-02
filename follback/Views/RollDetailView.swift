@@ -828,7 +828,11 @@ struct EditRollDetailsView: View {
     @State private var evCompensation: Float = 0
     @State private var pushPull: Float = 0
     @State private var notes: String = ""
+    @State private var locationName: String = ""
+    @State private var locationLatitude: Double?
+    @State private var locationLongitude: Double?
     @State private var showFilmPicker = false
+    @State private var showLocationPicker = false
     @State private var searchText = ""
 
     private var filteredGroups: [(brand: String, stocks: [FilmStock])]? {
@@ -954,6 +958,50 @@ struct EditRollDetailsView: View {
                         )
                     }
 
+                    // Location
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("LOCATION")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        Button {
+                            showLocationPicker = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "location.fill")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(Color.filmAccent)
+                                Text(locationName.isEmpty ? "Add Location" : locationName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(locationName.isEmpty ? Color.filmTertiary : Color.filmText)
+                                    .lineLimit(1)
+                                Spacer()
+                                if !locationName.isEmpty {
+                                    Button {
+                                        locationName = ""
+                                        locationLatitude = nil
+                                        locationLongitude = nil
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(Color.filmTertiary)
+                                    }
+                                } else {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     // Notes
                     VStack(alignment: .leading, spacing: 8) {
                         Text("NOTES")
@@ -1004,6 +1052,13 @@ struct EditRollDetailsView: View {
             .sheet(isPresented: $showFilmPicker) {
                 filmPickerSheet
             }
+            .fullScreenCover(isPresented: $showLocationPicker) {
+                LocationPickerView(
+                    locationName: $locationName,
+                    latitude: $locationLatitude,
+                    longitude: $locationLongitude
+                )
+            }
         }
         .onAppear {
             filmName = roll.filmName
@@ -1013,6 +1068,9 @@ struct EditRollDetailsView: View {
             evCompensation = roll.evCompensation
             pushPull = roll.pushPull
             notes = roll.notes
+            locationName = roll.locationName ?? ""
+            locationLatitude = roll.latitude
+            locationLongitude = roll.longitude
         }
     }
 
@@ -1098,6 +1156,9 @@ struct EditRollDetailsView: View {
         roll.evCompensation = evCompensation
         roll.pushPull = pushPull
         roll.notes = notes
+        roll.locationName = locationName.isEmpty ? nil : locationName
+        roll.latitude = locationLatitude
+        roll.longitude = locationLongitude
         roll.updatedAt = Date()
         try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
