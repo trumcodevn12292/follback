@@ -1,6 +1,7 @@
 import SwiftUI
 import MapKit
 import CoreLocation
+import Combine
 
 struct LocationPickerView: View {
     @Binding var locationName: String?
@@ -156,15 +157,15 @@ struct LocationPickerView: View {
         .onAppear {
             locationManager.requestLocation()
         }
-        .onChange(of: locationManager.currentLocation) { _, newLocation in
-            if let loc = newLocation {
-                selectedPin = loc
-                cameraPosition = .region(MKCoordinateRegion(
-                    center: loc,
-                    span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
-                ))
-                reverseGeocode(loc)
-            }
+        .onChange(of: locationManager.currentLatitude) { _, newLat in
+            guard let lat = newLat, let lng = locationManager.currentLongitude else { return }
+            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
+            selectedPin = coord
+            cameraPosition = .region(MKCoordinateRegion(
+                center: coord,
+                span: MKCoordinateSpan(latitudeDelta: 0.01, longitudeDelta: 0.01)
+            ))
+            reverseGeocode(coord)
         }
     }
 
@@ -211,7 +212,8 @@ struct LocationPickerView: View {
 
 class LocationPickerManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
-    @Published var currentLocation: CLLocationCoordinate2D?
+    @Published var currentLatitude: Double?
+    @Published var currentLongitude: Double?
 
     override init() {
         super.init()
@@ -226,7 +228,8 @@ class LocationPickerManager: NSObject, ObservableObject, CLLocationManagerDelega
 
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         if let loc = locations.last {
-            currentLocation = loc.coordinate
+            currentLatitude = loc.coordinate.latitude
+            currentLongitude = loc.coordinate.longitude
         }
     }
 
