@@ -1163,9 +1163,7 @@ struct ContactSheetView: View {
                                 if let camera = roll.camera { infoChip(camera.name) }
                                 infoChip("ISO \(roll.iso)")
                                 infoChip(roll.format)
-                                if let date = roll.startDate {
-                                    infoChip(date.formatted(.dateTime.month(.abbreviated).year()))
-                                }
+                                infoChip(roll.startDate.formatted(.dateTime.month(.abbreviated).year()))
                             }
                         }
                         .padding(.vertical, 12)
@@ -1347,9 +1345,7 @@ struct ContactSheetView: View {
                     if let camera = roll.camera { infoChipLarge(camera.name) }
                     infoChipLarge("ISO \(roll.iso)")
                     infoChipLarge(roll.format)
-                    if let date = roll.startDate {
-                        infoChipLarge(date.formatted(.dateTime.month(.abbreviated).day().year()))
-                    }
+                    infoChipLarge(roll.startDate.formatted(.dateTime.month(.abbreviated).day().year()))
                 }
             }
             .padding(.vertical, 20)
