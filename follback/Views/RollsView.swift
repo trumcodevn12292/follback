@@ -61,7 +61,6 @@ struct RollsView: View {
             }
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)
-                    .navigationBarBackButtonHidden(true)
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
