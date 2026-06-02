@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:follback.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:Packages/lottie-ios">
+   </FileRef>
+   <FileRef
+      location = "group:Packages/Kingfisher">
+   </FileRef>
+   <FileRef
+      location = "group:Packages/Charts">
+   </FileRef>
+   <FileRef
+      location = "group:Packages/Parchment">
+   </FileRef>
+   <FileRef
+      location = "group:Packages/SwiftUI-Shimmer">
+   </FileRef>
+</Workspace>
