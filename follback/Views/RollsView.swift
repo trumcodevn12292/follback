@@ -18,42 +18,52 @@ struct RollsView: View {
 
     var body: some View {
         NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 20) {
-                    headerSection
-                    filterSection
+            ZStack(alignment: .bottom) {
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        headerSection
+                        filterSection
 
-                    if rolls.isEmpty && !isLoading {
-                        emptyState
-                    } else if isLoading {
-                        shimmerContent
-                    } else {
-                        rollList
+                        if rolls.isEmpty && !isLoading {
+                            emptyState
+                        } else if isLoading {
+                            shimmerContent
+                        } else {
+                            rollList
+                        }
                     }
+                    .padding(.top, 8)
+                    .padding(.bottom, 80)
                 }
-                .padding(.top, 8)
-                .padding(.bottom, 20)
+
+                // Floating "+ New Roll" button
+                Button {
+                    showAddSheet = true
+                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 15, weight: .bold))
+                        Text("New Roll")
+                            .font(.system(size: 16, weight: .semibold))
+                    }
+                    .foregroundColor(Color.filmText)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 14)
+                    .background(
+                        Capsule()
+                            .fill(Color.filmSurface)
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.filmBorder, lineWidth: 0.5)
+                            )
+                    )
+                }
+                .buttonStyle(.plain)
+                .padding(.bottom, 16)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        showAddSheet = true
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                    } label: {
-                        Image(systemName: "plus")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(Color.filmAccent)
-                            .frame(width: 36, height: 36)
-                            .background(
-                                Circle()
-                                    .fill(Color.filmAccent.opacity(0.1))
-                            )
-                    }
-                    .buttonStyle(.plain)
-                }
-            }
             .fullScreenCover(isPresented: $showAddSheet) {
                 NavigationStack {
                     AddRollView()
@@ -77,24 +87,19 @@ struct RollsView: View {
     // MARK: - Header
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text("FilmVault")
-                .font(.system(size: 32, weight: .bold, design: .serif))
+        HStack {
+            Text("FILMVAULT")
+                .font(.system(size: 28, weight: .black))
                 .foregroundColor(Color.filmText)
+                .kerning(1.5)
 
-            Text("\(rolls.count) rolls · \(totalFrames) frames")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color.filmTertiary)
+            Spacer()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : -10)
         .animation(.easeOut(duration: 0.3), value: appeared)
-    }
-
-    private var totalFrames: Int {
-        rolls.reduce(0) { $0 + ($1.frames?.count ?? 0) }
     }
 
     // MARK: - Filters
@@ -104,6 +109,7 @@ struct RollsView: View {
             HStack(spacing: 8) {
                 filterPill(nil, label: "All", count: rolls.count)
                 filterPill(.inProgress, label: "Active", count: rolls.filter { $0.rollStatus == .inProgress }.count)
+                filterPill(.completed, label: "Completed", count: rolls.filter { $0.rollStatus == .completed }.count)
                 filterPill(.developed, label: "Developed", count: rolls.filter { $0.rollStatus == .developed }.count)
                 filterPill(.archived, label: "Archived", count: rolls.filter { $0.rollStatus == .archived }.count)
             }

@@ -155,10 +155,10 @@ struct RollDetailView: View {
             }
 
             Menu {
-                if roll.rollStatus == .inProgress {
+                if roll.rollStatus == .inProgress || roll.rollStatus == .completed {
                     Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
                 }
-                if roll.rollStatus == .developed {
+                if roll.rollStatus != .inProgress {
                     Button { markInProgress() } label: { Label("Mark Active", systemImage: "play") }
                 }
                 Button { archiveRoll() } label: { Label("Archive", systemImage: "archivebox") }
@@ -334,7 +334,8 @@ struct RollDetailView: View {
     private var statusColor: Color {
         switch roll.rollStatus {
         case .inProgress: return Color.filmAccent
-        case .developed: return Color.filmSuccess
+        case .completed: return Color.filmSuccess
+        case .developed: return Color.blue
         case .archived: return Color.filmTertiary
         }
     }
@@ -438,11 +439,15 @@ struct RollDetailView: View {
         }
 
         if importedCount > 0 {
+            roll.checkAutoComplete()
             try? modelContext.save()
             await MainActor.run {
                 isImporting = false
                 selectedPhotos = []
-                toastMessage = "Imported \(importedCount) photo\(importedCount == 1 ? "" : "s")"
+                let completed = roll.isCompleted
+                toastMessage = completed
+                    ? "Roll complete! \(importedCount) photo\(importedCount == 1 ? "" : "s") imported"
+                    : "Imported \(importedCount) photo\(importedCount == 1 ? "" : "s")"
                 withAnimation(.easeOut(duration: 0.3)) {
                     showToastFlag = true
                 }

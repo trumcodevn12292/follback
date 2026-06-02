@@ -315,6 +315,7 @@ struct FrameEditorView: View {
         target.capturedAt = Date()
 
         roll.updatedAt = Date()
+        roll.checkAutoComplete()
         try? modelContext.save()
 
         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
