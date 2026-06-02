@@ -8,79 +8,82 @@ struct RollCard: View {
     @Environment(\.modelContext) private var modelContext
 
     var body: some View {
-        HStack(spacing: 0) {
-            // Left accent bar with status color
-            statusBar
-                .frame(width: 4)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 0) {
+                statusBar
+                    .frame(width: 4)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 12) {
-                // Header
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(roll.filmName)
-                            .font(.system(size: 18, weight: .semibold, design: .serif))
-                            .foregroundColor(Color.filmText)
-                            .lineLimit(1)
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text(roll.filmName)
+                                .font(.system(size: 19, weight: .bold, design: .serif))
+                                .foregroundColor(Color.filmText)
+                                .lineLimit(1)
 
-                        Text(roll.camera?.name ?? "No camera")
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color.filmSecondary)
-                    }
-
-                    Spacer()
-
-                    statusBadge
-                }
-
-                // Film specs
-                HStack(spacing: 8) {
-                    specBadge("ISO \(roll.iso)")
-                    specBadge("\(roll.capacity) frames")
-                    specBadge(roll.filmFormat.displayName)
-                }
-
-                // Progress bar
-                VStack(alignment: .leading, spacing: 6) {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(Color.filmSprocket)
-                                .frame(height: 6)
-
-                            RoundedRectangle(cornerRadius: 3)
-                                .fill(gradientFill)
-                                .frame(width: geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1)), height: 6)
-                                .animation(.spring(response: 0.6, dampingFraction: 0.8), value: roll.filledFrames)
+                            HStack(spacing: 6) {
+                                Image(systemName: "camera.fill")
+                                    .font(.system(size: 11))
+                                    .foregroundColor(Color.filmTertiary)
+                                Text(roll.camera?.name ?? "No camera")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(Color.filmSecondary)
+                            }
                         }
-                    }
-                    .frame(height: 6)
 
-                    HStack {
-                        Text("\(roll.filledFrames) of \(roll.capacity)")
-                            .font(.system(size: 11, weight: .medium, design: .monospaced))
-                            .foregroundColor(Color.filmTertiary)
                         Spacer()
-                        if roll.pushPull != 0 {
-                            Text(String(format: "%+.1f stops", roll.pushPull))
-                                .font(.system(size: 11, weight: .medium))
+
+                        statusBadge
+                    }
+
+                    HStack(spacing: 8) {
+                        specBadge(icon: "film", text: "ISO \(roll.iso)")
+                        specBadge(icon: "square.grid.2x2", text: "\(roll.capacity)")
+                        specBadge(icon: "viewfinder", text: roll.filmFormat.displayName)
+                    }
+
+                    VStack(alignment: .leading, spacing: 7) {
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.filmSprocket)
+                                    .frame(height: 7)
+
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(gradientFill)
+                                    .frame(
+                                        width: geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1)),
+                                        height: 7
+                                    )
+                                    .shadow(color: Color.filmAccent.opacity(0.35), radius: 6, x: 0, y: 2)
+                                    .animation(.spring(response: 0.6, dampingFraction: 0.8), value: roll.filledFrames)
+                            }
+                        }
+                        .frame(height: 7)
+
+                        HStack {
+                            Text("\(roll.filledFrames)/\(roll.capacity) frames")
+                                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                                .foregroundColor(Color.filmTertiary)
+                            Spacer()
+                            if roll.pushPull != 0 {
+                                HStack(spacing: 3) {
+                                    Image(systemName: "arrow.up.arrow.down")
+                                        .font(.system(size: 9))
+                                    Text(String(format: "%+.1f", roll.pushPull))
+                                        .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                }
                                 .foregroundColor(Color.filmGold)
+                            }
                         }
                     }
                 }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 14)
             }
-            .padding(.vertical, 16)
-            .padding(.horizontal, 14)
         }
-        .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
-        )
-        .shadow(color: Color.black.opacity(0.04), radius: 12, x: 0, y: 4)
+        .filmCard(cornerRadius: 22)
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
                 Label("Delete", systemImage: "trash")
@@ -92,23 +95,32 @@ struct RollCard: View {
     }
 
     private var statusBar: some View {
-        statusColor
+        LinearGradient(
+            colors: [statusColor, statusColor.opacity(0.5)],
+            startPoint: .top,
+            endPoint: .bottom
+        )
     }
 
     private var statusBadge: some View {
-        Text(roll.rollStatus.displayName)
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .foregroundColor(statusColor)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(statusColor.opacity(0.1))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(statusColor.opacity(0.25), lineWidth: 0.5)
-            )
+        HStack(spacing: 4) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 6, height: 6)
+            Text(roll.rollStatus.displayName)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(statusColor)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            Capsule()
+                .fill(statusColor.opacity(0.1))
+        )
+        .overlay(
+            Capsule()
+                .stroke(statusColor.opacity(0.2), lineWidth: 0.5)
+        )
     }
 
     private var statusColor: Color {
@@ -127,15 +139,24 @@ struct RollCard: View {
         )
     }
 
-    private func specBadge(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-            .foregroundColor(Color.filmSecondary)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(Color.filmSurfaceSecondary)
-            )
+    private func specBadge(icon: String, text: String) -> some View {
+        HStack(spacing: 4) {
+            Image(systemName: icon)
+                .font(.system(size: 9))
+                .foregroundColor(Color.filmAccent.opacity(0.7))
+            Text(text)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                .foregroundColor(Color.filmSecondary)
+        }
+        .padding(.horizontal, 9)
+        .padding(.vertical, 5)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(Color.filmSurfaceSecondary)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8, style: .continuous)
+                        .stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5)
+                )
+        )
     }
 }

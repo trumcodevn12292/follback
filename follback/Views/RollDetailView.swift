@@ -3,141 +3,149 @@ import SwiftData
 import DGCharts
 
 enum FrameSheetTarget: Identifiable {
-    case existing(Frame)
     case new(Int)
+    case edit(Frame)
     var id: String {
         switch self {
-        case .existing(let f): return f.id.uuidString
-        case .new(let n): return "new_\(n)"
+        case .new(let num): return "new_\(num)"
+        case .edit(let frame): return "edit_\(frame.id.uuidString)"
         }
     }
 }
 
 struct RollDetailView: View {
     @Bindable var roll: Roll
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
-    @State private var frameSheetTarget: FrameSheetTarget?
     @State private var viewerFrame: Frame?
+    @State private var frameSheetTarget: FrameSheetTarget?
     @State private var selectedTab = 0
     @State private var appeared = false
-
-    private var sortedFrames: [Frame] {
-        roll.frames?.sorted(by: { $0.number < $1.number }) ?? []
-    }
+    @State private var showDeleteAlert = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 0) {
+            VStack(spacing: 20) {
+                headerBar
                 heroCard
-
-                SegmentedPicker(selection: $selectedTab, options: [("Frames", "square.grid.2x2"), ("Stats", "chart.bar.fill")])
-                    .padding(.horizontal, 16)
-                    .padding(.top, 20)
-                    .padding(.bottom, 12)
-
-                if selectedTab == 0 {
-                    frameGridContent
-                } else {
-                    statsContent
-                }
+                tabPicker
+                tabContent
             }
-            .padding(.bottom, 24)
+            .padding(.bottom, 100)
         }
-        .navigationTitle("")
-        .navigationBarBackButtonHidden(true)
-        .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button {
-                    dismiss()
-                } label: {
-                    Image(systemName: "chevron.left")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color.filmText)
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-            ToolbarItem(placement: .topBarTrailing) {
-                Menu {
-                    Button { markDeveloped() } label: {
-                        Label("Mark Developed", systemImage: "checkmark.circle")
-                    }
-                    Button { markInProgress() } label: {
-                        Label("Mark In Progress", systemImage: "arrow.clockwise")
-                    }
-                    Button { archiveRoll() } label: {
-                        Label("Archive", systemImage: "archivebox")
-                    }
-                } label: {
-                    Image(systemName: "ellipsis")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(Color.filmText)
-                        .frame(width: 36, height: 36)
-                        .background(
-                            Circle()
-                                .fill(.ultraThinMaterial)
-                                .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-        }
+        .background(Color.filmBackground.ignoresSafeArea())
+        .navigationBarHidden(true)
         .sheet(item: $frameSheetTarget) { target in
-            switch target {
-            case .existing(let frame):
-                FrameEditorView(roll: roll, frame: frame)
-            case .new(let number):
-                FrameEditorView(roll: roll, frameNumber: number)
+            NavigationStack {
+                switch target {
+                case .new(let num):
+                    FrameEditorView(roll: roll, currentNumber: num)
+                case .edit(let frame):
+                    FrameEditorView(roll: roll, frame: frame, currentNumber: frame.number)
+                }
             }
+            .presentationDetents([.large])
+            .presentationDragIndicator(.visible)
         }
         .sheet(item: $viewerFrame) { frame in
             FrameViewerView(frame: frame)
+        }
+        .alert("Delete Roll?", isPresented: $showDeleteAlert) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) {
+                modelContext.delete(roll)
+                try? modelContext.save()
+                dismiss()
+            }
+        } message: {
+            Text("This will permanently delete \"\(roll.filmName)\" and all its frames.")
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
             }
         }
-        .background(Color.filmBackground.ignoresSafeArea())
+    }
+
+    private var headerBar: some View {
+        HStack(spacing: 16) {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 40, height: 40)
+                    .background(
+                        Circle()
+                            .fill(Color.filmSurface)
+                            .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                    )
+            }
+            Spacer()
+
+            Menu {
+                if roll.rollStatus == .inProgress {
+                    Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
+                }
+                if roll.rollStatus == .developed {
+                    Button { markInProgress() } label: { Label("Mark Active", systemImage: "play") }
+                }
+                Button { archiveRoll() } label: { Label("Archive", systemImage: "archivebox") }
+                Button(role: .destructive) { showDeleteAlert = true } label: { Label("Delete", systemImage: "trash") }
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 40, height: 40)
+                    .background(
+                        Circle()
+                            .fill(Color.filmSurface)
+                            .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                    )
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
     }
 
     private var heroCard: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text(roll.filmName)
                         .font(.system(size: 26, weight: .bold, design: .serif))
                         .foregroundColor(Color.filmText)
-                    Text(roll.camera?.name ?? "No camera")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Color.filmSecondary)
+                    HStack(spacing: 8) {
+                        Image(systemName: "camera.fill")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.filmAccent)
+                        Text(roll.camera?.name ?? "No camera")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(Color.filmSecondary)
+                    }
                 }
                 Spacer()
                 statusBadge
             }
 
             HStack(spacing: 8) {
-                infoPill("ISO \(roll.iso)")
-                infoPill("\(roll.capacity) frames")
-                infoPill(roll.filmFormat.displayName)
+                specPill(icon: "film", text: "ISO \(roll.iso)")
+                specPill(icon: "square.grid.2x2", text: "\(roll.capacity)")
+                specPill(icon: "viewfinder", text: roll.filmFormat.displayName)
+                if roll.evCompensation != 0 {
+                    specPill(icon: "plusminus", text: String(format: "%+.1f EV", roll.evCompensation))
+                }
             }
 
             VStack(alignment: .leading, spacing: 8) {
                 GeometryReader { geo in
                     ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: 5)
                             .fill(Color.filmSprocket)
                             .frame(height: 8)
-
-                        RoundedRectangle(cornerRadius: 4)
+                        RoundedRectangle(cornerRadius: 5)
                             .fill(
                                 LinearGradient(
                                     colors: [Color.filmAccent, Color.filmGold],
@@ -145,142 +153,79 @@ struct RollDetailView: View {
                                     endPoint: .trailing
                                 )
                             )
-                            .frame(width: geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1)), height: 8)
+                            .frame(
+                                width: max(0, geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1))),
+                                height: 8
+                            )
+                            .shadow(color: Color.filmAccent.opacity(0.4), radius: 8, x: 0, y: 2)
+                            .animation(.spring(response: 0.6, dampingFraction: 0.8), value: roll.filledFrames)
                     }
                 }
                 .frame(height: 8)
 
                 HStack {
-                    Text("\(roll.filledFrames) of \(roll.capacity) frames")
+                    Text("\(roll.filledFrames)/\(roll.capacity) frames exposed")
                         .font(.system(size: 12, weight: .medium, design: .monospaced))
-                        .foregroundColor(Color.filmSecondary)
+                        .foregroundColor(Color.filmTertiary)
                     Spacer()
                     if roll.pushPull != 0 {
-                        Text(String(format: "Push/Pull %+.1f stops", roll.pushPull))
-                            .font(.system(size: 12, weight: .medium))
-                            .foregroundColor(Color.filmGold)
+                        HStack(spacing: 4) {
+                            Image(systemName: "arrow.up.arrow.down")
+                                .font(.system(size: 10))
+                            Text("Push/Pull \(String(format: "%+.1f", roll.pushPull))")
+                                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                        }
+                        .foregroundColor(Color.filmGold)
                     }
                 }
             }
+
+            if !roll.notes.isEmpty {
+                Text(roll.notes)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color.filmSecondary)
+                    .lineSpacing(4)
+                    .padding(.top, 2)
+            }
         }
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
-        )
-        .shadow(color: Color.black.opacity(0.04), radius: 16, x: 0, y: 6)
+        .filmCard(cornerRadius: 24)
         .padding(.horizontal, 16)
-        .padding(.top, 52)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 20)
     }
 
-    private var frameGridContent: some View {
-        LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12), GridItem(.flexible())], spacing: 12) {
-            ForEach(1...roll.capacity, id: \.self) { number in
-                if let frame = sortedFrames.first(where: { $0.number == number }) {
-                    frameCell(frame: frame)
-                } else {
-                    emptyCell(number: number)
-                }
-            }
+    private var statusBadge: some View {
+        HStack(spacing: 4) {
+            Circle()
+                .fill(statusColor)
+                .frame(width: 6, height: 6)
+            Text(roll.rollStatus.displayName)
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundColor(statusColor)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 8)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(Capsule().fill(statusColor.opacity(0.1)))
+        .overlay(Capsule().stroke(statusColor.opacity(0.2), lineWidth: 0.5))
     }
 
-    private var statsContent: some View {
-        VStack(spacing: 16) {
-            if !apertureDistribution.isEmpty {
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Aperture Distribution")
-                        .font(.system(size: 15, weight: .semibold))
-                        .foregroundColor(Color.filmText)
-                        .padding(.horizontal, 16)
-
-                    BarChartWrapper(data: apertureDistribution)
-                        .frame(height: 220)
-                        .padding(.horizontal, 16)
-                }
-            }
-
-            HStack(spacing: 12) {
-                statCard(title: "Filled", value: "\(roll.filledFrames)", icon: "photo.fill")
-                statCard(title: "Empty", value: "\(roll.capacity - roll.filledFrames)", icon: "square.dashed")
-            }
-            .padding(.horizontal, 16)
-        }
-        .padding(.top, 8)
-    }
-
-    private func statCard(title: String, value: String, icon: String) -> some View {
-        VStack(spacing: 10) {
+    private func specPill(icon: String, text: String) -> some View {
+        HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 24))
-                .foregroundColor(Color.filmAccent)
-            Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
-                .foregroundColor(Color.filmText)
-            Text(title)
-                .font(.system(size: 12, weight: .medium))
+                .font(.system(size: 9))
+                .foregroundColor(Color.filmAccent.opacity(0.7))
+            Text(text)
+                .font(.system(size: 11, weight: .semibold, design: .monospaced))
                 .foregroundColor(Color.filmSecondary)
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
         .background(
-            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
+            Capsule()
+                .fill(Color.filmAccent.opacity(0.06))
+                .overlay(Capsule().stroke(Color.filmAccent.opacity(0.12), lineWidth: 0.5))
         )
-    }
-
-    private var apertureDistribution: [String: Double] {
-        var counts: [String: Double] = [:]
-        for frame in sortedFrames {
-            if let ap = frame.apertureDisplay {
-                counts[ap, default: 0] += 1
-            }
-        }
-        return counts
-    }
-
-    private func infoPill(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .semibold, design: .monospaced))
-            .foregroundColor(Color.filmAccent)
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(Color.filmAccent.opacity(0.08))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(Color.filmAccent.opacity(0.2), lineWidth: 0.5)
-            )
-    }
-
-    private var statusBadge: some View {
-        Text(roll.rollStatus.displayName)
-            .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .foregroundColor(statusColor)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 5)
-            .background(
-                Capsule()
-                    .fill(statusColor.opacity(0.1))
-            )
-            .overlay(
-                Capsule()
-                    .stroke(statusColor.opacity(0.25), lineWidth: 0.5)
-            )
     }
 
     private var statusColor: Color {
@@ -291,14 +236,46 @@ struct RollDetailView: View {
         }
     }
 
+    private var tabPicker: some View {
+        SegmentedPicker(selection: $selectedTab, options: [("Frames", "square.grid.2x2"), ("Stats", "chart.bar")])
+            .padding(.horizontal, 16)
+    }
+
+    @ViewBuilder
+    private var tabContent: some View {
+        if selectedTab == 0 {
+            framesGrid
+        } else {
+            statsView
+        }
+    }
+
+    private var framesGrid: some View {
+        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+
+        return VStack(spacing: 12) {
+            LazyVGrid(columns: columns, spacing: 10) {
+                ForEach(1...roll.capacity, id: \.self) { num in
+                    if let frame = frames.first(where: { $0.number == num }) {
+                        frameCell(frame: frame)
+                    } else {
+                        emptyCell(number: num)
+                    }
+                }
+            }
+        }
+        .padding(.horizontal, 16)
+    }
+
     private func frameCell(frame: Frame) -> some View {
         ZStack(alignment: .bottomLeading) {
             if let assetID = frame.photoAssetID {
                 PhotoThumbnail(assetID: assetID)
                     .aspectRatio(1, contentMode: .fill)
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
+                    .clipShape(RoundedRectangle(cornerRadius: 16))
             } else {
-                RoundedRectangle(cornerRadius: 14)
+                RoundedRectangle(cornerRadius: 16)
                     .fill(Color.filmSprocket)
             }
 
@@ -309,19 +286,19 @@ struct RollDetailView: View {
                     .padding(.horizontal, 6)
                     .padding(.vertical, 2)
                     .background(
-                        RoundedRectangle(cornerRadius: 4)
-                            .fill(Color.black.opacity(0.5))
+                        RoundedRectangle(cornerRadius: 5)
+                            .fill(.ultraThinMaterial)
                     )
 
                 if let ap = frame.apertureDisplay, let sh = frame.shutterDisplay {
                     Text("\(ap) \(sh)")
-                        .font(.system(size: 9, design: .monospaced))
+                        .font(.system(size: 9, weight: .medium, design: .monospaced))
                         .foregroundColor(.white.opacity(0.95))
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(
-                            RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.black.opacity(0.5))
+                            RoundedRectangle(cornerRadius: 5)
+                                .fill(.ultraThinMaterial)
                         )
                 }
             }
@@ -330,6 +307,7 @@ struct RollDetailView: View {
         .aspectRatio(1, contentMode: .fit)
         .clipped()
         .contentShape(Rectangle())
+        .shadow(color: Color.black.opacity(0.08), radius: 4, x: 0, y: 2)
         .onTapGesture {
             viewerFrame = frame
         }
@@ -337,21 +315,98 @@ struct RollDetailView: View {
 
     private func emptyCell(number: Int) -> some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 14)
+            RoundedRectangle(cornerRadius: 16)
                 .fill(Color.filmSprocket)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.filmBorder, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.filmBorder, lineWidth: 0.5)
                 )
 
-            Text("\(number)")
-                .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundColor(Color.filmTertiary.opacity(0.4))
+            VStack(spacing: 4) {
+                Text("\(number)")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .foregroundColor(Color.filmTertiary.opacity(0.3))
+                Image(systemName: "plus")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.filmTertiary.opacity(0.2))
+            }
         }
         .aspectRatio(1, contentMode: .fit)
         .onTapGesture {
             frameSheetTarget = .new(number)
         }
+    }
+
+    private var statsView: some View {
+        VStack(spacing: 20) {
+            apertureChart
+            shutterChart
+        }
+        .padding(.horizontal, 16)
+    }
+
+    private var apertureChart: some View {
+        let frames = roll.frames ?? []
+        let grouped = Dictionary(grouping: frames.compactMap { $0.aperture }) { $0 }
+        let chartData = grouped.mapValues { Double($0.count) }
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "camera.aperture")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color.filmAccent)
+                Text("Aperture Distribution")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color.filmSecondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+            }
+
+            if chartData.isEmpty {
+                Text("No aperture data yet")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 40)
+            } else {
+                BarChartWrapper(data: chartData)
+                    .frame(height: 200)
+            }
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 18)
+    }
+
+    private var shutterChart: some View {
+        let frames = roll.frames ?? []
+        let grouped = Dictionary(grouping: frames.compactMap { $0.shutterSpeed }) { $0 }
+        let chartData = grouped.mapValues { Double($0.count) }
+
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                Image(systemName: "timer")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color.filmGold)
+                Text("Shutter Speed Distribution")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color.filmSecondary)
+                    .textCase(.uppercase)
+                    .tracking(0.5)
+            }
+
+            if chartData.isEmpty {
+                Text("No shutter data yet")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 40)
+            } else {
+                BarChartWrapper(data: chartData)
+                    .frame(height: 200)
+            }
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 18)
     }
 
     private func markDeveloped() {
@@ -383,6 +438,7 @@ struct SegmentedPicker: View {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                         selection = index
                     }
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                 } label: {
                     HStack(spacing: 6) {
                         Image(systemName: options[index].1)
@@ -397,8 +453,15 @@ struct SegmentedPicker: View {
                         ZStack {
                             if selection == index {
                                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(Color.filmAccent)
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [Color.filmAccent, Color.filmGold],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
                                     .matchedGeometryEffect(id: "pickerBg", in: animation)
+                                    .shadow(color: Color.filmAccent.opacity(0.3), radius: 8, x: 0, y: 3)
                             }
                         }
                     )
@@ -409,11 +472,11 @@ struct SegmentedPicker: View {
         .padding(4)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.filmSurfaceSecondary)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(Color.filmBorder, lineWidth: 0.5)
+                .fill(Color.filmSurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                )
         )
     }
 }
@@ -431,12 +494,14 @@ struct BarChartWrapper: UIViewRepresentable {
         chart.xAxis.labelPosition = .bottom
         chart.xAxis.drawGridLinesEnabled = false
         chart.xAxis.labelTextColor = UIColor(Color.filmTertiary)
-        chart.xAxis.labelFont = .systemFont(ofSize: 10)
+        chart.xAxis.labelFont = .systemFont(ofSize: 10, weight: .medium)
         chart.leftAxis.drawGridLinesEnabled = false
         chart.leftAxis.labelTextColor = UIColor(Color.filmTertiary)
+        chart.leftAxis.labelFont = .systemFont(ofSize: 9)
         chart.leftAxis.axisMinimum = 0
         chart.rightAxis.enabled = false
         chart.animate(yAxisDuration: 0.8, easingOption: .easeOutBack)
+        chart.setScaleEnabled(false)
         return chart
     }
 
@@ -449,8 +514,8 @@ struct BarChartWrapper: UIViewRepresentable {
         let dataSet = BarChartDataSet(entries: entries)
         dataSet.colors = [UIColor(Color.filmAccent)]
         dataSet.valueTextColor = UIColor(Color.filmTertiary)
-        dataSet.valueFont = .systemFont(ofSize: 10)
-        dataSet.cornerRadius = 4
+        dataSet.valueFont = .systemFont(ofSize: 10, weight: .medium)
+        dataSet.drawValuesEnabled = true
         let chartData = BarChartData(dataSet: dataSet)
         uiView.xAxis.valueFormatter = IndexAxisValueFormatter(values: labels)
         uiView.data = chartData

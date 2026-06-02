@@ -24,7 +24,7 @@ struct ContentView: View {
         ZStack(alignment: .bottom) {
             tabContent
 
-            glassTabBar
+            floatingTabBar
         }
         .ignoresSafeArea(.keyboard)
     }
@@ -42,50 +42,86 @@ struct ContentView: View {
         }
     }
 
-    private var glassTabBar: some View {
+    private var floatingTabBar: some View {
         HStack(spacing: 0) {
             ForEach(0..<4, id: \.self) { index in
                 tabItem(index: index)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.vertical, 8)
+        .padding(.horizontal, 6)
+        .padding(.vertical, 6)
         .background(
             Capsule()
                 .fill(.ultraThinMaterial)
                 .overlay(
                     Capsule()
-                        .stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5)
+                        .fill(Color.filmGlass.opacity(0.7))
                 )
-                .shadow(color: Color.black.opacity(0.08), radius: 20, x: 0, y: 8)
+                .overlay(
+                    Capsule()
+                        .stroke(
+                            LinearGradient(
+                                colors: [Color.filmBorder.opacity(0.6), Color.filmBorder.opacity(0.2)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            ),
+                            lineWidth: 0.5
+                        )
+                )
+                .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 10)
+                .shadow(color: Color.filmAccent.opacity(0.05), radius: 30, x: 0, y: 5)
         )
-        .padding(.horizontal, 24)
+        .padding(.horizontal, 20)
         .padding(.bottom, max(8, bottomSafeArea))
     }
 
     private func tabItem(index: Int) -> some View {
         let items = [
-            ("camera.roll", "Rolls"),
+            ("film", "Rolls"),
             ("camera", "Cameras"),
             ("magnifyingglass", "Find"),
-            ("gearshape.fill", "Settings")
+            ("gearshape", "Settings")
         ]
         let isSelected = selectedTab == index
         return Button {
-            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
                 selectedTab = index
                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
             }
         } label: {
-            VStack(spacing: 4) {
-                Image(systemName: items[index].0)
-                    .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
-                    .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
-                    .scaleEffect(isSelected ? 1.1 : 1.0)
-                    .frame(height: 24)
+            VStack(spacing: 3) {
+                ZStack {
+                    if isSelected {
+                        Circle()
+                            .fill(
+                                RadialGradient(
+                                    colors: [Color.filmAccent.opacity(0.2), Color.clear],
+                                    center: .center,
+                                    startRadius: 0,
+                                    endRadius: 20
+                                )
+                            )
+                            .frame(width: 40, height: 40)
+                            .matchedGeometryEffect(id: "tabGlow", in: tabAnimation)
+                    }
+
+                    Image(systemName: isSelected ? items[index].0 + ".fill" : items[index].0)
+                        .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
+                        .foregroundStyle(
+                            isSelected
+                            ? AnyShapeStyle(LinearGradient(
+                                colors: [Color.filmAccent, Color.filmGold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                              ))
+                            : AnyShapeStyle(Color.filmTertiary)
+                        )
+                        .scaleEffect(isSelected ? 1.1 : 1.0)
+                        .frame(height: 24)
+                }
 
                 Text(items[index].1)
-                    .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
+                    .font(.system(size: 10, weight: isSelected ? .bold : .medium))
                     .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
             }
             .frame(maxWidth: .infinity)
@@ -94,7 +130,7 @@ struct ContentView: View {
                 ZStack {
                     if isSelected {
                         Capsule()
-                            .fill(Color.filmAccent.opacity(0.12))
+                            .fill(Color.filmAccent.opacity(0.08))
                             .matchedGeometryEffect(id: "activeTab", in: tabAnimation)
                     }
                 }

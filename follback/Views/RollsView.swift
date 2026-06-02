@@ -41,15 +41,26 @@ struct RollsView: View {
                         withAnimation(.spring(response: 0.35)) {
                             showAddSheet = true
                         }
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundColor(Color.filmText)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.filmAccent, Color.filmGold],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                             .frame(width: 40, height: 40)
                             .background(
                                 Circle()
                                     .fill(Color.filmSurface)
-                                    .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                                    )
+                                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 3)
                             )
                     }
                     .buttonStyle(.plain)
@@ -79,15 +90,33 @@ struct RollsView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("FilmVault")
-                        .font(.system(size: 32, weight: .bold, design: .serif))
-                        .foregroundColor(Color.filmText)
-                    Text("\(rolls.count) rolls · \(totalFrames) frames")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color.filmSecondary)
+                VStack(alignment: .leading, spacing: 6) {
+                    HStack(spacing: 8) {
+                        Text("FilmVault")
+                            .font(.system(size: 34, weight: .bold, design: .serif))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [Color.filmText, Color.filmText.opacity(0.85)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                    }
+                    HStack(spacing: 6) {
+                        Image(systemName: "film")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.filmAccent)
+                        Text("\(rolls.count) rolls")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color.filmSecondary)
+                        Text("·")
+                            .foregroundColor(Color.filmTertiary)
+                        Text("\(totalFrames) frames")
+                            .font(.system(size: 14, weight: .semibold))
+                            .foregroundColor(Color.filmSecondary)
+                    }
                 }
                 Spacer()
             }
@@ -113,7 +142,8 @@ struct RollsView: View {
     }
 
     private func filterPill(_ status: RollStatus?, label: String, count: Int) -> some View {
-        Button {
+        let isActive = selectedFilter == status
+        return Button {
             withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
                 if status == nil {
                     selectedFilter = nil
@@ -129,26 +159,31 @@ struct RollsView: View {
                 if count > 0 {
                     Text("\(count)")
                         .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundColor(selectedFilter == status ? Color.filmSurface : Color.filmAccent)
+                        .foregroundColor(isActive ? Color.filmBackground : Color.filmAccent)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 2)
                         .background(
                             Capsule()
-                                .fill(selectedFilter == status ? Color.filmBackground.opacity(0.25) : Color.filmAccent.opacity(0.12))
+                                .fill(isActive ? Color.filmBackground.opacity(0.25) : Color.filmAccent.opacity(0.12))
                         )
                 }
             }
-            .foregroundColor(selectedFilter == status ? Color.filmBackground : Color.filmText)
+            .foregroundColor(isActive ? Color.filmBackground : Color.filmText)
             .padding(.horizontal, 16)
-            .padding(.vertical, 8)
+            .padding(.vertical, 9)
             .background(
                 Capsule()
-                    .fill(selectedFilter == status ? Color.filmAccent : Color.filmSurface)
+                    .fill(
+                        isActive
+                        ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                        : AnyShapeStyle(Color.filmSurface)
+                    )
             )
             .overlay(
                 Capsule()
-                    .stroke(selectedFilter == status ? Color.clear : Color.filmBorder, lineWidth: 1)
+                    .stroke(isActive ? Color.clear : Color.filmBorder, lineWidth: 0.5)
             )
+            .shadow(color: isActive ? Color.filmAccent.opacity(0.25) : Color.clear, radius: 8, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
@@ -165,7 +200,7 @@ struct RollsView: View {
                 .scaleEffect(appeared ? 1 : 0.96)
                 .animation(
                     .spring(response: 0.55, dampingFraction: 0.75)
-                    .delay(Double(index) * 0.07),
+                    .delay(Double(index) * 0.06),
                     value: appeared
                 )
             }
@@ -174,43 +209,69 @@ struct RollsView: View {
     }
 
     private var emptyState: some View {
-        VStack(spacing: 24) {
+        VStack(spacing: 28) {
             ZStack {
                 Circle()
-                    .fill(Color.filmAccent.opacity(0.08))
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.filmAccent.opacity(0.1), Color.filmAccent.opacity(0.02)],
+                            center: .center,
+                            startRadius: 20,
+                            endRadius: 70
+                        )
+                    )
+                    .frame(width: 140, height: 140)
+
+                Circle()
+                    .stroke(Color.filmAccent.opacity(0.15), lineWidth: 1)
                     .frame(width: 120, height: 120)
-                Image(systemName: "camera.roll")
-                    .font(.system(size: 44, weight: .light))
-                    .foregroundColor(Color.filmAccent)
+
+                Image(systemName: "film")
+                    .font(.system(size: 48, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             }
 
-            VStack(spacing: 8) {
+            VStack(spacing: 10) {
                 Text("No rolls yet")
-                    .font(.system(size: 22, weight: .bold, design: .serif))
+                    .font(.system(size: 24, weight: .bold, design: .serif))
                     .foregroundColor(Color.filmText)
-                Text("Start documenting your analog photography journey")
-                    .font(.system(size: 14))
+                Text("Start documenting your analog\nphotography journey")
+                    .font(.system(size: 15, weight: .medium))
                     .foregroundColor(Color.filmSecondary)
                     .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
+                    .lineSpacing(3)
             }
 
             Button {
                 withAnimation(.spring(response: 0.35)) {
                     showAddSheet = true
                 }
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
                     Text("New Roll")
                 }
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 16, weight: .bold))
                 .foregroundColor(Color.filmBackground)
-                .padding(.horizontal, 28)
-                .padding(.vertical, 14)
+                .padding(.horizontal, 32)
+                .padding(.vertical, 15)
                 .background(
                     Capsule()
-                        .fill(Color.filmAccent)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.filmAccent, Color.filmGold],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
                 )
             }
             .buttonStyle(.plain)
@@ -221,9 +282,13 @@ struct RollsView: View {
     private var shimmerContent: some View {
         VStack(spacing: 16) {
             ForEach(0..<4, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                RoundedRectangle(cornerRadius: 22, style: .continuous)
                     .fill(Color.filmSurface)
-                    .frame(height: 140)
+                    .frame(height: 150)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                    )
                     .shimmering(
                         gradient: Gradient(colors: [.clear, Color.filmAccent.opacity(0.06), .clear]),
                         bandSize: 0.5

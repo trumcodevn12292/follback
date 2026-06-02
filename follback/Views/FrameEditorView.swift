@@ -6,255 +6,277 @@ import Photos
 struct FrameEditorView: View {
     @Bindable var roll: Roll
     var frame: Frame?
-    var frameNumber: Int?
-
-    @Environment(\.modelContext) private var modelContext
+    let currentNumber: Int
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
 
-    @State private var selectedItem: PhotosPickerItem?
     @State private var selectedAperture: Aperture?
     @State private var selectedShutter: ShutterSpeed?
     @State private var focusDistance = ""
     @State private var flashUsed = false
     @State private var locationName = ""
     @State private var notes = ""
+    @State private var selectedItem: PhotosPickerItem?
     @State private var previewImage: UIImage?
-    @State private var photoAuthStatus = PHPhotoLibrary.authorizationStatus()
-    @State private var appeared = false
-
-    private var currentNumber: Int {
-        frame?.number ?? frameNumber ?? 1
-    }
-
-    init(roll: Roll, frame: Frame? = nil, frameNumber: Int? = nil) {
-        self.roll = roll
-        self.frame = frame
-        self.frameNumber = frameNumber
-        if let existing = frame {
-            _selectedAperture = State(initialValue: existing.aperture.flatMap { Aperture(rawValue: $0) })
-            _selectedShutter = State(initialValue: existing.shutter)
-            _focusDistance = State(initialValue: existing.focusDistance ?? "")
-            _flashUsed = State(initialValue: existing.flashUsed)
-            _locationName = State(initialValue: existing.locationName ?? "")
-            _notes = State(initialValue: existing.notes)
-        }
-    }
+    @State private var photoAuthStatus: PHAuthorizationStatus = .notDetermined
+    @State private var cardAppeared = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    photoSection
-                    exposureSection
-                    locationSection
-                    notesSection
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .padding(.bottom, 24)
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 20) {
+                headerCard
+                photoSection
+                exposureCard
+                detailsCard
+                saveButton
             }
-            .navigationTitle("Frame \(currentNumber)")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(Color.filmText)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveFrame() }
-                        .foregroundColor(Color.filmAccent)
-                        .fontWeight(.semibold)
-                }
-            }
-            .onAppear {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                    appeared = true
-                }
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 16)
+            .padding(.bottom, 40)
         }
         .background(Color.filmBackground.ignoresSafeArea())
-        .onChange(of: selectedItem) { _, newItem in
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button("Cancel") { dismiss() }
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Color.filmSecondary)
+            }
+        }
+        .onAppear {
+            loadExistingData()
+            requestPhotoAccess()
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                cardAppeared = true
+            }
+        }
+        .onChange(of: selectedItem) { _, item in
+            guard let item = item else { return }
             Task {
-                if let data = try? await newItem?.loadTransferable(type: Data.self),
-                   let image = UIImage(data: data) {
+                if let data = try? await item.loadTransferable(type: Data.self),
+                   let uiImage = UIImage(data: data) {
                     await MainActor.run {
-                        self.previewImage = image
+                        previewImage = uiImage
                     }
                 }
             }
         }
     }
 
+    private var headerCard: some View {
+        VStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.filmGold.opacity(0.15), Color.filmGold.opacity(0.02)],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 40
+                        )
+                    )
+                    .frame(width: 72, height: 72)
+                Text("#\(currentNumber)")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            Text(frame == nil ? "New Frame" : "Edit Frame")
+                .font(.system(size: 22, weight: .bold, design: .serif))
+                .foregroundColor(Color.filmText)
+            Text(roll.filmName)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color.filmSecondary)
+        }
+        .frame(maxWidth: .infinity)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : -15)
+    }
+
     private var photoSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionLabel("Photo")
 
-            if photoAuthStatus == .authorized || photoAuthStatus == .limited {
-                PhotosPicker(selection: $selectedItem, matching: .images) {
-                    photoPreview
-                }
-                .buttonStyle(.plain)
-            } else if photoAuthStatus == .denied || photoAuthStatus == .restricted {
-                photoPlaceholder(icon: "lock.circle", text: "Photo library access denied")
-            } else {
-                Button { requestPhotoAccess() } label: {
-                    photoPlaceholder(icon: "photo.badge.plus", text: "Tap to allow photo access")
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-    }
-
-    private var photoPreview: some View {
-        Group {
-            if let image = previewImage {
-                Image(uiImage: image)
+            if let preview = previewImage {
+                Image(uiImage: preview)
                     .resizable()
-                    .scaledToFill()
-                    .frame(height: 260)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            } else if let assetID = frame?.photoAssetID {
-                PhotoThumbnail(assetID: assetID)
-                    .frame(height: 260)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            } else {
-                photoPlaceholder(icon: "photo.badge.plus", text: "Tap to select photo")
-            }
-        }
-    }
-
-    private func photoPlaceholder(icon: String, text: String) -> some View {
-        RoundedRectangle(cornerRadius: 20, style: .continuous)
-            .fill(Color.filmSurfaceSecondary)
-            .frame(height: 260)
-            .overlay(
-                VStack(spacing: 12) {
-                    Image(systemName: icon)
-                        .font(.system(size: 40, weight: .light))
-                        .foregroundColor(Color.filmTertiary)
-                    Text(text)
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color.filmSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal, 32)
-                }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(Color.filmBorder, lineWidth: 0.5)
-            )
-    }
-
-    private var exposureSection: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            sectionLabel("Exposure")
-
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Aperture")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.filmSecondary)
-                    DialPicker(items: Aperture.allCases, selected: $selectedAperture, display: { $0.displayName })
-                }
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text("Shutter Speed")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.filmSecondary)
-                    DialPicker(items: ShutterSpeed.allCases, selected: $selectedShutter, display: { $0.displayName })
-                }
-
-                HStack {
-                    Text("Focus distance")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Color.filmText)
-                    Spacer()
-                    TextField("e.g. 3m", text: $focusDistance)
-                        .multilineTextAlignment(.trailing)
-                        .foregroundColor(Color.filmSecondary)
-                        .frame(width: 120)
-                }
-                .padding(.vertical, 4)
-
-                HStack {
-                    Text("Flash used")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundColor(Color.filmText)
-                    Spacer()
-                    Toggle("", isOn: $flashUsed)
-                        .labelsHidden()
-                        .tint(Color.filmAccent)
-                }
-                .padding(.vertical, 4)
-            }
-            .padding(18)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.filmSurface)
+                    .scaledToFit()
+                    .clipShape(RoundedRectangle(cornerRadius: 14))
                     .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        RoundedRectangle(cornerRadius: 14)
                             .stroke(Color.filmBorder, lineWidth: 0.5)
                     )
+                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            }
+
+            PhotosPicker(selection: $selectedItem, matching: .images) {
+                HStack(spacing: 10) {
+                    Image(systemName: "photo.on.rectangle.angled")
+                        .font(.system(size: 16))
+                    Text(previewImage == nil ? "Choose Photo" : "Change Photo")
+                        .font(.system(size: 15, weight: .semibold))
+                }
+                .foregroundColor(Color.filmAccent)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.filmAccent.opacity(0.08))
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 12)
+                                .stroke(Color.filmAccent.opacity(0.15), lineWidth: 0.5)
+                        )
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: cardAppeared)
+    }
+
+    private var exposureCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionLabel("Exposure")
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Aperture")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.filmTertiary)
+                DialPicker(items: Aperture.allCases, selected: $selectedAperture) { $0.rawValue }
+            }
+
+            Divider().background(Color.filmBorder)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Shutter Speed")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.filmTertiary)
+                DialPicker(items: ShutterSpeed.allCases, selected: $selectedShutter) { $0.rawValue }
+            }
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: cardAppeared)
+    }
+
+    private var detailsCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionLabel("Details")
+
+            fieldRow(label: "Focus Distance") {
+                TextField("e.g. 1.5m", text: $focusDistance)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmText)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            HStack {
+                HStack(spacing: 10) {
+                    Image(systemName: "bolt.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(flashUsed ? Color.filmAccent : Color.filmTertiary)
+                    Text("Flash")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundColor(Color.filmText)
+                }
+                Spacer()
+                Toggle("", isOn: $flashUsed)
+                    .labelsHidden()
+                    .tint(Color.filmAccent)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Location") {
+                TextField("Where was this taken?", text: $locationName)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmText)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Notes") {
+                TextEditor(text: $notes)
+                    .font(.system(size: 15))
+                    .foregroundColor(Color.filmText)
+                    .frame(minHeight: 60)
+                    .scrollContentBackground(.hidden)
+            }
+        }
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.15), value: cardAppeared)
+    }
+
+    private var saveButton: some View {
+        Button {
+            saveFrame()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Save Frame")
+                    .font(.system(size: 17, weight: .bold))
+            }
+            .foregroundColor(Color.filmBackground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
             )
         }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: appeared)
-    }
-
-    private var locationSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Location")
-
-            TextField("Location name", text: $locationName)
-                .font(.system(size: 16))
-                .foregroundColor(Color.filmText)
-                .padding(18)
-                .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color.filmSurface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .stroke(Color.filmBorder, lineWidth: 0.5)
-                        )
-                )
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: appeared)
-    }
-
-    private var notesSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Notes")
-
-            TextEditor(text: $notes)
-                .frame(minHeight: 120)
-                .font(.system(size: 16))
-                .foregroundColor(Color.filmText)
-                .padding(14)
-                .background(
-                    RoundedRectangle(cornerRadius: 20, style: .continuous)
-                        .fill(Color.filmSurface)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20, style: .continuous)
-                                .stroke(Color.filmBorder, lineWidth: 0.5)
-                        )
-                )
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 12)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.15), value: appeared)
+        .buttonStyle(.plain)
+        .opacity(cardAppeared ? 1 : 0)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.2), value: cardAppeared)
     }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 13, weight: .bold))
             .foregroundColor(Color.filmSecondary)
             .textCase(.uppercase)
             .tracking(0.5)
+    }
+
+    private func fieldRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color.filmTertiary)
+            content()
+        }
+    }
+
+    private func loadExistingData() {
+        guard let frame = frame else { return }
+        if let ap = frame.aperture { selectedAperture = Aperture(rawValue: ap) }
+        if let sh = frame.shutterSpeed { selectedShutter = ShutterSpeed(rawValue: sh) }
+        focusDistance = frame.focusDistance ?? ""
+        flashUsed = frame.flashUsed
+        locationName = frame.locationName ?? ""
+        notes = frame.notes
     }
 
     private func requestPhotoAccess() {

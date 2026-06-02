@@ -1,44 +1,71 @@
 import SwiftUI
 
 extension Color {
-    // MARK: - FilmVault Darkroom Palette (static dark-only)
-    // App maintains a consistent dark "analog darkroom" aesthetic
+    // MARK: - FilmVault Cinematic Palette
+    // Rich, warm analog aesthetic with depth and sophistication
 
-    /// Primary background — warm espresso
-    static let filmBackground = Color(hex: "#0F0D0A")
+    /// Primary background — deep charcoal with warm undertone
+    static let filmBackground = Color(hex: "#0A0908")
 
-    /// Card / elevated surface
-    static let filmSurface = Color(hex: "#1C1814")
+    /// Card / elevated surface — warm dark
+    static let filmSurface = Color(hex: "#171412")
 
     /// Secondary surface (inputs, inner cards)
-    static let filmSurfaceSecondary = Color(hex: "#14110E")
+    static let filmSurfaceSecondary = Color(hex: "#0E0C0A")
 
-    /// Primary accent — warm amber
-    static let filmAccent = Color(hex: "#D97706")
+    /// Elevated surface for modals/popovers
+    static let filmSurfaceElevated = Color(hex: "#1E1A16")
 
-    /// Secondary accent — gold
-    static let filmGold = Color(hex: "#B45309")
+    /// Primary accent — rich amber gold
+    static let filmAccent = Color(hex: "#E8A832")
 
-    /// Primary text — warm white
-    static let filmText = Color(hex: "#F2EDE6")
+    /// Secondary accent — deep warm gold
+    static let filmGold = Color(hex: "#C47F17")
 
-    /// Secondary text
-    static let filmSecondary = Color(hex: "#A89B8C")
+    /// Tertiary accent — rose copper
+    static let filmCopper = Color(hex: "#B87333")
+
+    /// Primary text — warm pearl white
+    static let filmText = Color(hex: "#F5F0E8")
+
+    /// Secondary text — warm gray
+    static let filmSecondary = Color(hex: "#B5A898")
 
     /// Tertiary / muted text
-    static let filmTertiary = Color(hex: "#6B5E52")
+    static let filmTertiary = Color(hex: "#7A6E62")
 
     /// Borders and dividers
-    static let filmBorder = Color(hex: "#2A2520")
+    static let filmBorder = Color(hex: "#2C2620")
+
+    /// Subtle border for hover/focus states
+    static let filmBorderActive = Color(hex: "#3D352C")
 
     /// Empty / placeholder fill
-    static let filmSprocket = Color(hex: "#12100D")
+    static let filmSprocket = Color(hex: "#100E0B")
 
-    /// Status / success
-    static let filmSuccess = Color(hex: "#10B981")
+    /// Status / success — emerald
+    static let filmSuccess = Color(hex: "#34D399")
 
-    /// Status / warning
-    static let filmWarning = Color(hex: "#F59E0B")
+    /// Status / warning — amber
+    static let filmWarning = Color(hex: "#FBBF24")
+
+    /// Status / error — soft red
+    static let filmError = Color(hex: "#F87171")
+
+    /// Status / info — sky blue
+    static let filmInfo = Color(hex: "#60A5FA")
+
+    /// Gradient start for aurora effects
+    static let filmGradientStart = Color(hex: "#E8A832")
+
+    /// Gradient mid
+    static let filmGradientMid = Color(hex: "#D97706")
+
+    /// Gradient end
+    static let filmGradientEnd = Color(hex: "#B87333")
+
+    /// Glass tint for glassmorphism
+    static let filmGlass = Color(hex: "#1A1612")
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
@@ -62,5 +89,100 @@ extension Color {
             blue: Double(b) / 255,
             opacity: Double(a) / 255
         )
+    }
+}
+
+// MARK: - Gradient Presets
+extension LinearGradient {
+    static let filmAccentGradient = LinearGradient(
+        colors: [Color.filmGradientStart, Color.filmGradientMid, Color.filmGradientEnd],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let filmWarmGradient = LinearGradient(
+        colors: [Color.filmAccent, Color.filmGold],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
+    static let filmSubtleGradient = LinearGradient(
+        colors: [Color.filmAccent.opacity(0.15), Color.filmGold.opacity(0.05)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let filmGlassGradient = LinearGradient(
+        colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
+// MARK: - Reusable View Modifiers
+struct FilmCardStyle: ViewModifier {
+    var cornerRadius: CGFloat = 20
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(.linearGradient(
+                                colors: [Color.white.opacity(0.03), Color.clear],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            ))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 6)
+    }
+}
+
+struct FilmGlassStyle: ViewModifier {
+    var cornerRadius: CGFloat = 20
+
+    func body(content: Content) -> some View {
+        content
+            .background(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .fill(Color.filmGlass.opacity(0.6))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                            .stroke(Color.filmBorder.opacity(0.6), lineWidth: 0.5)
+                    )
+            )
+            .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 8)
+    }
+}
+
+struct FilmAccentGlow: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .shadow(color: Color.filmAccent.opacity(0.3), radius: 12, x: 0, y: 4)
+    }
+}
+
+extension View {
+    func filmCard(cornerRadius: CGFloat = 20) -> some View {
+        modifier(FilmCardStyle(cornerRadius: cornerRadius))
+    }
+
+    func filmGlass(cornerRadius: CGFloat = 20) -> some View {
+        modifier(FilmGlassStyle(cornerRadius: cornerRadius))
+    }
+
+    func filmGlow() -> some View {
+        modifier(FilmAccentGlow())
     }
 }

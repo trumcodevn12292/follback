@@ -5,176 +5,232 @@ struct AddCameraView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
-    var onSave: ((Camera) -> Void)?
-
     @State private var name = ""
     @State private var brand = ""
     @State private var format: FilmFormat = .mm35
-    @State private var type: CameraType = .slr
-    @State private var fixedFocalLength: String = ""
+    @State private var cameraType: CameraType = .slr
+    @State private var fixedFocalLength = ""
     @State private var notes = ""
-    @State private var appeared = false
+    @State private var cardAppeared = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                nameCard
-                brandCard
-                formatCard
-                typeCard
-                focalCard
+            VStack(spacing: 20) {
+                headerCard
+                detailsCard
                 notesCard
+                saveButton
             }
             .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .padding(.bottom, 24)
+            .padding(.vertical, 16)
+            .padding(.bottom, 40)
         }
-        .navigationTitle("New Camera")
-        .navigationBarTitleDisplayMode(.inline)
+        .background(Color.filmBackground.ignoresSafeArea())
+        .navigationTitle("")
+        .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar {
-            ToolbarItem(placement: .cancellationAction) {
+            ToolbarItem(placement: .topBarLeading) {
                 Button("Cancel") { dismiss() }
-                    .foregroundColor(Color.filmText)
-            }
-            ToolbarItem(placement: .confirmationAction) {
-                Button("Save") { saveCamera() }
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty || brand.trimmingCharacters(in: .whitespaces).isEmpty)
-                    .foregroundColor(Color.filmAccent)
-                    .fontWeight(.semibold)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Color.filmSecondary)
             }
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                appeared = true
+                cardAppeared = true
             }
         }
-        .background(Color.filmBackground.ignoresSafeArea())
     }
 
-    private var nameCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Camera Name")
-            TextField("e.g. Leica M6", text: $name)
-                .font(.system(size: 16))
+    private var headerCard: some View {
+        VStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill(
+                        RadialGradient(
+                            colors: [Color.filmGold.opacity(0.15), Color.filmGold.opacity(0.02)],
+                            center: .center,
+                            startRadius: 10,
+                            endRadius: 40
+                        )
+                    )
+                    .frame(width: 72, height: 72)
+                Image(systemName: "camera")
+                    .font(.system(size: 30, weight: .light))
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            Text("New Camera")
+                .font(.system(size: 22, weight: .bold, design: .serif))
                 .foregroundColor(Color.filmText)
-                .padding(16)
-                .background(cardBackground)
         }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
+        .frame(maxWidth: .infinity)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : -15)
     }
 
-    private var brandCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Brand")
-            TextField("e.g. Leica", text: $brand)
-                .font(.system(size: 16))
-                .foregroundColor(Color.filmText)
-                .padding(16)
-                .background(cardBackground)
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.04), value: appeared)
-    }
+    private var detailsCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            sectionLabel("Camera Details")
 
-    private var formatCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Format")
-            Picker("Film Format", selection: $format) {
-                ForEach(FilmFormat.allCases, id: \.self) { fmt in
-                    Text(fmt.displayName).tag(fmt)
+            fieldRow(label: "Name") {
+                TextField("e.g. Nikon F3", text: $name)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmText)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Brand") {
+                TextField("e.g. Nikon", text: $brand)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmText)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Film Format") {
+                Picker("", selection: $format) {
+                    ForEach(FilmFormat.allCases, id: \.self) { f in
+                        Text(f.displayName).tag(f)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .tint(Color.filmAccent)
+            }
+
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Camera Type") {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(CameraType.allCases, id: \.self) { type in
+                            let isSelected = cameraType == type
+                            Button {
+                                withAnimation(.spring(response: 0.25)) {
+                                    cameraType = type
+                                }
+                                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                            } label: {
+                                Text(type.displayName)
+                                    .font(.system(size: 13, weight: isSelected ? .bold : .medium))
+                                    .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        Capsule()
+                                            .fill(
+                                                isSelected
+                                                ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                                                : AnyShapeStyle(Color.filmSurfaceSecondary)
+                                            )
+                                    )
+                                    .overlay(
+                                        Capsule()
+                                            .stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5)
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
                 }
             }
-            .pickerStyle(.segmented)
-            .colorMultiply(Color.filmAccent)
-            .padding(16)
-            .background(cardBackground)
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.08), value: appeared)
-    }
 
-    private var typeCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Type")
-            Picker("Camera Type", selection: $type) {
-                ForEach(CameraType.allCases, id: \.self) { t in
-                    Text(t.displayName).tag(t)
-                }
+            Divider().background(Color.filmBorder)
+
+            fieldRow(label: "Fixed Focal Length (optional)") {
+                TextField("e.g. 50mm", text: $fixedFocalLength)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmText)
             }
-            .pickerStyle(.menu)
-            .tint(Color.filmAccent)
-            .foregroundColor(Color.filmText)
-            .padding(16)
-            .background(cardBackground)
         }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.12), value: appeared)
-    }
-
-    private var focalCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Fixed Focal Length (optional)")
-            TextField("e.g. 50", text: $fixedFocalLength)
-                .keyboardType(.numberPad)
-                .font(.system(size: 16))
-                .foregroundColor(Color.filmText)
-                .padding(16)
-                .background(cardBackground)
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.16), value: appeared)
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.05), value: cardAppeared)
     }
 
     private var notesCard: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
             sectionLabel("Notes")
             TextEditor(text: $notes)
-                .frame(minHeight: 80)
-                .font(.system(size: 16))
+                .font(.system(size: 15))
                 .foregroundColor(Color.filmText)
-                .padding(12)
-                .background(cardBackground)
+                .frame(minHeight: 80)
+                .scrollContentBackground(.hidden)
+                .padding(4)
         }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 10)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.2), value: appeared)
+        .padding(18)
+        .filmCard(cornerRadius: 20)
+        .opacity(cardAppeared ? 1 : 0)
+        .offset(y: cardAppeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.1), value: cardAppeared)
     }
 
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color.filmSurface)
-            .overlay(
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .stroke(Color.filmBorder, lineWidth: 0.5)
+    private var saveButton: some View {
+        Button {
+            saveCamera()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        } label: {
+            HStack(spacing: 10) {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Save Camera")
+                    .font(.system(size: 17, weight: .bold))
+            }
+            .foregroundColor(Color.filmBackground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                Capsule()
+                    .fill(
+                        name.isEmpty
+                        ? AnyShapeStyle(Color.filmTertiary)
+                        : AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                    )
+                    .shadow(color: name.isEmpty ? .clear : Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
             )
+        }
+        .buttonStyle(.plain)
+        .disabled(name.isEmpty)
+        .opacity(cardAppeared ? 1 : 0)
+        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.15), value: cardAppeared)
     }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: 13, weight: .bold))
             .foregroundColor(Color.filmSecondary)
             .textCase(.uppercase)
             .tracking(0.5)
     }
 
+    private func fieldRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color.filmTertiary)
+            content()
+        }
+    }
+
     private func saveCamera() {
-        let focal = Int(fixedFocalLength.trimmingCharacters(in: .whitespaces))
         let camera = Camera(
-            name: name.trimmingCharacters(in: .whitespaces),
-            brand: brand.trimmingCharacters(in: .whitespaces),
+            name: name,
+            brand: brand,
             format: format,
-            type: type,
-            fixedFocalLength: focal,
+            type: cameraType,
+            fixedFocalLength: fixedFocalLength.isEmpty ? nil : fixedFocalLength,
             notes: notes
         )
         modelContext.insert(camera)
         try? modelContext.save()
-        onSave?(camera)
         dismiss()
     }
 }

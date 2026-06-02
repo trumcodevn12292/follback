@@ -6,305 +6,277 @@ struct ShareTemplateView: View {
     let roll: Roll
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedTemplate: ShareTemplate = .polaroid
-    @State private var showActivitySheet = false
+    @State private var selectedTemplate = 0
     @State private var renderedImage: UIImage?
+    @State private var showShareSheet = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 20) {
-                    templatePreview
-                        .frame(height: 420)
-                        .padding(.horizontal, 16)
+        ZStack {
+            Color.filmBackground.ignoresSafeArea()
 
-                    templateSelector
+            VStack(spacing: 0) {
+                headerBar
 
-                    Button {
-                        renderAndShare()
-                    } label: {
-                        HStack(spacing: 8) {
-                            Image(systemName: "square.and.arrow.up")
-                            Text("Share")
-                        }
-                        .font(.system(size: 16, weight: .semibold))
-                        .foregroundColor(Color.filmBackground)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.filmAccent)
-                        )
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 24) {
+                        templatePreview
+                        templatePicker
                     }
-                    .buttonStyle(.plain)
                     .padding(.horizontal, 16)
-                    .padding(.bottom, 24)
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
                 }
-                .padding(.vertical, 12)
-            }
-            .navigationTitle("Share")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Done") { dismiss() }
-                        .foregroundColor(Color.filmText)
-                }
+
+                shareButton
             }
         }
-        .background(Color.filmBackground.ignoresSafeArea())
-        .sheet(isPresented: $showActivitySheet) {
+        .sheet(isPresented: $showShareSheet) {
             if let rendered = renderedImage {
                 ShareSheet(activityItems: [rendered])
             }
         }
     }
 
+    private var headerBar: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(Color.filmSurface)
+                            .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                    )
+            }
+            Spacer()
+            Text("Share")
+                .font(.system(size: 17, weight: .bold, design: .serif))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Color.clear.frame(width: 36, height: 36)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+    }
+
+    @ViewBuilder
     private var templatePreview: some View {
-        Group {
-            switch selectedTemplate {
-            case .polaroid:
-                PolaroidTemplate(image: image, frame: frame, roll: roll)
-            case .filmStrip:
-                FilmStripTemplate(image: image, frame: frame, roll: roll)
-            case .darkroom:
-                DarkroomTemplate(image: image, frame: frame, roll: roll)
-            }
+        switch selectedTemplate {
+        case 0:
+            polaroidTemplate
+        case 1:
+            filmStripTemplate
+        default:
+            darkroomTemplate
         }
     }
 
-    private var templateSelector: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Template")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.filmSecondary)
-                .textCase(.uppercase)
-                .padding(.horizontal, 16)
-
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(ShareTemplate.allCases, id: \.self) { template in
-                        templateButton(template)
+    private var templatePicker: some View {
+        HStack(spacing: 10) {
+            ForEach(0..<3, id: \.self) { index in
+                let labels = ["Polaroid", "Film Strip", "Darkroom"]
+                let icons = ["rectangle.portrait", "film", "circle.dotted"]
+                let isSelected = selectedTemplate == index
+                Button {
+                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        selectedTemplate = index
                     }
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                } label: {
+                    VStack(spacing: 6) {
+                        Image(systemName: icons[index])
+                            .font(.system(size: 18))
+                        Text(labels[index])
+                            .font(.system(size: 11, weight: .semibold))
+                    }
+                    .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(
+                        RoundedRectangle(cornerRadius: 14)
+                            .fill(
+                                isSelected
+                                ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                : AnyShapeStyle(Color.filmSurface)
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14)
+                            .stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5)
+                    )
+                    .shadow(color: isSelected ? Color.filmAccent.opacity(0.25) : .clear, radius: 8, x: 0, y: 3)
                 }
-                .padding(.horizontal, 16)
+                .buttonStyle(.plain)
             }
         }
     }
 
-    private func templateButton(_ template: ShareTemplate) -> some View {
+    private var shareButton: some View {
         Button {
-            withAnimation(.spring(response: 0.3)) {
-                selectedTemplate = template
-            }
-            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            renderAndShare()
         } label: {
-            VStack(spacing: 6) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color.filmSurface)
-                        .frame(width: 80, height: 80)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 10)
-                                .stroke(selectedTemplate == template ? Color.filmAccent : Color.filmBorder, lineWidth: selectedTemplate == template ? 2 : 1)
-                        )
-                    Image(systemName: template.icon)
-                        .font(.system(size: 24))
-                        .foregroundColor(selectedTemplate == template ? Color.filmAccent : Color.filmTertiary)
-                }
-                Text(template.displayName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(selectedTemplate == template ? Color.filmAccent : Color.filmSecondary)
+            HStack(spacing: 10) {
+                Image(systemName: "square.and.arrow.up")
+                    .font(.system(size: 15, weight: .bold))
+                Text("Share")
+                    .font(.system(size: 17, weight: .bold))
             }
+            .foregroundColor(Color.filmBackground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 18)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
+            )
         }
         .buttonStyle(.plain)
-        .scaleEffect(selectedTemplate == template ? 1.05 : 1.0)
-        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: selectedTemplate)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 24)
     }
 
-    private func renderAndShare() {
-        let renderer = ImageRenderer(content: templatePreview)
-        renderer.scale = UIScreen.main.scale
-        if let uiImage = renderer.uiImage {
-            renderedImage = uiImage
-            showActivitySheet = true
-        }
-    }
-}
-
-enum ShareTemplate: CaseIterable {
-    case polaroid, filmStrip, darkroom
-
-    var displayName: String {
-        switch self {
-        case .polaroid: return "Polaroid"
-        case .filmStrip: return "Film Strip"
-        case .darkroom: return "Darkroom"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .polaroid: return "rectangle.fill"
-        case .filmStrip: return "film.fill"
-        case .darkroom: return "photo.fill"
-        }
-    }
-}
-
-struct PolaroidTemplate: View {
-    let image: UIImage
-    let frame: Frame
-    let roll: Roll
-
-    var body: some View {
-        VStack(spacing: 16) {
+    private var polaroidTemplate: some View {
+        VStack(spacing: 0) {
             Image(uiImage: image)
                 .resizable()
-                .scaledToFill()
-                .frame(height: 280)
-                .clipShape(RoundedRectangle(cornerRadius: 4))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 4)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
+                .scaledToFit()
+                .padding(16)
 
-            VStack(spacing: 4) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(roll.filmName)
-                    .font(.system(size: 16, weight: .semibold, design: .serif))
-                    .foregroundColor(Color.filmText)
-                if let ap = frame.apertureDisplay, let sh = frame.shutterDisplay {
-                    Text("\(ap)  ·  \(sh)")
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color.filmSecondary)
-                }
-                Text("Frame #\(frame.number)")
-                    .font(.system(size: 11))
-                    .foregroundColor(Color.filmTertiary)
-            }
-        }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.15), radius: 10, x: 0, y: 6)
-        )
-    }
-}
-
-struct FilmStripTemplate: View {
-    let image: UIImage
-    let frame: Frame
-    let roll: Roll
-
-    var body: some View {
-        ZStack {
-            Color.black
-
-            VStack(spacing: 0) {
-                HStack(spacing: 4) {
-                    ForEach(0..<6) { _ in
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(Color.filmSprocket)
-                            .frame(width: 8, height: 20)
-                    }
-                }
-                .padding(.vertical, 8)
-
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .padding(.horizontal, 12)
-
-                HStack(spacing: 4) {
-                    ForEach(0..<6) { _ in
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(Color.filmSprocket)
-                            .frame(width: 8, height: 20)
-                    }
-                }
-                .padding(.vertical, 8)
-
-                HStack {
-                    Text("\(roll.filmName) · #\(frame.number)")
-                        .font(.system(size: 10, design: .monospaced))
-                        .foregroundColor(Color.filmSecondary)
-                    Spacer()
+                    .font(.system(size: 16, weight: .bold, design: .serif))
+                    .foregroundColor(.black)
+                HStack(spacing: 6) {
                     if let ap = frame.apertureDisplay {
                         Text(ap)
-                            .font(.system(size: 10, design: .monospaced))
-                            .foregroundColor(Color.filmSecondary)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
                     }
+                    if let sh = frame.shutterDisplay {
+                        Text(sh)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    }
+                    Text("Frame #\(frame.number)")
+                        .font(.system(size: 11))
                 }
-                .padding(.horizontal, 12)
-                .padding(.bottom, 8)
+                .foregroundColor(.gray)
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 20)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .background(Color.white)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+        .shadow(color: Color.black.opacity(0.15), radius: 12, x: 0, y: 6)
     }
-}
 
-struct DarkroomTemplate: View {
-    let image: UIImage
-    let frame: Frame
-    let roll: Roll
+    private var filmStripTemplate: some View {
+        VStack(spacing: 0) {
+            sprocketRow
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .padding(.horizontal, 24)
+                .padding(.vertical, 12)
+            sprocketRow
 
-    var body: some View {
-        ZStack {
-            Color.filmBackground
-
-            VStack(spacing: 12) {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 12))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.filmBorder, lineWidth: 1)
-                    )
-
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(roll.filmName)
-                        .font(.system(size: 18, weight: .bold, design: .serif))
-                        .foregroundColor(Color.filmText)
-
-                    HStack(spacing: 8) {
-                        if let ap = frame.apertureDisplay {
-                            Text(ap)
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundColor(Color.filmAccent)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.filmAccent.opacity(0.12))
-                                )
-                        }
-                        if let sh = frame.shutterDisplay {
-                            Text(sh)
-                                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                                .foregroundColor(Color.filmAccent)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.filmAccent.opacity(0.12))
-                                )
-                        }
-                    }
-
-                    Text("Frame #\(frame.number) · \(roll.camera?.name ?? "")")
-                        .font(.system(size: 12))
-                        .foregroundColor(Color.filmSecondary)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
+            HStack {
+                Text(roll.filmName)
+                    .font(.system(size: 12, weight: .bold, design: .monospaced))
+                Spacer()
+                Text("Frame #\(frame.number)")
+                    .font(.system(size: 12, design: .monospaced))
             }
-            .padding(20)
+            .foregroundColor(Color.filmAccent)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 12)
         }
+        .background(Color.black)
+        .clipShape(RoundedRectangle(cornerRadius: 4))
+    }
+
+    private var sprocketRow: some View {
+        HStack(spacing: 6) {
+            ForEach(0..<16, id: \.self) { _ in
+                RoundedRectangle(cornerRadius: 2)
+                    .fill(Color.filmTertiary.opacity(0.4))
+                    .frame(width: 12, height: 8)
+            }
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+    }
+
+    private var darkroomTemplate: some View {
+        VStack(spacing: 0) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFit()
+                .padding(16)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(roll.filmName)
+                    .font(.system(size: 18, weight: .bold, design: .serif))
+                    .foregroundColor(Color.filmText)
+
+                HStack(spacing: 8) {
+                    if let ap = frame.apertureDisplay {
+                        Text(ap)
+                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                            .foregroundColor(Color.filmAccent)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.filmAccent.opacity(0.12))
+                            )
+                    }
+                    if let sh = frame.shutterDisplay {
+                        Text(sh)
+                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                            .foregroundColor(Color.filmGold)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(
+                                Capsule()
+                                    .fill(Color.filmGold.opacity(0.12))
+                            )
+                    }
+                }
+
+                Text("Frame #\(frame.number) · \(roll.camera?.name ?? "")")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.filmSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 16)
+            .padding(.bottom, 16)
+        }
+        .background(Color.filmBackground)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay(
             RoundedRectangle(cornerRadius: 16)
                 .stroke(Color.filmBorder, lineWidth: 1)
         )
+    }
+
+    @MainActor
+    private func renderAndShare() {
+        let renderer = ImageRenderer(content: templatePreview.frame(width: 390))
+        renderer.scale = 3
+        if let uiImage = renderer.uiImage {
+            renderedImage = uiImage
+            showShareSheet = true
+        }
     }
 }
 
