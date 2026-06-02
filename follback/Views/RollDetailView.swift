@@ -31,6 +31,7 @@ struct RollDetailView: View {
     @State private var toastMessage: String?
     @State private var showToastFlag = false
     @State private var isImporting = false
+    @State private var showEditDetails = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -101,6 +102,9 @@ struct RollDetailView: View {
         } message: {
             Text("This will permanently delete \"\(roll.filmName)\" and all its frames.")
         }
+        .sheet(isPresented: $showEditDetails) {
+            EditRollDetailsView(roll: roll)
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
@@ -155,6 +159,7 @@ struct RollDetailView: View {
             }
 
             Menu {
+                Button { showEditDetails = true } label: { Label("Edit Details", systemImage: "pencil") }
                 if roll.rollStatus == .inProgress || roll.rollStatus == .completed {
                     Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
                 }
@@ -223,6 +228,18 @@ struct RollDetailView: View {
                         infoChipView(label: "Push/Pull", value: String(format: "%+.1f", roll.pushPull))
                     }
                 }
+                .padding(.horizontal, 16)
+            }
+
+            if let location = roll.locationName {
+                HStack(spacing: 6) {
+                    Image(systemName: "location.fill")
+                        .font(.system(size: 12))
+                    Text(location)
+                        .font(.system(size: 14, weight: .medium))
+                        .lineLimit(1)
+                }
+                .foregroundColor(Color.filmTertiary)
                 .padding(.horizontal, 16)
             }
 
@@ -760,5 +777,298 @@ struct BarChartWrapper: UIViewRepresentable {
         let chartData = BarChartData(dataSet: dataSet)
         uiView.xAxis.valueFormatter = IndexAxisValueFormatter(values: labels)
         uiView.data = chartData
+    }
+}
+
+// MARK: - Edit Roll Details
+
+struct EditRollDetailsView: View {
+    @Bindable var roll: Roll
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+
+    @State private var filmName: String = ""
+    @State private var iso: Int = 400
+    @State private var capacity: Int = 36
+    @State private var format: FilmFormat = .mm35
+    @State private var evCompensation: Float = 0
+    @State private var pushPull: Float = 0
+    @State private var notes: String = ""
+    @State private var showFilmPicker = false
+    @State private var searchText = ""
+
+    private var filteredGroups: [(brand: String, stocks: [FilmStock])]? {
+        let groups = FilmStock.groupedByBrand
+        if searchText.isEmpty { return groups }
+        let query = searchText.lowercased()
+        return groups.compactMap { group in
+            let filtered = group.stocks.filter {
+                $0.displayName.lowercased().contains(query) ||
+                $0.brand.lowercased().contains(query)
+            }
+            return filtered.isEmpty ? nil : (brand: group.brand, stocks: filtered)
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 20) {
+                    // Film selection
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("FILM STOCK")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        Button {
+                            showFilmPicker = true
+                        } label: {
+                            HStack {
+                                Text(filmName.isEmpty ? "Select Film" : filmName)
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(filmName.isEmpty ? Color.filmTertiary : Color.filmText)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(Color.filmTertiary)
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
+                    // Basic settings
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("BASIC SETTINGS")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        VStack(spacing: 0) {
+                            settingsRow("ISO", value: "\(iso)") {
+                                Picker("", selection: $iso) {
+                                    ForEach([50, 100, 160, 200, 400, 800, 1600, 3200], id: \.self) { v in
+                                        Text("\(v)").tag(v)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(Color.filmAccent)
+                            }
+
+                            Divider().background(Color.filmBorder.opacity(0.3))
+
+                            settingsRow("Format", value: format.displayName) {
+                                Picker("", selection: $format) {
+                                    ForEach(FilmFormat.allCases, id: \.self) { f in
+                                        Text(f.displayName).tag(f)
+                                    }
+                                }
+                                .pickerStyle(.menu)
+                                .tint(Color.filmAccent)
+                            }
+
+                            Divider().background(Color.filmBorder.opacity(0.3))
+
+                            settingsRow("Exposures", value: "\(capacity)") {
+                                Picker("", selection: $capacity) {
+                                    Text("12").tag(12)
+                                    Text("24").tag(24)
+                                    Text("36").tag(36)
+                                }
+                                .pickerStyle(.menu)
+                                .tint(Color.filmAccent)
+                            }
+
+                            Divider().background(Color.filmBorder.opacity(0.3))
+
+                            HStack {
+                                Text("EV Compensation")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmText)
+                                Spacer()
+                                Text(String(format: "%+.1f", evCompensation))
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmAccent)
+                                Stepper("", value: $evCompensation, in: -3...3, step: 0.5)
+                                    .labelsHidden()
+                            }
+                            .padding(16)
+
+                            Divider().background(Color.filmBorder.opacity(0.3))
+
+                            HStack {
+                                Text("Push/Pull")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmText)
+                                Spacer()
+                                Text(String(format: "%+.1f", pushPull))
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmAccent)
+                                Stepper("", value: $pushPull, in: -3...3, step: 0.5)
+                                    .labelsHidden()
+                            }
+                            .padding(16)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.filmSurface)
+                        )
+                    }
+
+                    // Notes
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("NOTES")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        TextEditor(text: $notes)
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmText)
+                            .frame(minHeight: 80)
+                            .scrollContentBackground(.hidden)
+                            .padding(14)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                    }
+
+                    // Save button
+                    Button {
+                        saveChanges()
+                    } label: {
+                        Text("Save Changes")
+                            .font(.system(size: 18, weight: .bold))
+                            .foregroundColor(Color.filmText)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmAccent)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
+                .padding(16)
+                .padding(.bottom, 20)
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Edit Details")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { dismiss() }
+                        .foregroundColor(Color.filmAccent)
+                }
+            }
+            .sheet(isPresented: $showFilmPicker) {
+                filmPickerSheet
+            }
+        }
+        .onAppear {
+            filmName = roll.filmName
+            iso = roll.iso
+            capacity = roll.capacity
+            format = roll.filmFormat
+            evCompensation = roll.evCompensation
+            pushPull = roll.pushPull
+            notes = roll.notes
+        }
+    }
+
+    private func settingsRow<Content: View>(_ label: String, value: String, @ViewBuilder trailing: () -> Content) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            trailing()
+        }
+        .padding(16)
+    }
+
+    private var filmPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    ForEach(filteredGroups ?? [], id: \.brand) { group in
+                        Section {
+                            ForEach(group.stocks, id: \.id) { stock in
+                                Button {
+                                    filmName = stock.displayName
+                                    if let isoVal = stock.isoValue {
+                                        iso = isoVal
+                                    }
+                                    showFilmPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        if let coverUrl = stock.fullCoverUrl,
+                                           let url = URL(string: coverUrl) {
+                                            KFImage(url)
+                                                .requestModifier(FilmerImageAuth.shared.modifier)
+                                                .resizable()
+                                                .scaledToFill()
+                                                .frame(width: 44, height: 44)
+                                                .clipShape(RoundedRectangle(cornerRadius: 8))
+                                        }
+                                        Text(stock.displayName)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(Color.filmText)
+                                        Spacer()
+                                        if filmName == stock.displayName {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text(group.brand)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Choose Film")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { showFilmPicker = false }
+                        .foregroundColor(Color.filmAccent)
+                }
+            }
+            .searchable(text: $searchText, prompt: "Search films...")
+        }
+    }
+
+    private func saveChanges() {
+        roll.filmName = filmName
+        roll.iso = iso
+        roll.capacity = capacity
+        roll.format = format.rawValue
+        roll.evCompensation = evCompensation
+        roll.pushPull = pushPull
+        roll.notes = notes
+        roll.updatedAt = Date()
+        try? modelContext.save()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
     }
 }

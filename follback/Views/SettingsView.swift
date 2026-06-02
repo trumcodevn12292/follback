@@ -1,11 +1,19 @@
 import SwiftUI
 import SwiftData
+import Kingfisher
 
 struct SettingsView: View {
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
     @Query(sort: \Camera.name) var cameras: [Camera]
     @State private var appeared = false
-    @State private var photoImportMode: PhotoImportMode = .copy
+    @AppStorage("photoImportMode") private var photoImportModeRaw: String = PhotoImportMode.copy.rawValue
+
+    private var photoImportMode: Binding<PhotoImportMode> {
+        Binding(
+            get: { PhotoImportMode(rawValue: photoImportModeRaw) ?? .copy },
+            set: { photoImportModeRaw = $0.rawValue }
+        )
+    }
     @State private var showClearCacheAlert = false
     @State private var cacheCleared = false
 
@@ -80,14 +88,14 @@ struct SettingsView: View {
                         .font(.system(size: 16, weight: .semibold))
                         .foregroundColor(Color.filmText)
 
-                    Picker("", selection: $photoImportMode) {
+                    Picker("", selection: photoImportMode) {
                         ForEach(PhotoImportMode.allCases, id: \.self) { mode in
                             Text(mode.rawValue).tag(mode)
                         }
                     }
                     .pickerStyle(.segmented)
 
-                    Text(photoImportMode.description)
+                    Text(photoImportMode.wrappedValue.description)
                         .font(.system(size: 13))
                         .foregroundColor(Color.filmTertiary)
                 }
@@ -134,8 +142,11 @@ struct SettingsView: View {
 
     private func clearCache() {
         // Clear Kingfisher image cache
-        let cache = URLCache.shared
-        cache.removeAllCachedResponses()
+        KingfisherManager.shared.cache.clearMemoryCache()
+        KingfisherManager.shared.cache.clearDiskCache()
+
+        // Clear URL cache
+        URLCache.shared.removeAllCachedResponses()
 
         // Clear tmp directory
         let tmpDir = FileManager.default.temporaryDirectory

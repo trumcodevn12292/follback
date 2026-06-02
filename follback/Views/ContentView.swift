@@ -27,19 +27,12 @@ struct ContentView: View {
                     }
                     .tag(1)
 
-                SearchView()
-                    .tabItem {
-                        Image(systemName: "magnifyingglass")
-                        Text("Find")
-                    }
-                    .tag(2)
-
                 SettingsView()
                     .tabItem {
-                        Image(systemName: selectedTab == 3 ? "gearshape.fill" : "gearshape")
+                        Image(systemName: selectedTab == 2 ? "gearshape.fill" : "gearshape")
                         Text("Settings")
                     }
-                    .tag(3)
+                    .tag(2)
             }
             .tint(Color.filmAccent)
         }
