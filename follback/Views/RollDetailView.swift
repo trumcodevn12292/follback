@@ -3,6 +3,7 @@ import SwiftData
 import PhotosUI
 import Photos
 import DGCharts
+import Kingfisher
 
 enum FrameSheetTarget: Identifiable {
     case new(Int)
@@ -22,23 +23,53 @@ struct RollDetailView: View {
 
     @State private var viewerFrame: Frame?
     @State private var frameSheetTarget: FrameSheetTarget?
-    @State private var selectedTab = 0
     @State private var appeared = false
     @State private var showDeleteAlert = false
     @State private var fullScreenFrame: Frame?
+    @State private var showPhotoPicker = false
+    @State private var selectedPhotos: [PhotosPickerItem] = []
+    @State private var toastMessage: String?
+    @State private var showToastFlag = false
+
+    private var matchingFilmStock: FilmStock? {
+        FilmStock.allStocks.first { stock in
+            stock.displayName.lowercased() == roll.filmName.lowercased() ||
+            "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+        }
+    }
 
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                headerBar
-                heroCard
-                tabPicker
-                tabContent
+        ZStack(alignment: .bottom) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 0) {
+                    headerBar
+                    heroSection
+                    if hasPhotos {
+                        sortFilterBar
+                        photoGrid
+                    } else {
+                        emptyStateView
+                    }
+                }
+                .padding(.bottom, 100)
             }
-            .padding(.bottom, 20)
+
+            importButton
+
+            if showToastFlag, let message = toastMessage {
+                toastView(message: message)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
         .background(Color.filmBackground.ignoresSafeArea())
         .navigationBarHidden(true)
+        .photosPicker(isPresented: $showPhotoPicker,
+                      selection: $selectedPhotos,
+                      maxSelectionCount: emptySlotCount,
+                      matching: .images)
+        .onChange(of: selectedPhotos) { _, newItems in
+            Task { await importPhotos(newItems) }
+        }
         .sheet(item: $frameSheetTarget) { target in
             NavigationStack {
                 switch target {
@@ -74,9 +105,20 @@ struct RollDetailView: View {
         }
     }
 
+    private var hasPhotos: Bool {
+        let frames = roll.frames ?? []
+        return frames.contains { $0.photoAssetID != nil }
+    }
+
+    private var emptySlotCount: Int {
+        let frames = roll.frames ?? []
+        let filled = frames.filter { $0.photoAssetID != nil }.count
+        return max(0, roll.capacity - filled)
+    }
+
     // MARK: - Header
     private var headerBar: some View {
-        HStack(spacing: 16) {
+        HStack(spacing: 12) {
             Button {
                 dismiss()
             } label: {
@@ -91,6 +133,23 @@ struct RollDetailView: View {
                     )
             }
             Spacer()
+
+            if hasPhotos {
+                Button {
+                    showPhotoPicker = true
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .bold))
+                        .foregroundColor(Color.filmText)
+                        .frame(width: 40, height: 40)
+                        .background(
+                            Circle()
+                                .fill(Color.filmSurface)
+                                .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                        )
+                }
+            }
 
             Menu {
                 if roll.rollStatus == .inProgress {
@@ -117,97 +176,141 @@ struct RollDetailView: View {
         .padding(.top, 8)
     }
 
-    // MARK: - Hero
-    private var heroCard: some View {
+    // MARK: - Hero Section (Filmer style)
+    private var heroSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 5) {
-                    Text(roll.filmName)
-                        .font(.system(size: 26, weight: .bold, design: .serif))
-                        .foregroundColor(Color.filmText)
-                    HStack(spacing: 8) {
-                        Image(systemName: "camera.fill")
-                            .font(.system(size: 12))
-                            .foregroundColor(Color.filmAccent)
-                        Text(roll.camera?.name ?? "No camera")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundColor(Color.filmSecondary)
+            // Roll title
+            Text(roll.filmName)
+                .font(.system(size: 28, weight: .bold))
+                .foregroundColor(Color.filmText)
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+
+            // Film cover + info chips (horizontal scroll)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 16) {
+                    // Film cover image
+                    filmCoverImage
+
+                    infoChipView(label: "Film format", value: roll.filmFormat.displayName)
+
+                    Divider()
+                        .frame(height: 40)
+                        .background(Color.filmBorder)
+
+                    infoChipView(label: "ISO", value: "\(roll.iso)")
+
+                    Divider()
+                        .frame(height: 40)
+                        .background(Color.filmBorder)
+
+                    infoChipView(label: "Exposures", value: "\(roll.filledFrames)/\(roll.capacity)")
+
+                    if let camera = roll.camera {
+                        Divider()
+                            .frame(height: 40)
+                            .background(Color.filmBorder)
+                        infoChipView(label: "Camera", value: camera.name)
+                    }
+
+                    if roll.pushPull != 0 {
+                        Divider()
+                            .frame(height: 40)
+                            .background(Color.filmBorder)
+                        infoChipView(label: "Push/Pull", value: String(format: "%+.1f", roll.pushPull))
                     }
                 }
-                Spacer()
-                statusBadge
+                .padding(.horizontal, 16)
             }
-
-            HStack(spacing: 8) {
-                specPill(icon: "film", text: "ISO \(roll.iso)")
-                specPill(icon: "square.grid.2x2", text: "\(roll.capacity)")
-                specPill(icon: "viewfinder", text: roll.filmFormat.displayName)
-                if roll.evCompensation != 0 {
-                    specPill(icon: "plusminus", text: String(format: "%+.1f EV", roll.evCompensation))
-                }
-            }
-
-            // Film strip progress
-            filmStripProgress
 
             if !roll.notes.isEmpty {
                 Text(roll.notes)
-                    .font(.system(size: 13, weight: .medium))
+                    .font(.system(size: 14, weight: .regular))
                     .foregroundColor(Color.filmSecondary)
                     .lineSpacing(4)
-                    .padding(.top, 2)
+                    .padding(.horizontal, 16)
             }
         }
-        .padding(20)
-        .filmCard(cornerRadius: 24)
-        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
         .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 20)
+        .offset(y: appeared ? 0 : 15)
     }
 
-    private var filmStripProgress: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            GeometryReader { geo in
-                ZStack(alignment: .leading) {
-                    // Track with sprocket holes
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(Color.filmSprocket)
-                        .frame(height: 8)
+    private var filmCoverImage: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.filmSurface)
+                .frame(width: 72, height: 72)
 
-                    RoundedRectangle(cornerRadius: 5)
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.filmAccent, Color.filmGold],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .frame(
-                            width: max(0, geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1))),
-                            height: 8
-                        )
-                        .shadow(color: Color.filmAccent.opacity(0.4), radius: 8, x: 0, y: 2)
-                        .animation(.spring(response: 0.6, dampingFraction: 0.8), value: roll.filledFrames)
-                }
-            }
-            .frame(height: 8)
-
-            HStack {
-                Text("\(roll.filledFrames)/\(roll.capacity) frames exposed")
-                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+            if let stock = matchingFilmStock,
+               let coverUrlString = stock.fullCoverUrl,
+               let coverURL = URL(string: coverUrlString) {
+                KFImage(coverURL)
+                    .requestModifier(FilmerImageAuth.shared.modifier)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 72, height: 72)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                Image(systemName: "film")
+                    .font(.system(size: 24, weight: .light))
                     .foregroundColor(Color.filmTertiary)
-                Spacer()
-                if roll.pushPull != 0 {
-                    HStack(spacing: 4) {
-                        Image(systemName: "arrow.up.arrow.down")
-                            .font(.system(size: 10))
-                        Text("Push/Pull \(String(format: "%+.1f", roll.pushPull))")
-                            .font(.system(size: 12, weight: .semibold, design: .monospaced))
-                    }
-                    .foregroundColor(Color.filmGold)
-                }
             }
         }
+    }
+
+    private func infoChipView(label: String, value: String) -> some View {
+        VStack(spacing: 4) {
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
+            Text(value)
+                .font(.system(size: 17, weight: .bold))
+                .foregroundColor(Color.filmText)
+        }
+    }
+
+    // MARK: - Empty State
+    private var emptyStateView: some View {
+        VStack(spacing: 24) {
+            Spacer()
+                .frame(height: 60)
+
+            VStack(spacing: 12) {
+                Image(systemName: "photo.on.rectangle.angled")
+                    .font(.system(size: 48, weight: .ultraLight))
+                    .foregroundColor(Color.filmTertiary.opacity(0.5))
+
+                Text("No photos yet")
+                    .font(.system(size: 18, weight: .semibold))
+                    .foregroundColor(Color.filmSecondary)
+
+                Text("Import photos from your camera roll to fill this film roll")
+                    .font(.system(size: 14, weight: .regular))
+                    .foregroundColor(Color.filmTertiary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 40)
+            }
+
+            Spacer()
+                .frame(height: 40)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    // MARK: - Sort/Filter Bar
+    private var sortFilterBar: some View {
+        HStack {
+            let frames = roll.frames ?? []
+            let photoCount = frames.filter { $0.photoAssetID != nil }.count
+            Text("\(photoCount) photos")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
+            Spacer()
+            statusBadge
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
     }
 
     private var statusBadge: some View {
@@ -225,24 +328,6 @@ struct RollDetailView: View {
         .overlay(Capsule().stroke(statusColor.opacity(0.2), lineWidth: 0.5))
     }
 
-    private func specPill(icon: String, text: String) -> some View {
-        HStack(spacing: 4) {
-            Image(systemName: icon)
-                .font(.system(size: 9))
-                .foregroundColor(Color.filmAccent.opacity(0.7))
-            Text(text)
-                .font(.system(size: 11, weight: .semibold, design: .monospaced))
-                .foregroundColor(Color.filmSecondary)
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(Color.filmAccent.opacity(0.06))
-                .overlay(Capsule().stroke(Color.filmAccent.opacity(0.12), lineWidth: 0.5))
-        )
-    }
-
     private var statusColor: Color {
         switch roll.rollStatus {
         case .inProgress: return Color.filmAccent
@@ -251,47 +336,128 @@ struct RollDetailView: View {
         }
     }
 
-    // MARK: - Tabs
-    private var tabPicker: some View {
-        SegmentedPicker(selection: $selectedTab, options: [("Frames", "square.grid.2x2"), ("Stats", "chart.bar")])
-            .padding(.horizontal, 16)
+    // MARK: - Import Button (bottom floating)
+    private var importButton: some View {
+        Button {
+            showPhotoPicker = true
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "plus")
+                    .font(.system(size: 16, weight: .bold))
+                Text("Import Photos")
+                    .font(.system(size: 16, weight: .semibold))
+            }
+            .foregroundColor(Color.filmBackground)
+            .frame(maxWidth: 220)
+            .padding(.vertical, 14)
+            .background(
+                Capsule()
+                    .fill(Color(.systemGray5))
+            )
+        }
+        .padding(.bottom, 30)
     }
 
-    @ViewBuilder
-    private var tabContent: some View {
-        if selectedTab == 0 {
-            photoGrid
-        } else {
-            statsView
+    // MARK: - Toast
+    private func toastView(message: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 20))
+                .foregroundColor(Color.filmSuccess)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Import complete")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+                Text(message)
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundColor(Color.filmSecondary)
+            }
+            Spacer()
+        }
+        .padding(16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.filmSurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                )
+                .shadow(color: .black.opacity(0.3), radius: 20, y: 10)
+        )
+        .padding(.horizontal, 16)
+        .padding(.bottom, 90)
+    }
+
+    // MARK: - Photo Import
+    private func importPhotos(_ items: [PhotosPickerItem]) async {
+        guard !items.isEmpty else { return }
+        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let emptySlots = (1...roll.capacity).filter { num in
+            !frames.contains { $0.number == num && $0.photoAssetID != nil }
+        }
+
+        var importedCount = 0
+        for (index, item) in items.enumerated() {
+            guard index < emptySlots.count else { break }
+            let slotNumber = emptySlots[index]
+
+            if let assetID = item.itemIdentifier {
+                if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+                    existingFrame.photoAssetID = assetID
+                } else {
+                    let newFrame = Frame(
+                        number: slotNumber,
+                        photoAssetID: assetID
+                    )
+                    newFrame.roll = roll
+                    modelContext.insert(newFrame)
+                }
+                importedCount += 1
+            }
+        }
+
+        if importedCount > 0 {
+            try? modelContext.save()
+            selectedPhotos = []
+
+            await MainActor.run {
+                toastMessage = "Imported \(importedCount) photo\(importedCount == 1 ? "" : "s")"
+                withAnimation(.easeOut(duration: 0.3)) {
+                    showToastFlag = true
+                }
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
+
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            await MainActor.run {
+                withAnimation(.easeIn(duration: 0.3)) {
+                    showToastFlag = false
+                }
+            }
         }
     }
 
-    // MARK: - Photo Grid (iOS Photos style)
+    // MARK: - Photo Grid (Filmer style - 3 column, edge-to-edge)
     private var photoGrid: some View {
-        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let frames = (roll.frames ?? [])
+            .filter { $0.photoAssetID != nil }
+            .sorted { $0.number < $1.number }
         let columns = [
             GridItem(.flexible(), spacing: 2),
             GridItem(.flexible(), spacing: 2),
             GridItem(.flexible(), spacing: 2)
         ]
 
-        return VStack(spacing: 2) {
-            LazyVGrid(columns: columns, spacing: 2) {
-                ForEach(1...roll.capacity, id: \.self) { num in
-                    if let frame = frames.first(where: { $0.number == num }) {
-                        filledPhotoCell(frame: frame)
-                    } else {
-                        emptyPhotoCell(number: num)
-                    }
-                }
+        return LazyVGrid(columns: columns, spacing: 2) {
+            ForEach(frames, id: \.id) { frame in
+                photoCell(frame: frame)
             }
         }
-        .padding(.horizontal, 2)
-        .clipShape(RoundedRectangle(cornerRadius: 16))
-        .padding(.horizontal, 14)
+        .padding(.horizontal, 0)
     }
 
-    private func filledPhotoCell(frame: Frame) -> some View {
+    private func photoCell(frame: Frame) -> some View {
         ZStack(alignment: .bottomLeading) {
             if let assetID = frame.photoAssetID {
                 PhotoThumbnail(assetID: assetID)
@@ -301,156 +467,33 @@ struct RollDetailView: View {
                 Rectangle()
                     .fill(Color.filmSurface)
                     .aspectRatio(1, contentMode: .fill)
-                    .overlay(
-                        VStack(spacing: 4) {
-                            Image(systemName: "photo")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color.filmTertiary.opacity(0.5))
-                            Text("#\(frame.number)")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundColor(Color.filmTertiary.opacity(0.4))
-                        }
-                    )
             }
 
-            // Frame number overlay
             Text("\(frame.number)")
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
                 .padding(.horizontal, 5)
                 .padding(.vertical, 2)
-                .background(
-                    Capsule()
-                        .fill(.black.opacity(0.5))
-                )
+                .background(Capsule().fill(.black.opacity(0.5)))
                 .padding(4)
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            if frame.photoAssetID != nil {
-                fullScreenFrame = frame
-            } else {
-                viewerFrame = frame
-            }
+            fullScreenFrame = frame
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         }
         .contextMenu {
             Button {
                 frameSheetTarget = .edit(frame)
             } label: {
-                Label("Edit", systemImage: "pencil")
+                Label("Edit Details", systemImage: "pencil")
             }
-            if frame.photoAssetID != nil {
-                Button {
-                    fullScreenFrame = frame
-                } label: {
-                    Label("View Full Screen", systemImage: "arrow.up.left.and.arrow.down.right")
-                }
+            Button {
+                fullScreenFrame = frame
+            } label: {
+                Label("View Full Screen", systemImage: "arrow.up.left.and.arrow.down.right")
             }
         }
-    }
-
-    private func emptyPhotoCell(number: Int) -> some View {
-        Rectangle()
-            .fill(Color.filmSprocket)
-            .aspectRatio(1, contentMode: .fill)
-            .overlay(
-                VStack(spacing: 6) {
-                    ZStack {
-                        Circle()
-                            .fill(Color.filmAccent.opacity(0.08))
-                            .frame(width: 32, height: 32)
-                        Image(systemName: "plus")
-                            .font(.system(size: 14, weight: .medium))
-                            .foregroundColor(Color.filmAccent.opacity(0.5))
-                    }
-                    Text("\(number)")
-                        .font(.system(size: 10, weight: .bold, design: .monospaced))
-                        .foregroundColor(Color.filmTertiary.opacity(0.3))
-                }
-            )
-            .overlay(
-                Rectangle()
-                    .stroke(Color.filmBorder.opacity(0.3), lineWidth: 0.5)
-            )
-            .contentShape(Rectangle())
-            .onTapGesture {
-                frameSheetTarget = .new(number)
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            }
-    }
-
-    // MARK: - Stats
-    private var statsView: some View {
-        VStack(spacing: 20) {
-            apertureChart
-            shutterChart
-        }
-        .padding(.horizontal, 16)
-    }
-
-    private var apertureChart: some View {
-        let frames = roll.frames ?? []
-        let grouped = Dictionary(grouping: frames.compactMap { $0.aperture }) { $0 }
-        let chartData = Dictionary(uniqueKeysWithValues: grouped.map { (Aperture(rawValue: $0.key)?.displayName ?? "f/\($0.key)", Double($0.value.count)) })
-
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "camera.aperture")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color.filmAccent)
-                Text("Aperture Distribution")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color.filmSecondary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-            }
-
-            if chartData.isEmpty {
-                Text("No aperture data yet")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color.filmTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 40)
-            } else {
-                BarChartWrapper(data: chartData)
-                    .frame(height: 200)
-            }
-        }
-        .padding(18)
-        .filmCard(cornerRadius: 18)
-    }
-
-    private var shutterChart: some View {
-        let frames = roll.frames ?? []
-        let grouped = Dictionary(grouping: frames.compactMap { $0.shutterSpeed }) { $0 }
-        let chartData = grouped.mapValues { Double($0.count) }
-
-        return VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 8) {
-                Image(systemName: "timer")
-                    .font(.system(size: 14))
-                    .foregroundColor(Color.filmGold)
-                Text("Shutter Speed Distribution")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color.filmSecondary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-            }
-
-            if chartData.isEmpty {
-                Text("No shutter data yet")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(Color.filmTertiary)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.vertical, 40)
-            } else {
-                BarChartWrapper(data: chartData)
-                    .frame(height: 200)
-            }
-        }
-        .padding(18)
-        .filmCard(cornerRadius: 18)
     }
 
     private func markDeveloped() {
@@ -650,49 +693,6 @@ struct FullScreenPhotoView: View {
                 self.image = img
             }
         }
-    }
-}
-
-// MARK: - Segmented Picker
-struct SegmentedPicker: View {
-    @Binding var selection: Int
-    let options: [(String, String)]
-
-    var body: some View {
-        HStack(spacing: 4) {
-            ForEach(0..<options.count, id: \.self) { index in
-                Button {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        selection = index
-                    }
-                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                } label: {
-                    HStack(spacing: 6) {
-                        Image(systemName: options[index].1)
-                            .font(.system(size: 14))
-                        Text(options[index].0)
-                            .font(.system(size: 13, weight: .semibold))
-                    }
-                    .foregroundColor(selection == index ? Color.filmBackground : Color.filmTertiary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            .fill(selection == index ? Color.filmAccent : Color.clear)
-                    )
-                }
-                .buttonStyle(.plain)
-            }
-        }
-        .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
-                )
-        )
     }
 }
 
