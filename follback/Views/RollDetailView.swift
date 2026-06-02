@@ -1002,9 +1002,7 @@ struct EditRollDetailsView: View {
                             ForEach(group.stocks, id: \.id) { stock in
                                 Button {
                                     filmName = stock.displayName
-                                    if let isoVal = stock.isoValue {
-                                        iso = isoVal
-                                    }
+                                    iso = stock.isoValue
                                     showFilmPicker = false
                                 } label: {
                                     HStack(spacing: 12) {
