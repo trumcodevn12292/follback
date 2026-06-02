@@ -7,6 +7,9 @@ struct FilmVaultApp: App {
         WindowGroup {
             ContentView()
                 .withTheme()
+                .task {
+                    await FilmerImageAuth.shared.ensureToken()
+                }
         }
         .modelContainer(for: [Roll.self, Frame.self, Camera.self])
     }
