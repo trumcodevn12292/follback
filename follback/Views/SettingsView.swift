@@ -166,7 +166,7 @@ struct SettingsView: View {
                         }
                     }
                     Spacer()
-                    Text("2.0")
+                    Text("3.0")
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
                         .foregroundColor(Color.filmAccent)
                         .padding(.horizontal, 10)
@@ -328,10 +328,8 @@ struct LineChartWrapper: UIViewRepresentable {
         dataSet.drawValuesEnabled = false
         dataSet.mode = .cubicBezier
         dataSet.drawFilledEnabled = true
-        let gradientColors = [UIColor(Color.filmAccent.opacity(0.3)).cgColor, UIColor.clear.cgColor] as CFArray
-        if let gradient = CGGradient(colorsSpace: nil, colors: gradientColors, locations: nil) {
-            dataSet.fill = LinearGradientFill(gradient: gradient, angle: 90)
-        }
+        dataSet.fillColor = UIColor(Color.filmAccent.opacity(0.3))
+        dataSet.fillAlpha = 0.3
         let chartData = LineChartData(dataSet: dataSet)
         let labels = sortedKeys.map { "\($0.month!)/\($0.year! % 100)" }
         uiView.xAxis.valueFormatter = IndexAxisValueFormatter(values: labels)
