@@ -476,31 +476,26 @@ struct RollDetailView: View {
 
         return LazyVGrid(columns: columns, spacing: 2) {
             ForEach(frames, id: \.id) { frame in
-                photoCell(frame: frame)
+                GeometryReader { geo in
+                    photoCell(frame: frame, size: geo.size.width)
+                }
+                .aspectRatio(1, contentMode: .fit)
             }
         }
         .padding(.horizontal, 0)
     }
 
-    private func photoCell(frame: Frame) -> some View {
-        ZStack(alignment: .bottomLeading) {
+    private func photoCell(frame: Frame, size: CGFloat) -> some View {
+        Group {
             if let assetID = frame.photoAssetID {
                 PhotoThumbnail(assetID: assetID)
-                    .aspectRatio(1, contentMode: .fill)
+                    .frame(width: size, height: size)
                     .clipped()
             } else {
                 Rectangle()
                     .fill(Color.filmSurface)
-                    .aspectRatio(1, contentMode: .fill)
+                    .frame(width: size, height: size)
             }
-
-            Text("\(frame.number)")
-                .font(.system(size: 9, weight: .bold, design: .monospaced))
-                .foregroundColor(.white)
-                .padding(.horizontal, 5)
-                .padding(.vertical, 2)
-                .background(Capsule().fill(.black.opacity(0.5)))
-                .padding(4)
         }
         .contentShape(Rectangle())
         .onTapGesture {
