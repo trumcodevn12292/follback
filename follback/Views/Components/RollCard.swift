@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Kingfisher
 
 struct RollCard: View {
     let roll: Roll
@@ -15,7 +16,9 @@ struct RollCard: View {
                     .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 14) {
-                    HStack(alignment: .top) {
+                    HStack(alignment: .top, spacing: 12) {
+                        filmCoverThumbnail
+
                         VStack(alignment: .leading, spacing: 5) {
                             Text(roll.filmName)
                                 .font(.system(size: 19, weight: .bold, design: .serif))
@@ -90,6 +93,35 @@ struct RollCard: View {
             }
             Button(action: onArchive) {
                 Label("Archive", systemImage: "archivebox")
+            }
+        }
+    }
+
+    private var matchingFilmStock: FilmStock? {
+        FilmStock.allStocks.first { stock in
+            stock.displayName.lowercased() == roll.filmName.lowercased() ||
+            "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+        }
+    }
+
+    private var filmCoverThumbnail: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.filmSurface)
+                .frame(width: 42, height: 42)
+
+            if let stock = matchingFilmStock,
+               let coverUrlString = stock.fullCoverUrl,
+               let coverURL = URL(string: coverUrlString) {
+                KFImage(coverURL)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 42, height: 42)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                Image(systemName: "film")
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmAccent.opacity(0.5))
             }
         }
     }

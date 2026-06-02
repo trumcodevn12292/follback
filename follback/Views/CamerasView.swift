@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Kingfisher
 
 struct CamerasView: View {
     @Query(sort: \Camera.name) var cameras: [Camera]
@@ -190,6 +191,15 @@ struct CameraRow: View {
     let camera: Camera
     let rollCount: Int
 
+    private var matchingCameraModel: CameraModel? {
+        CameraModel.allModels.first { model in
+            model.name.lowercased() == camera.name.lowercased() &&
+            model.brand.lowercased() == camera.brand.lowercased()
+        } ?? CameraModel.allModels.first { model in
+            camera.name.lowercased().contains(model.name.lowercased())
+        }
+    }
+
     var body: some View {
         HStack(spacing: 16) {
             ZStack {
@@ -206,15 +216,26 @@ struct CameraRow: View {
                         RoundedRectangle(cornerRadius: 14)
                             .stroke(Color.filmAccent.opacity(0.15), lineWidth: 0.5)
                     )
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 22))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+
+                if let model = matchingCameraModel,
+                   let coverUrlString = model.fullCoverUrl,
+                   let coverURL = URL(string: coverUrlString) {
+                    KFImage(coverURL)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 52, height: 52)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                } else {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.filmAccent, Color.filmGold],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
                         )
-                    )
+                }
             }
 
             VStack(alignment: .leading, spacing: 4) {

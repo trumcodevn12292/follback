@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import Kingfisher
 
 struct AddRollView: View {
     @Environment(\.modelContext) private var modelContext
@@ -25,14 +26,14 @@ struct AddRollView: View {
 
     private var filteredStocks: [(brand: String, stocks: [FilmStock])] {
         if searchText.isEmpty {
-            return FilmStock.groupedByBrand
+            return FilmStock.groupedByBrandPopularFirst
         }
         let query = searchText.lowercased()
-        return FilmStock.groupedByBrand.compactMap { group in
+        return FilmStock.groupedByBrandPopularFirst.compactMap { group in
             let filtered = group.stocks.filter {
                 $0.displayName.lowercased().contains(query) ||
                 $0.brand.lowercased().contains(query) ||
-                "\($0.iso)".contains(query)
+                "\($0.isoValue)".contains(query)
             }
             return filtered.isEmpty ? nil : (brand: group.brand, stocks: filtered)
         }
@@ -268,18 +269,18 @@ struct AddRollView: View {
     }
 
     private func filmStockRow(_ stock: FilmStock) -> some View {
-        let isSelected = selectedFilmStock?.name == stock.name && selectedFilmStock?.brand == stock.brand
+        let isSelected = selectedFilmStock?.id == stock.id
         return Button {
             withAnimation(.spring(response: 0.3)) {
                 selectedFilmStock = stock
                 showCustomInput = false
                 customFilmName = ""
-                iso = stock.iso
+                iso = stock.isoValue
             }
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } label: {
             HStack(spacing: 14) {
-                // Film canister icon
+                // Film cover image
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(
@@ -295,18 +296,27 @@ struct AddRollView: View {
                                 .stroke(stock.color.opacity(0.3), lineWidth: 0.5)
                         )
 
-                    VStack(spacing: 2) {
-                        Circle()
-                            .fill(stock.color)
-                            .frame(width: 14, height: 14)
-                            .overlay(
-                                Circle()
-                                    .fill(Color.filmBackground.opacity(0.5))
-                                    .frame(width: 5, height: 5)
-                            )
-                        RoundedRectangle(cornerRadius: 1)
-                            .fill(stock.accentColor.opacity(0.6))
-                            .frame(width: 20, height: 3)
+                    if let coverUrlString = stock.fullCoverUrl,
+                       let coverURL = URL(string: coverUrlString) {
+                        KFImage(coverURL)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    } else {
+                        VStack(spacing: 2) {
+                            Circle()
+                                .fill(stock.color)
+                                .frame(width: 14, height: 14)
+                                .overlay(
+                                    Circle()
+                                        .fill(Color.filmBackground.opacity(0.5))
+                                        .frame(width: 5, height: 5)
+                                )
+                            RoundedRectangle(cornerRadius: 1)
+                                .fill(stock.accentColor.opacity(0.6))
+                                .frame(width: 20, height: 3)
+                        }
                     }
                 }
 
@@ -315,7 +325,7 @@ struct AddRollView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color.filmText)
                     HStack(spacing: 6) {
-                        Text("ISO \(stock.iso)")
+                        Text("ISO \(stock.isoValue)")
                             .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .foregroundColor(stock.color)
                         Text("·")
@@ -656,17 +666,27 @@ struct AddRollView: View {
                                        startPoint: .topLeading, endPoint: .bottomTrailing)
                     )
                     .frame(width: 56, height: 56)
-                Circle()
-                    .fill(stock.color)
-                    .frame(width: 20, height: 20)
-                    .overlay(Circle().fill(Color.filmBackground.opacity(0.4)).frame(width: 7, height: 7))
+
+                if let coverUrlString = stock.fullCoverUrl,
+                   let coverURL = URL(string: coverUrlString) {
+                    KFImage(coverURL)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 56, height: 56)
+                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                } else {
+                    Circle()
+                        .fill(stock.color)
+                        .frame(width: 20, height: 20)
+                        .overlay(Circle().fill(Color.filmBackground.opacity(0.4)).frame(width: 7, height: 7))
+                }
             }
             VStack(alignment: .leading, spacing: 3) {
                 Text(stock.displayName)
                     .font(.system(size: 17, weight: .bold, design: .serif))
                     .foregroundColor(Color.filmText)
                 HStack(spacing: 6) {
-                    Text("ISO \(stock.iso)")
+                    Text("ISO \(stock.isoValue)")
                         .font(.system(size: 12, weight: .bold, design: .monospaced))
                         .foregroundColor(stock.color)
                     Text(stock.type.rawValue)
