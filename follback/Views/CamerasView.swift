@@ -9,7 +9,6 @@ struct CamerasView: View {
 
     @State private var appeared = false
     @State private var searchText = ""
-    @State private var showAddCamera = false
 
     private var filteredGroups: [(brand: String, models: [CameraModel])] {
         let groups = CameraModel.groupedByBrandPopularFirst
@@ -53,7 +52,7 @@ struct CamerasView: View {
                             .padding(.horizontal, 20)
 
                         ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 10) {
+                            HStack(spacing: 12) {
                                 ForEach(cameras) { camera in
                                     myCameraCard(camera)
                                 }
@@ -81,21 +80,25 @@ struct CamerasView: View {
                 .padding(.horizontal, 16)
                 .padding(.bottom, 12)
 
-                // Camera database list
+                // Camera database grid
                 ScrollView(showsIndicators: false) {
                     LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
                         ForEach(filteredGroups, id: \.brand) { group in
                             Section {
-                                ForEach(group.models, id: \.id) { model in
-                                    Button {
-                                        addCameraFromModel(model)
-                                    } label: {
-                                        apiCameraRow(model)
+                                let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
+                                LazyVGrid(columns: columns, spacing: 12) {
+                                    ForEach(group.models, id: \.id) { model in
+                                        Button {
+                                            addCameraFromModel(model)
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        } label: {
+                                            cameraGridCard(model)
+                                        }
+                                        .buttonStyle(.plain)
                                     }
-                                    .buttonStyle(.plain)
-                                    Divider().background(Color.filmBorder.opacity(0.2))
-                                        .padding(.horizontal, 16)
                                 }
+                                .padding(.horizontal, 16)
+                                .padding(.bottom, 16)
                             } header: {
                                 brandHeader(group.brand, models: group.models)
                             }
@@ -162,10 +165,6 @@ struct CamerasView: View {
 
     private func brandHeader(_ brand: String, models: [CameraModel]) -> some View {
         HStack(spacing: 10) {
-            Text(brand)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color.filmText)
-
             if let logoUrl = models.first?.fullBrandLogoUrl,
                let url = URL(string: logoUrl) {
                 KFImage(url)
@@ -175,71 +174,78 @@ struct CamerasView: View {
                     .frame(height: 20)
             }
 
+            Text(brand)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(Color.filmText)
+
             Spacer()
+
+            Text("\(models.count)")
+                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .foregroundColor(Color.filmTertiary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .background(Color.filmBackground)
     }
 
-    private func apiCameraRow(_ model: CameraModel) -> some View {
+    private func cameraGridCard(_ model: CameraModel) -> some View {
         let isAdded = cameras.contains { c in
             c.name.lowercased() == model.name.lowercased() &&
             c.brand.lowercased() == model.brand.lowercased()
         }
 
-        return HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(Color.filmSurfaceSecondary)
-                    .frame(width: 56, height: 56)
+        return VStack(spacing: 0) {
+            ZStack(alignment: .topTrailing) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.filmSurfaceSecondary)
+                        .frame(height: 120)
 
-                if let coverUrl = model.fullCoverUrl, let url = URL(string: coverUrl) {
-                    KFImage(url)
-                        .requestModifier(FilmerImageAuth.shared.modifier)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                } else {
-                    Image(systemName: "camera")
-                        .font(.system(size: 18, weight: .light))
-                        .foregroundColor(Color.filmTertiary)
+                    if let coverUrl = model.fullCoverUrl, let url = URL(string: coverUrl) {
+                        KFImage(url)
+                            .requestModifier(FilmerImageAuth.shared.modifier)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 120)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    } else {
+                        Image(systemName: "camera")
+                            .font(.system(size: 32, weight: .light))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                }
+
+                if isAdded {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color.filmAccent)
+                        .background(Circle().fill(Color.filmBackground).frame(width: 16, height: 16))
+                        .padding(6)
                 }
             }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(model.name)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(Color.filmText)
                     .lineLimit(1)
 
                 if let type = model.cameraType {
                     Text(type)
-                        .font(.system(size: 13))
+                        .font(.system(size: 11))
                         .foregroundColor(Color.filmTertiary)
+                        .lineLimit(1)
                 }
             }
-
-            Spacer()
-
-            if isAdded {
-                Text("Added")
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(Color.filmAccent)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 4)
-                    .background(
-                        Capsule().fill(Color.filmAccent.opacity(0.15))
-                    )
-            } else {
-                Image(systemName: "plus.circle")
-                    .font(.system(size: 20))
-                    .foregroundColor(Color.filmAccent)
-            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.filmSurface)
+        )
     }
 
     private func addCameraFromModel(_ model: CameraModel) {
@@ -255,6 +261,5 @@ struct CamerasView: View {
         )
         modelContext.insert(camera)
         try? modelContext.save()
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }

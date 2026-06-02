@@ -1,14 +1,17 @@
 import SwiftUI
 import SwiftData
 import Kingfisher
+import PhotosUI
 
 struct AddRollView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Camera.name) var cameras: [Camera]
+    @StateObject private var customFilmStore = CustomFilmStore.shared
 
     @State private var step = 0
     @State private var selectedFilmStock: FilmStock?
+    @State private var selectedCustomFilm: CustomFilm?
     @State private var customFilmName = ""
     @State private var searchText = ""
     @State private var selectedCamera: Camera?
@@ -27,6 +30,14 @@ struct AddRollView: View {
     @State private var showCustomInput = false
     @State private var showCameraPicker = false
     @State private var showLocationPicker = false
+
+    // Custom film creation states
+    @State private var showCustomFilmForm = false
+    @State private var newCustomName = ""
+    @State private var newCustomISO = 400
+    @State private var newCustomType = "COLOR_NEGATIVE"
+    @State private var newCustomCoverItem: PhotosPickerItem?
+    @State private var newCustomCoverData: Data?
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -73,6 +84,9 @@ struct AddRollView: View {
                 longitude: $locationLongitude
             )
         }
+        .sheet(isPresented: $showCustomFilmForm) {
+            customFilmFormSheet
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
@@ -105,7 +119,7 @@ struct AddRollView: View {
             Spacer()
 
             Text(stepTitle)
-                .font(.system(size: 17, weight: .bold, design: .serif))
+                .font(.system(size: 17, weight: .bold))
                 .foregroundColor(Color.filmText)
 
             Spacer()
@@ -144,7 +158,7 @@ struct AddRollView: View {
 
     private var canAdvance: Bool {
         switch step {
-        case 0: return selectedFilmStock != nil || !customFilmName.isEmpty
+        case 0: return selectedFilmStock != nil || selectedCustomFilm != nil || !customFilmName.isEmpty
         case 1: return true
         default: return false
         }
@@ -177,7 +191,7 @@ struct AddRollView: View {
                         .font(.system(size: 15))
                         .foregroundColor(Color.filmTertiary)
                     TextField("Search film stocks...", text: $searchText)
-                        .font(.system(size: 16))
+                        .font(.system(size: 15))
                         .foregroundColor(Color.filmText)
                 }
                 .padding(14)
@@ -191,34 +205,29 @@ struct AddRollView: View {
                 )
                 .padding(.horizontal, 16)
 
-                // Custom name option
+                // Custom film button → opens form sheet
                 Button {
-                    withAnimation(.spring(response: 0.3)) {
-                        showCustomInput.toggle()
-                        if showCustomInput {
-                            selectedFilmStock = nil
-                        }
-                    }
+                    showCustomFilmForm = true
                 } label: {
                     HStack(spacing: 12) {
                         ZStack {
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
                                 .fill(Color.filmAccent.opacity(0.1))
                                 .frame(width: 44, height: 44)
-                            Image(systemName: "pencil.line")
-                                .font(.system(size: 18))
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 20))
                                 .foregroundColor(Color.filmAccent)
                         }
                         VStack(alignment: .leading, spacing: 2) {
-                            Text("Custom Film Name")
+                            Text("Create Custom Film")
                                 .font(.system(size: 15, weight: .semibold))
                                 .foregroundColor(Color.filmText)
-                            Text("Enter your own film stock name")
+                            Text("Add your own film stock")
                                 .font(.system(size: 12))
                                 .foregroundColor(Color.filmTertiary)
                         }
                         Spacer()
-                        Image(systemName: showCustomInput ? "chevron.up" : "chevron.down")
+                        Image(systemName: "chevron.right")
                             .font(.system(size: 12, weight: .bold))
                             .foregroundColor(Color.filmTertiary)
                     }
@@ -228,27 +237,33 @@ struct AddRollView: View {
                             .fill(Color.filmSurface)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .stroke(showCustomInput ? Color.filmAccent.opacity(0.3) : Color.filmBorder, lineWidth: 0.5)
+                                    .stroke(Color.filmBorder, lineWidth: 0.5)
                             )
                     )
                 }
                 .buttonStyle(.plain)
                 .padding(.horizontal, 16)
 
-                if showCustomInput {
-                    TextField("e.g. Kodak Portra 400", text: $customFilmName)
-                        .font(.system(size: 16))
-                        .foregroundColor(Color.filmText)
-                        .padding(14)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.filmSurfaceSecondary)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .stroke(Color.filmAccent.opacity(0.2), lineWidth: 0.5)
-                                )
-                        )
-                        .padding(.horizontal, 16)
+                // My Custom Films section
+                if !customFilmStore.films.isEmpty && searchText.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("MY CUSTOM FILMS")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(Color.filmSecondary)
+                                .textCase(.uppercase)
+                                .tracking(1)
+                            Spacer()
+                            Text("\(customFilmStore.films.count)")
+                                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        .padding(.horizontal, 20)
+
+                        ForEach(customFilmStore.films) { film in
+                            customFilmRow(film)
+                        }
+                    }
                 }
 
                 // Film stock list
@@ -282,11 +297,92 @@ struct AddRollView: View {
         }
     }
 
+    private func customFilmRow(_ film: CustomFilm) -> some View {
+        let isSelected = selectedCustomFilm?.id == film.id
+        return Button {
+            withAnimation(.spring(response: 0.3)) {
+                selectedCustomFilm = film
+                selectedFilmStock = nil
+                customFilmName = ""
+                iso = film.iso
+            }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .fill(Color.filmAccent.opacity(0.1))
+                        .frame(width: 50, height: 50)
+
+                    if let data = film.coverImageData, let uiImage = UIImage(data: data) {
+                        Image(uiImage: uiImage)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 50, height: 50)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                    } else {
+                        Image(systemName: "film")
+                            .font(.system(size: 18))
+                            .foregroundColor(Color.filmAccent)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text(film.name)
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+                    HStack(spacing: 6) {
+                        Text("ISO \(film.iso)")
+                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color.filmAccent)
+                        Text("·")
+                            .foregroundColor(Color.filmTertiary)
+                        Text(film.typeDisplayName)
+                            .font(.system(size: 11, weight: .medium))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                }
+
+                Spacer()
+
+                if isSelected {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundStyle(
+                            LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .top, endPoint: .bottom)
+                        )
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(isSelected ? Color.filmAccent.opacity(0.06) : Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .stroke(isSelected ? Color.filmAccent.opacity(0.3) : Color.filmBorder, lineWidth: isSelected ? 1 : 0.5)
+                    )
+            )
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 16)
+        .contextMenu {
+            Button(role: .destructive) {
+                customFilmStore.remove(film)
+                if selectedCustomFilm?.id == film.id {
+                    selectedCustomFilm = nil
+                }
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+
     private func filmStockRow(_ stock: FilmStock) -> some View {
         let isSelected = selectedFilmStock?.id == stock.id
         return Button {
             withAnimation(.spring(response: 0.3)) {
                 selectedFilmStock = stock
+                selectedCustomFilm = nil
                 showCustomInput = false
                 customFilmName = ""
                 iso = stock.isoValue
@@ -294,7 +390,6 @@ struct AddRollView: View {
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } label: {
             HStack(spacing: 14) {
-                // Film cover image
                 ZStack {
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
                         .fill(
@@ -375,18 +470,221 @@ struct AddRollView: View {
         .padding(.horizontal, 16)
     }
 
-    // MARK: - Step 2: Settings (Filmer confirmation style)
+    // MARK: - Custom Film Form Sheet
+    private var customFilmFormSheet: some View {
+        NavigationStack {
+            ZStack {
+                Color.filmBackground.ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Cover photo
+                        VStack(spacing: 8) {
+                            Text("COVER PHOTO")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            PhotosPicker(selection: $newCustomCoverItem, matching: .images) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(Color.filmSurface)
+                                        .frame(height: 140)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                                        )
+
+                                    if let data = newCustomCoverData, let uiImage = UIImage(data: data) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(height: 140)
+                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                    } else {
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "photo.badge.plus")
+                                                .font(.system(size: 28, weight: .light))
+                                                .foregroundColor(Color.filmTertiary)
+                                            Text("Tap to add cover")
+                                                .font(.system(size: 13))
+                                                .foregroundColor(Color.filmTertiary)
+                                        }
+                                    }
+                                }
+                            }
+                            .onChange(of: newCustomCoverItem) { _, item in
+                                Task {
+                                    if let data = try? await item?.loadTransferable(type: Data.self) {
+                                        newCustomCoverData = data
+                                    }
+                                }
+                            }
+                        }
+
+                        // Film name
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("FILM NAME")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            TextField("e.g. My Kodak Portra 400", text: $newCustomName)
+                                .font(.system(size: 16))
+                                .foregroundColor(Color.filmText)
+                                .padding(14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color.filmSurface)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                                        )
+                                )
+                        }
+
+                        // ISO
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("ISO")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            HStack(spacing: 0) {
+                                ForEach(isoOptions, id: \.self) { option in
+                                    Button {
+                                        newCustomISO = option
+                                    } label: {
+                                        Text("\(option)")
+                                            .font(.system(size: 13, weight: newCustomISO == option ? .bold : .medium))
+                                            .foregroundColor(newCustomISO == option ? Color.filmBackground : Color.filmSecondary)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                newCustomISO == option
+                                                    ? AnyView(Capsule().fill(Color.filmAccent))
+                                                    : AnyView(Capsule().fill(Color.clear))
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+
+                        // Film type
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("FILM TYPE")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            VStack(spacing: 0) {
+                                ForEach(Array(zip(CustomFilm.filmTypes, CustomFilm.filmTypeNames)), id: \.0) { typeCode, typeName in
+                                    Button {
+                                        newCustomType = typeCode
+                                    } label: {
+                                        HStack {
+                                            Text(typeName)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            Spacer()
+                                            if newCustomType == typeCode {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundColor(Color.filmAccent)
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 14)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    if typeCode != CustomFilm.filmTypes.last {
+                                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                                    }
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+
+                        // Save button
+                        Button {
+                            let film = CustomFilm(
+                                id: UUID().uuidString,
+                                name: newCustomName,
+                                iso: newCustomISO,
+                                filmType: newCustomType,
+                                coverImageData: newCustomCoverData
+                            )
+                            customFilmStore.add(film)
+                            selectedCustomFilm = film
+                            selectedFilmStock = nil
+                            iso = film.iso
+                            showCustomFilmForm = false
+                            resetCustomForm()
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        } label: {
+                            Text("Save Custom Film")
+                                .font(.system(size: 17, weight: .bold))
+                                .foregroundColor(Color.filmBackground)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(newCustomName.isEmpty
+                                              ? Color.filmTertiary
+                                              : LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                                )
+                        }
+                        .disabled(newCustomName.isEmpty)
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
+                }
+            }
+            .navigationTitle("Custom Film")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        showCustomFilmForm = false
+                        resetCustomForm()
+                    }
+                    .foregroundColor(Color.filmAccent)
+                }
+            }
+        }
+    }
+
+    private func resetCustomForm() {
+        newCustomName = ""
+        newCustomISO = 400
+        newCustomType = "COLOR_NEGATIVE"
+        newCustomCoverItem = nil
+        newCustomCoverData = nil
+    }
+
+    // MARK: - Step 2: Settings
     private var settingsStep: some View {
         ScrollView(showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
-                // Basic Info section
                 Text("Basic Info")
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(Color.filmTertiary)
                     .padding(.horizontal, 4)
 
                 VStack(spacing: 0) {
-                    // Camera Model (tappable → picker sheet)
+                    // Camera Model
                     Button {
                         showCameraPicker = true
                     } label: {
@@ -437,6 +735,7 @@ struct AddRollView: View {
                             .foregroundColor(Color.filmText)
                         Spacer()
                         Picker("", selection: $capacity) {
+                            Text("12").tag(12)
                             Text("24").tag(24)
                             Text("36").tag(36)
                         }
@@ -445,10 +744,9 @@ struct AddRollView: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
 
-                    if selectedFilmStock == nil {
+                    if selectedFilmStock == nil && selectedCustomFilm == nil {
                         settingsDivider
 
-                        // ISO (custom film only)
                         HStack {
                             Text("ISO")
                                 .font(.system(size: 16, weight: .medium))
@@ -617,210 +915,19 @@ struct AddRollView: View {
             .padding(.horizontal, 18)
     }
 
-    // MARK: - Step 3: Review & Create
-    private var reviewStep: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                // Film roll visual
-                VStack(spacing: 16) {
-                    filmRollVisual
-                    Text(filmDisplayName)
-                        .font(.system(size: 24, weight: .bold, design: .serif))
-                        .foregroundColor(Color.filmText)
-                    Text("\(capacity) exposures · ISO \(iso) · \(format.displayName)")
-                        .font(.system(size: 14, weight: .medium, design: .monospaced))
-                        .foregroundColor(Color.filmSecondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 24)
-
-                // Summary card
-                VStack(spacing: 12) {
-                    summaryRow(icon: "film", label: "Film", value: filmDisplayName)
-                    Divider().background(Color.filmBorder)
-                    summaryRow(icon: "number", label: "Exposures", value: "\(capacity)")
-                    Divider().background(Color.filmBorder)
-                    summaryRow(icon: "camera.aperture", label: "ISO", value: "\(iso)")
-                    Divider().background(Color.filmBorder)
-                    summaryRow(icon: "viewfinder", label: "Format", value: format.displayName)
-                    if let cam = selectedCamera {
-                        Divider().background(Color.filmBorder)
-                        summaryRow(icon: "camera", label: "Camera", value: cam.name)
-                    }
-                    if evCompensation != 0 {
-                        Divider().background(Color.filmBorder)
-                        summaryRow(icon: "plusminus", label: "EV", value: String(format: "%+.1f", evCompensation))
-                    }
-                    if pushPull != 0 {
-                        Divider().background(Color.filmBorder)
-                        summaryRow(icon: "arrow.up.arrow.down", label: "Push/Pull", value: String(format: "%+.1f", pushPull))
-                    }
-                }
-                .padding(18)
-                .filmCard(cornerRadius: 20)
-
-                // Confirm button
-                Button {
-                    saveRoll()
-                } label: {
-                    Text("Confirm")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(Color.filmText)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                .fill(Color.filmSurface)
-                        )
-                }
-                .buttonStyle(.plain)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-            .padding(.bottom, 40)
-        }
-    }
-
     // MARK: - Helpers
 
     private var filmDisplayName: String {
-        selectedFilmStock?.displayName ?? customFilmName
-    }
-
-    private var filmRollVisual: some View {
-        ZStack {
-            if let stock = selectedFilmStock,
-               let coverUrlString = stock.fullCoverUrl,
-               let coverURL = URL(string: coverUrlString) {
-                KFImage(coverURL)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(width: 140, height: 140)
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .shadow(color: Color.filmAccent.opacity(0.2), radius: 16, x: 0, y: 8)
-            } else {
-                let color = selectedFilmStock?.color ?? Color.filmAccent
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.filmSurface)
-                    .frame(width: 140, height: 140)
-                    .overlay(
-                        Image(systemName: "film")
-                            .font(.system(size: 40, weight: .light))
-                            .foregroundColor(color.opacity(0.5))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color.filmBorder, lineWidth: 0.5)
-                    )
-            }
+        if let stock = selectedFilmStock {
+            return stock.displayName
+        } else if let custom = selectedCustomFilm {
+            return custom.name
         }
-    }
-
-    private func selectedFilmPreview(_ stock: FilmStock) -> some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(
-                        LinearGradient(colors: [stock.color.opacity(0.2), stock.accentColor.opacity(0.1)],
-                                       startPoint: .topLeading, endPoint: .bottomTrailing)
-                    )
-                    .frame(width: 56, height: 56)
-
-                if let coverUrlString = stock.fullCoverUrl,
-                   let coverURL = URL(string: coverUrlString) {
-                    KFImage(coverURL)
-                        .requestModifier(FilmerImageAuth.shared.modifier)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 56, height: 56)
-                        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-                } else {
-                    Circle()
-                        .fill(stock.color)
-                        .frame(width: 20, height: 20)
-                        .overlay(Circle().fill(Color.filmBackground.opacity(0.4)).frame(width: 7, height: 7))
-                }
-            }
-            VStack(alignment: .leading, spacing: 3) {
-                Text(stock.displayName)
-                    .font(.system(size: 17, weight: .bold, design: .serif))
-                    .foregroundColor(Color.filmText)
-                HStack(spacing: 6) {
-                    Text("ISO \(stock.isoValue)")
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
-                        .foregroundColor(stock.color)
-                    Text(stock.type.rawValue)
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(Color.filmTertiary)
-                }
-            }
-            Spacer()
-            Button {
-                withAnimation(.spring(response: 0.3)) { step = 0 }
-            } label: {
-                Text("Change")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color.filmAccent)
-            }
-        }
-        .padding(14)
-        .filmCard(cornerRadius: 18)
-    }
-
-    private var customFilmPreview: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                    .fill(Color.filmAccent.opacity(0.1))
-                    .frame(width: 56, height: 56)
-                Image(systemName: "film")
-                    .font(.system(size: 22))
-                    .foregroundColor(Color.filmAccent)
-            }
-            Text(customFilmName)
-                .font(.system(size: 17, weight: .bold, design: .serif))
-                .foregroundColor(Color.filmText)
-            Spacer()
-            Button {
-                withAnimation(.spring(response: 0.3)) { step = 0 }
-            } label: {
-                Text("Change")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color.filmAccent)
-            }
-        }
-        .padding(14)
-        .filmCard(cornerRadius: 18)
-    }
-
-    private func summaryRow(icon: String, label: String, value: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.system(size: 13))
-                .foregroundColor(Color.filmAccent)
-                .frame(width: 20)
-            Text(label)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color.filmSecondary)
-            Spacer()
-            Text(value)
-                .font(.system(size: 14, weight: .bold))
-                .foregroundColor(Color.filmText)
-        }
-    }
-
-    private func sectionLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 13, weight: .bold))
-            .foregroundColor(Color.filmSecondary)
-            .textCase(.uppercase)
-            .tracking(0.5)
+        return customFilmName
     }
 
     // MARK: - Save
     private func saveRoll() {
-        // Match camera from database by selectedCameraModelName
         let matchedCamera = selectedCameraModelName.flatMap { name in
             cameras.first { $0.name == name || name.contains($0.name) }
         } ?? selectedCamera

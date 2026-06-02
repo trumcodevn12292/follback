@@ -566,77 +566,25 @@ struct FullScreenPhotoView: View {
     @State private var lastScale: CGFloat = 1.0
     @State private var offset: CGSize = .zero
     @State private var lastOffset: CGSize = .zero
+    @State private var currentIndex: Int = 0
+
+    private var photoFrames: [Frame] {
+        (roll.frames ?? [])
+            .filter { $0.photoAssetID != nil }
+            .sorted { $0.number < $1.number }
+    }
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            if let image = image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .scaleEffect(scale)
-                    .offset(offset)
-                    .gesture(
-                        MagnificationGesture()
-                            .onChanged { value in
-                                scale = lastScale * value
-                            }
-                            .onEnded { _ in
-                                withAnimation(.spring(response: 0.3)) {
-                                    if scale < 1.0 { scale = 1.0 }
-                                    if scale > 5.0 { scale = 5.0 }
-                                    lastScale = scale
-                                }
-                            }
-                    )
-                    .simultaneousGesture(
-                        DragGesture()
-                            .onChanged { value in
-                                if scale > 1.0 {
-                                    offset = CGSize(
-                                        width: lastOffset.width + value.translation.width,
-                                        height: lastOffset.height + value.translation.height
-                                    )
-                                } else if value.translation.height > 50 {
-                                    dismiss()
-                                }
-                            }
-                            .onEnded { _ in
-                                lastOffset = offset
-                            }
-                    )
-                    .onTapGesture(count: 2) {
-                        withAnimation(.spring(response: 0.3)) {
-                            if scale > 1.0 {
-                                scale = 1.0
-                                lastScale = 1.0
-                                offset = .zero
-                                lastOffset = .zero
-                            } else {
-                                scale = 2.5
-                                lastScale = 2.5
-                            }
-                        }
-                    }
-                    .onTapGesture {
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            showInfo.toggle()
-                        }
-                    }
-            } else if let assetID = frame.photoAssetID {
-                PhotoThumbnail(assetID: assetID)
-                    .aspectRatio(contentMode: .fit)
-            } else {
-                VStack(spacing: 12) {
-                    Image(systemName: "photo")
-                        .font(.system(size: 48, weight: .light))
-                        .foregroundColor(.white.opacity(0.3))
-                    Text("No photo")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(.white.opacity(0.5))
+            TabView(selection: $currentIndex) {
+                ForEach(Array(photoFrames.enumerated()), id: \.element.id) { index, photoFrame in
+                    PhotoPageView(frame: photoFrame, onDismiss: { dismiss() })
+                        .tag(index)
                 }
             }
+            .tabViewStyle(.page(indexDisplayMode: .never))
 
             // Top bar
             VStack {
@@ -651,9 +599,11 @@ struct FullScreenPhotoView: View {
                             .background(Circle().fill(.ultraThinMaterial))
                     }
                     Spacer()
-                    Text("Frame #\(frame.number)")
-                        .font(.system(size: 15, weight: .bold, design: .monospaced))
-                        .foregroundColor(.white)
+                    if currentIndex < photoFrames.count {
+                        Text("\(currentIndex + 1) / \(photoFrames.count)")
+                            .font(.system(size: 15, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
+                    }
                     Spacer()
                     Button {
                         withAnimation { showInfo.toggle() }
@@ -670,28 +620,32 @@ struct FullScreenPhotoView: View {
 
                 Spacer()
 
-                if showInfo {
-                    infoBar
+                if showInfo, currentIndex < photoFrames.count {
+                    infoBarFor(photoFrames[currentIndex])
                 }
             }
         }
-        .onAppear { loadImage() }
+        .onAppear {
+            if let idx = photoFrames.firstIndex(where: { $0.id == frame.id }) {
+                currentIndex = idx
+            }
+        }
     }
 
-    private var infoBar: some View {
+    private func infoBarFor(_ f: Frame) -> some View {
         VStack(spacing: 8) {
             HStack(spacing: 16) {
-                if let ap = frame.apertureDisplay {
+                if let ap = f.apertureDisplay {
                     infoChip(icon: "camera.aperture", value: ap)
                 }
-                if let sh = frame.shutterDisplay {
+                if let sh = f.shutterDisplay {
                     infoChip(icon: "timer", value: sh)
                 }
-                if frame.flashUsed {
+                if f.flashUsed {
                     infoChip(icon: "bolt.fill", value: "Flash")
                 }
             }
-            if let loc = frame.locationName, !loc.isEmpty {
+            if let loc = f.locationName, !loc.isEmpty {
                 HStack(spacing: 4) {
                     Image(systemName: "location.fill")
                         .font(.system(size: 10))
@@ -719,6 +673,67 @@ struct FullScreenPhotoView: View {
                 .font(.system(size: 13, weight: .semibold, design: .monospaced))
         }
         .foregroundColor(.white.opacity(0.9))
+    }
+
+}
+
+// MARK: - Photo Page View (single photo in album viewer)
+
+private struct PhotoPageView: View {
+    let frame: Frame
+    let onDismiss: () -> Void
+    @State private var image: UIImage?
+    @State private var scale: CGFloat = 1.0
+    @State private var lastScale: CGFloat = 1.0
+
+    var body: some View {
+        GeometryReader { geo in
+            if let image = image {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxWidth: geo.size.width, maxHeight: geo.size.height)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    .scaleEffect(scale)
+                    .gesture(
+                        MagnificationGesture()
+                            .onChanged { value in
+                                scale = lastScale * value
+                            }
+                            .onEnded { _ in
+                                withAnimation(.spring(response: 0.3)) {
+                                    if scale < 1.0 { scale = 1.0 }
+                                    if scale > 5.0 { scale = 5.0 }
+                                    lastScale = scale
+                                }
+                            }
+                    )
+                    .onTapGesture(count: 2) {
+                        withAnimation(.spring(response: 0.3)) {
+                            if scale > 1.0 {
+                                scale = 1.0
+                                lastScale = 1.0
+                            } else {
+                                scale = 2.5
+                                lastScale = 2.5
+                            }
+                        }
+                    }
+            } else if let assetID = frame.photoAssetID {
+                PhotoThumbnail(assetID: assetID)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(maxWidth: geo.size.width, maxHeight: geo.size.height)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            } else {
+                VStack(spacing: 12) {
+                    Image(systemName: "photo")
+                        .font(.system(size: 48, weight: .light))
+                        .foregroundColor(.white.opacity(0.3))
+                }
+                .position(x: geo.size.width / 2, y: geo.size.height / 2)
+            }
+        }
+        .onAppear { loadImage() }
     }
 
     private func loadImage() {
