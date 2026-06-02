@@ -1361,13 +1361,13 @@ struct ContactSheetView: View {
 
         return VStack(spacing: 0) {
             // Title area
-            VStack(spacing: 6) {
+            VStack(spacing: 5) {
                 Text(roll.filmName.uppercased())
                     .font(.system(size: 16, weight: .black, design: .monospaced))
                     .foregroundColor(inkColor)
                     .kerning(2)
 
-                HStack(spacing: 8) {
+                HStack(spacing: 10) {
                     if let camera = roll.camera {
                         chipLabel(camera.name)
                     }
@@ -1379,6 +1379,16 @@ struct ContactSheetView: View {
                     .font(.system(size: 8, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#9A8E7E"))
                     .kerning(1)
+
+                if let loc = roll.locationName, !loc.isEmpty {
+                    HStack(spacing: 3) {
+                        Image(systemName: "mappin")
+                            .font(.system(size: 6))
+                        Text(loc.uppercased())
+                            .font(.system(size: 7, weight: .medium, design: .monospaced))
+                    }
+                    .foregroundColor(Color(hex: "#9A8E7E"))
+                }
             }
             .padding(.top, 16)
             .padding(.bottom, 10)
@@ -1411,12 +1421,6 @@ struct ContactSheetView: View {
         Text(text.uppercased())
             .font(.system(size: 7, weight: .semibold, design: .monospaced))
             .foregroundColor(Color(hex: "#6A5E4E"))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .stroke(Color(hex: "#C8BAA8"), lineWidth: 0.5)
-            )
     }
 
     // MARK: - Film Strip Row
@@ -1445,7 +1449,7 @@ struct ContactSheetView: View {
                         if let img = loadedImages[frame.number] {
                             Image(uiImage: img)
                                 .resizable()
-                                .scaledToFill()
+                                .scaledToFit()
                         }
                     }
                     .aspectRatio(3.0/2.0, contentMode: .fit)
@@ -1596,7 +1600,7 @@ struct ContactSheetView: View {
                     .foregroundColor(inkColor)
                     .kerning(3)
 
-                HStack(spacing: 12) {
+                HStack(spacing: 14) {
                     if let camera = roll.camera {
                         exportChip(camera.name)
                     }
@@ -1608,6 +1612,16 @@ struct ContactSheetView: View {
                     .font(.system(size: 10, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#9A8E7E"))
                     .kerning(1.5)
+
+                if let loc = roll.locationName, !loc.isEmpty {
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin")
+                            .font(.system(size: 8))
+                        Text(loc.uppercased())
+                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    }
+                    .foregroundColor(Color(hex: "#9A8E7E"))
+                }
             }
             .padding(.top, 20)
             .padding(.bottom, 12)
@@ -1643,12 +1657,6 @@ struct ContactSheetView: View {
         Text(text.uppercased())
             .font(.system(size: 9, weight: .semibold, design: .monospaced))
             .foregroundColor(Color(hex: "#6A5E4E"))
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                RoundedRectangle(cornerRadius: 4, style: .continuous)
-                    .stroke(Color(hex: "#C8BAA8"), lineWidth: 0.5)
-            )
     }
 
     @MainActor
@@ -1686,7 +1694,7 @@ struct ContactSheetView: View {
                         if let img = loadedImages[frame.number] {
                             Image(uiImage: img)
                                 .resizable()
-                                .scaledToFill()
+                                .scaledToFit()
                         }
                     }
                     .aspectRatio(3.0/2.0, contentMode: .fit)
