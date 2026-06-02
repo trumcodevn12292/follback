@@ -639,9 +639,11 @@ struct AddRollView: View {
                                 .padding(.vertical, 16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(newCustomName.isEmpty
-                                              ? Color.filmTertiary
-                                              : LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                                        .fill(LinearGradient(
+                                            colors: newCustomName.isEmpty
+                                                ? [Color.filmTertiary, Color.filmTertiary]
+                                                : [Color.filmAccent, Color.filmGold],
+                                            startPoint: .leading, endPoint: .trailing))
                                 )
                         }
                         .disabled(newCustomName.isEmpty)
