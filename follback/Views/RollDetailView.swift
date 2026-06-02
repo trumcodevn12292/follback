@@ -1160,7 +1160,7 @@ struct ContactSheetView: View {
                                 .foregroundColor(Color.filmAccent)
                                 .kerning(1.5)
                             HStack(spacing: 12) {
-                                if let camera = roll.camera { infoChip(camera) }
+                                if let camera = roll.camera { infoChip(camera.name) }
                                 infoChip("ISO \(roll.iso)")
                                 infoChip(roll.format)
                                 if let date = roll.startDate {
@@ -1344,7 +1344,7 @@ struct ContactSheetView: View {
                     .foregroundColor(Color.filmAccent)
                     .kerning(2)
                 HStack(spacing: 16) {
-                    if let camera = roll.camera { infoChipLarge(camera) }
+                    if let camera = roll.camera { infoChipLarge(camera.name) }
                     infoChipLarge("ISO \(roll.iso)")
                     infoChipLarge(roll.format)
                     if let date = roll.startDate {
