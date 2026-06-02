@@ -60,6 +60,13 @@ struct LocationPickerView: View {
                             .font(.system(size: 15))
                             .foregroundColor(Color.filmText)
                             .onSubmit { performSearch() }
+                        .onChange(of: searchText) { _, newValue in
+                            if newValue.count >= 2 {
+                                performSearch()
+                            } else if newValue.isEmpty {
+                                searchResults = []
+                            }
+                        }
                     }
                     .padding(12)
                     .background(
@@ -186,12 +193,14 @@ struct LocationPickerView: View {
 
     private func selectMapItem(_ item: MKMapItem) {
         let coord = item.placemark.coordinate
-        selectedPin = coord
-        cameraPosition = .region(MKCoordinateRegion(
-            center: coord,
-            span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
-        ))
-        resolvedAddress = item.placemark.formattedAddress ?? item.name
+        withAnimation {
+            selectedPin = coord
+            cameraPosition = .region(MKCoordinateRegion(
+                center: coord,
+                span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
+            ))
+        }
+        resolvedAddress = item.placemark.formattedAddress ?? item.name ?? "Selected location"
         searchResults = []
         searchText = ""
     }

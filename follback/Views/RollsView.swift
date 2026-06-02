@@ -10,10 +10,25 @@ struct RollsView: View {
     @State private var selectedFilter: RollStatus? = nil
     @State private var appeared = false
     @State private var isLoading = true
+    @State private var showSearch = false
+    @State private var searchText = ""
+    @State private var editingRoll: Roll?
 
     private var filteredRolls: [Roll] {
-        guard let filter = selectedFilter else { return rolls }
-        return rolls.filter { $0.rollStatus == filter }
+        var result = rolls
+        if let filter = selectedFilter {
+            result = result.filter { $0.rollStatus == filter }
+        }
+        if !searchText.isEmpty {
+            let query = searchText.lowercased()
+            result = result.filter {
+                $0.filmName.lowercased().contains(query) ||
+                ($0.camera?.name.lowercased().contains(query) ?? false) ||
+                ($0.locationName?.lowercased().contains(query) ?? false) ||
+                ($0.notes.lowercased().contains(query))
+            }
+        }
+        return result
     }
 
     var body: some View {
@@ -22,6 +37,11 @@ struct RollsView: View {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         headerSection
+
+                        if showSearch {
+                            searchBar
+                        }
+
                         filterSection
 
                         if rolls.isEmpty && !isLoading {
@@ -72,6 +92,9 @@ struct RollsView: View {
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)
             }
+            .sheet(item: $editingRoll) { roll in
+                EditRollDetailsView(roll: roll)
+            }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     withAnimation(.easeOut(duration: 0.4)) {
@@ -94,12 +117,50 @@ struct RollsView: View {
                 .kerning(1.5)
 
             Spacer()
+
+            Button {
+                withAnimation(.easeOut(duration: 0.25)) {
+                    showSearch.toggle()
+                    if !showSearch { searchText = "" }
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                Image(systemName: showSearch ? "xmark" : "magnifyingglass")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(showSearch ? Color.filmAccent.opacity(0.15) : Color.filmSurface)
+                    )
+            }
+            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : -10)
         .animation(.easeOut(duration: 0.3), value: appeared)
+    }
+
+    // MARK: - Search
+
+    private var searchBar: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("Search rolls...", text: $searchText)
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmText)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color.filmSurface)
+        )
+        .padding(.horizontal, 20)
+        .transition(.opacity.combined(with: .move(edge: .top)))
     }
 
     // MARK: - Filters
@@ -156,7 +217,12 @@ struct RollsView: View {
         LazyVStack(spacing: 12) {
             ForEach(Array(filteredRolls.enumerated()), id: \.element.id) { index, roll in
                 NavigationLink(value: roll) {
-                    RollCard(roll: roll, onDelete: { deleteRoll(roll) }, onArchive: { archiveRoll(roll) })
+                    RollCard(
+                        roll: roll,
+                        onDelete: { deleteRoll(roll) },
+                        onArchive: { archiveRoll(roll) },
+                        onEditDetails: { editingRoll = roll }
+                    )
                 }
                 .buttonStyle(.plain)
                 .opacity(appeared ? 1 : 0)

@@ -6,6 +6,7 @@ struct RollCard: View {
     let roll: Roll
     let onDelete: () -> Void
     let onArchive: () -> Void
+    let onEditDetails: () -> Void
     @Environment(\.modelContext) private var modelContext
 
     private var photoFrames: [Frame] {
@@ -95,11 +96,14 @@ struct RollCard: View {
                 .fill(Color.filmSurface)
         )
         .contextMenu {
-            Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
+            Button(action: onEditDetails) {
+                Label("Edit Details", systemImage: "pencil")
             }
             Button(action: onArchive) {
                 Label("Archive", systemImage: "archivebox")
+            }
+            Button(role: .destructive, action: onDelete) {
+                Label("Delete", systemImage: "trash")
             }
         }
     }
