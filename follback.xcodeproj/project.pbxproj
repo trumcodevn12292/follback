@@ -370,7 +370,7 @@
 			repositoryURL = "https://github.com/rechsteiner/Parchment.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 3.0.0;
 			};
 		};
 		9CF83366B038267730681117 /* XCRemoteSwiftPackageReference "Kingfisher" */ = {
@@ -378,7 +378,7 @@
 			repositoryURL = "https://github.com/onevcat/Kingfisher.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 7.0.0;
 			};
 		};
 		C0F50F5ACED83F0403DCBE2D /* XCRemoteSwiftPackageReference "Charts" */ = {
@@ -386,7 +386,7 @@
 			repositoryURL = "https://github.com/danielgindi/Charts.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 5.0.0;
 			};
 		};
 		EC41D159AC081C29BFE1A744 /* XCRemoteSwiftPackageReference "lottie-ios" */ = {
@@ -394,7 +394,7 @@
 			repositoryURL = "https://github.com/airbnb/lottie-ios.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 4.0.0;
 			};
 		};
 		FBBB144B5675088EA8005FE4 /* XCRemoteSwiftPackageReference "SwiftUI-Shimmer" */ = {
@@ -402,7 +402,7 @@
 			repositoryURL = "https://github.com/markiv/SwiftUI-Shimmer.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.5.0;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
