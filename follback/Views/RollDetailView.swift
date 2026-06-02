@@ -30,6 +30,7 @@ struct RollDetailView: View {
     @State private var selectedPhotos: [PhotosPickerItem] = []
     @State private var toastMessage: String?
     @State private var showToastFlag = false
+    @State private var isImporting = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -62,7 +63,9 @@ struct RollDetailView: View {
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
-        .navigationBarHidden(true)
+        .navigationBarBackButtonHidden(true)
+        .toolbarBackground(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
         .photosPicker(isPresented: $showPhotoPicker,
                       selection: $selectedPhotos,
                       maxSelectionCount: emptySlotCount,
@@ -339,23 +342,35 @@ struct RollDetailView: View {
     // MARK: - Import Button (bottom floating)
     private var importButton: some View {
         Button {
-            showPhotoPicker = true
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            if !isImporting {
+                showPhotoPicker = true
+                UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            }
         } label: {
             HStack(spacing: 8) {
-                Image(systemName: "plus")
-                    .font(.system(size: 16, weight: .bold))
-                Text("Import Photos")
-                    .font(.system(size: 16, weight: .semibold))
+                if isImporting {
+                    ProgressView()
+                        .progressViewStyle(CircularProgressViewStyle(tint: Color.filmBackground))
+                        .scaleEffect(0.8)
+                    Text("Importing...")
+                        .font(.system(size: 16, weight: .semibold))
+                } else {
+                    Image(systemName: "plus")
+                        .font(.system(size: 16, weight: .bold))
+                    Text("Import Photos")
+                        .font(.system(size: 16, weight: .semibold))
+                }
             }
             .foregroundColor(Color.filmBackground)
             .frame(maxWidth: 220)
             .padding(.vertical, 14)
             .background(
                 Capsule()
-                    .fill(Color(.systemGray5))
+                    .fill(Color.filmAccent)
             )
         }
+        .disabled(isImporting || emptySlotCount == 0)
+        .opacity(emptySlotCount == 0 && !isImporting ? 0.5 : 1)
         .padding(.bottom, 30)
     }
 
@@ -392,6 +407,7 @@ struct RollDetailView: View {
     // MARK: - Photo Import
     private func importPhotos(_ items: [PhotosPickerItem]) async {
         guard !items.isEmpty else { return }
+        await MainActor.run { isImporting = true }
         let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
         let emptySlots = (1...roll.capacity).filter { num in
             !frames.contains { $0.number == num && $0.photoAssetID != nil }
@@ -402,14 +418,18 @@ struct RollDetailView: View {
             guard index < emptySlots.count else { break }
             let slotNumber = emptySlots[index]
 
-            if let assetID = item.itemIdentifier {
+            if let data = try? await item.loadTransferable(type: Data.self),
+               let uiImage = UIImage(data: data),
+               let jpegData = uiImage.jpegData(compressionQuality: 0.9) {
+                let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+                let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent(filename)
+                try? jpegData.write(to: url)
+
                 if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
-                    existingFrame.photoAssetID = assetID
+                    existingFrame.photoAssetID = filename
                 } else {
-                    let newFrame = Frame(
-                        number: slotNumber,
-                        photoAssetID: assetID
-                    )
+                    let newFrame = Frame(number: slotNumber, photoAssetID: filename)
                     newFrame.roll = roll
                     modelContext.insert(newFrame)
                 }
@@ -419,9 +439,9 @@ struct RollDetailView: View {
 
         if importedCount > 0 {
             try? modelContext.save()
-            selectedPhotos = []
-
             await MainActor.run {
+                isImporting = false
+                selectedPhotos = []
                 toastMessage = "Imported \(importedCount) photo\(importedCount == 1 ? "" : "s")"
                 withAnimation(.easeOut(duration: 0.3)) {
                     showToastFlag = true
@@ -434,6 +454,11 @@ struct RollDetailView: View {
                 withAnimation(.easeIn(duration: 0.3)) {
                     showToastFlag = false
                 }
+            }
+        } else {
+            await MainActor.run {
+                isImporting = false
+                selectedPhotos = []
             }
         }
     }

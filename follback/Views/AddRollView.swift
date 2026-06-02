@@ -599,61 +599,31 @@ struct AddRollView: View {
     }
 
     private var filmRollVisual: some View {
-        let color = selectedFilmStock?.color ?? Color.filmAccent
-        let accent = selectedFilmStock?.accentColor ?? Color.filmGold
-
-        return ZStack {
-            // Outer ring
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [color.opacity(0.15), color.opacity(0.02)],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 60
+        ZStack {
+            if let stock = selectedFilmStock,
+               let coverUrlString = stock.fullCoverUrl,
+               let coverURL = URL(string: coverUrlString) {
+                KFImage(coverURL)
+                    .requestModifier(FilmerImageAuth.shared.modifier)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 140, height: 140)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                    .shadow(color: Color.filmAccent.opacity(0.2), radius: 16, x: 0, y: 8)
+            } else {
+                let color = selectedFilmStock?.color ?? Color.filmAccent
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .frame(width: 140, height: 140)
+                    .overlay(
+                        Image(systemName: "film")
+                            .font(.system(size: 40, weight: .light))
+                            .foregroundColor(color.opacity(0.5))
                     )
-                )
-                .frame(width: 120, height: 120)
-
-            // Film canister body
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [Color.filmSurface, Color.filmSurfaceSecondary],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20, style: .continuous)
+                            .stroke(Color.filmBorder, lineWidth: 0.5)
                     )
-                )
-                .frame(width: 80, height: 80)
-                .overlay(
-                    Circle()
-                        .stroke(color.opacity(0.3), lineWidth: 1.5)
-                )
-                .shadow(color: color.opacity(0.2), radius: 12, x: 0, y: 4)
-
-            // Inner spool
-            Circle()
-                .fill(
-                    LinearGradient(
-                        colors: [color, accent],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .frame(width: 28, height: 28)
-                .overlay(
-                    Circle()
-                        .fill(Color.filmBackground.opacity(0.4))
-                        .frame(width: 10, height: 10)
-                )
-
-            // Sprocket holes
-            ForEach(0..<8) { i in
-                Circle()
-                    .fill(color.opacity(0.15))
-                    .frame(width: 6, height: 6)
-                    .offset(y: -32)
-                    .rotationEffect(.degrees(Double(i) * 45))
             }
         }
     }

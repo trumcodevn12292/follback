@@ -48,7 +48,6 @@ struct SearchView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)
-                    .navigationBarBackButtonHidden(true)
             }
             .onAppear {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
