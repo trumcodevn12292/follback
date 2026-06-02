@@ -14,6 +14,7 @@ struct LocationPickerView: View {
     @State private var cameraPosition: MapCameraPosition = .automatic
     @State private var selectedPin: CLLocationCoordinate2D?
     @State private var resolvedAddress: String?
+    @State private var hasUserSelection = false
 
     var body: some View {
         ZStack {
@@ -46,6 +47,7 @@ struct LocationPickerView: View {
                     .mapStyle(.standard(elevation: .realistic))
                     .onTapGesture { position in
                         if let coord = reader.convert(position, from: .local) {
+                            hasUserSelection = true
                             withAnimation {
                                 selectedPin = coord
                             }
@@ -176,6 +178,7 @@ struct LocationPickerView: View {
             locationManager.requestLocation()
         }
         .onChange(of: locationManager.currentLatitude) { _, newLat in
+            guard !hasUserSelection else { return }
             guard let lat = newLat, let lng = locationManager.currentLongitude else { return }
             let coord = CLLocationCoordinate2D(latitude: lat, longitude: lng)
             selectedPin = coord
@@ -203,6 +206,7 @@ struct LocationPickerView: View {
     }
 
     private func selectMapItem(_ item: MKMapItem) {
+        hasUserSelection = true
         let coord = item.placemark.coordinate
         withAnimation {
             selectedPin = coord

@@ -84,7 +84,7 @@ struct AddRollView: View {
                 longitude: $locationLongitude
             )
         }
-        .sheet(isPresented: $showCustomFilmForm) {
+        .fullScreenCover(isPresented: $showCustomFilmForm) {
             customFilmFormSheet
         }
         .onAppear {
