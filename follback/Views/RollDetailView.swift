@@ -974,7 +974,7 @@ struct EditRollDetailsView: View {
                                     .foregroundColor(Color.filmAccent)
                                 Text((locationName ?? "").isEmpty ? "Add Location" : (locationName ?? ""))
                                     .font(.system(size: 16, weight: .medium))
-                                    .foregroundColor(locationName.isEmpty ? Color.filmTertiary : Color.filmText)
+                                    .foregroundColor((locationName ?? "").isEmpty ? Color.filmTertiary : Color.filmText)
                                     .lineLimit(1)
                                 Spacer()
                                 if !(locationName ?? "").isEmpty {
