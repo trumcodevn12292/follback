@@ -32,6 +32,7 @@ struct RollDetailView: View {
     @State private var showToastFlag = false
     @State private var isImporting = false
     @State private var showEditDetails = false
+    @State private var showContactSheet = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -105,6 +106,9 @@ struct RollDetailView: View {
         .sheet(isPresented: $showEditDetails) {
             EditRollDetailsView(roll: roll)
         }
+        .fullScreenCover(isPresented: $showContactSheet) {
+            ContactSheetView(roll: roll)
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
@@ -160,6 +164,9 @@ struct RollDetailView: View {
 
             Menu {
                 Button { showEditDetails = true } label: { Label("Edit Details", systemImage: "pencil") }
+                if hasPhotos {
+                    Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
+                }
                 if roll.rollStatus == .inProgress || roll.rollStatus == .completed {
                     Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
                 }
@@ -1083,5 +1090,343 @@ struct EditRollDetailsView: View {
         try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
+    }
+}
+
+// MARK: - Contact Sheet View
+
+struct ContactSheetView: View {
+    let roll: Roll
+    @Environment(\.dismiss) private var dismiss
+    @State private var loadedImages: [Int: UIImage] = [:]
+    @State private var isLoading = true
+    @State private var savedToPhotos = false
+    @State private var isSaving = false
+
+    private var photoFrames: [Frame] {
+        (roll.frames ?? [])
+            .filter { $0.photoAssetID != nil }
+            .sorted { $0.number < $1.number }
+    }
+
+    private let columns = 6
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                // Header
+                HStack {
+                    Button { dismiss() } label: {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(.ultraThinMaterial))
+                    }
+                    Spacer()
+                    Text("CONTACT SHEET")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.white)
+                        .kerning(1.2)
+                    Spacer()
+                    Button { saveContactSheet() } label: {
+                        if isSaving {
+                            ProgressView()
+                                .tint(.white)
+                                .frame(width: 36, height: 36)
+                        } else {
+                            Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "square.and.arrow.down")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(savedToPhotos ? .green : .white)
+                                .frame(width: 36, height: 36)
+                                .background(Circle().fill(.ultraThinMaterial))
+                        }
+                    }
+                    .disabled(isSaving || isLoading)
+                }
+                .padding(.horizontal, 16)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+                // Contact sheet content
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 0) {
+                        // Film info header
+                        VStack(spacing: 4) {
+                            Text(roll.filmName.uppercased())
+                                .font(.system(size: 20, weight: .black))
+                                .foregroundColor(Color.filmAccent)
+                                .kerning(1.5)
+                            HStack(spacing: 12) {
+                                if let camera = roll.camera { infoChip(camera) }
+                                infoChip("ISO \(roll.iso)")
+                                infoChip(roll.format)
+                                if let date = roll.startDate {
+                                    infoChip(date.formatted(.dateTime.month(.abbreviated).year()))
+                                }
+                            }
+                        }
+                        .padding(.vertical, 12)
+
+                        // Film strip rows
+                        let rows = stride(from: 0, to: photoFrames.count, by: columns).map {
+                            Array(photoFrames[$0..<min($0 + columns, photoFrames.count)])
+                        }
+
+                        ForEach(Array(rows.enumerated()), id: \.offset) { rowIdx, row in
+                            VStack(spacing: 0) {
+                                // Sprocket holes top
+                                sprocketRow
+
+                                // Photo row
+                                HStack(spacing: 2) {
+                                    ForEach(row, id: \.id) { frame in
+                                        ZStack {
+                                            Color(hex: "#1A1A1A")
+                                            if let img = loadedImages[frame.number] {
+                                                Image(uiImage: img)
+                                                    .resizable()
+                                                    .scaledToFill()
+                                            }
+                                        }
+                                        .frame(height: 52)
+                                        .clipped()
+                                        .overlay(alignment: .bottomLeading) {
+                                            Text("\(frame.number)")
+                                                .font(.system(size: 7, weight: .bold, design: .monospaced))
+                                                .foregroundColor(Color.filmAccent.opacity(0.8))
+                                                .padding(2)
+                                        }
+                                    }
+                                    // Fill empty slots in last row
+                                    if row.count < columns {
+                                        ForEach(0..<(columns - row.count), id: \.self) { _ in
+                                            Color(hex: "#1A1A1A")
+                                                .frame(height: 52)
+                                        }
+                                    }
+                                }
+
+                                // Sprocket holes bottom
+                                sprocketRow
+                            }
+                            .background(Color(hex: "#111111"))
+                            .padding(.vertical, 2)
+                        }
+
+                        // Footer
+                        HStack {
+                            Text("FILMVAULT")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color.filmTertiary)
+                            Spacer()
+                            Text("\(photoFrames.count) FRAMES")
+                                .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        .padding(.horizontal, 8)
+                        .padding(.top, 12)
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 40)
+                }
+            }
+
+            // Toast
+            if savedToPhotos {
+                VStack {
+                    Spacer()
+                    HStack(spacing: 8) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 16))
+                            .foregroundColor(.green)
+                        Text("Saved to Photos")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.white)
+                    }
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 12)
+                    .background(Capsule().fill(Color(hex: "#2A2A2A")))
+                    .padding(.bottom, 50)
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .onAppear { loadAllImages() }
+    }
+
+    private var sprocketRow: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<(columns * 3), id: \.self) { i in
+                if i % 3 == 1 {
+                    RoundedRectangle(cornerRadius: 1)
+                        .fill(Color(hex: "#333333"))
+                        .frame(width: 6, height: 4)
+                } else {
+                    Color.clear.frame(width: 6, height: 4)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 6)
+    }
+
+    private func infoChip(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 10, weight: .medium, design: .monospaced))
+            .foregroundColor(Color.filmSecondary)
+    }
+
+    private func loadAllImages() {
+        let frames = photoFrames
+        let fetchOptions = PHFetchOptions()
+
+        Task {
+            for frame in frames {
+                guard let assetID = frame.photoAssetID else { continue }
+                let results = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: fetchOptions)
+                guard let asset = results.firstObject else { continue }
+
+                let options = PHImageRequestOptions()
+                options.deliveryMode = .highQualityFormat
+                options.isSynchronous = false
+                options.resizeMode = .fast
+
+                let targetSize = CGSize(width: 200, height: 200)
+                PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { image, _ in
+                    if let image = image {
+                        DispatchQueue.main.async {
+                            loadedImages[frame.number] = image
+                        }
+                    }
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                isLoading = false
+            }
+        }
+    }
+
+    @MainActor
+    private func saveContactSheet() {
+        isSaving = true
+        let renderer = ImageRenderer(content: contactSheetImage)
+        renderer.scale = 3.0
+
+        if let uiImage = renderer.uiImage {
+            UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+            UINotificationFeedbackGenerator().notificationOccurred(.success)
+            withAnimation(.spring(response: 0.4)) {
+                savedToPhotos = true
+                isSaving = false
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
+                withAnimation { savedToPhotos = false }
+            }
+        } else {
+            isSaving = false
+        }
+    }
+
+    @MainActor
+    private var contactSheetImage: some View {
+        let rows = stride(from: 0, to: photoFrames.count, by: columns).map {
+            Array(photoFrames[$0..<min($0 + columns, photoFrames.count)])
+        }
+
+        return VStack(spacing: 0) {
+            // Header
+            VStack(spacing: 6) {
+                Text(roll.filmName.uppercased())
+                    .font(.system(size: 28, weight: .black))
+                    .foregroundColor(Color.filmAccent)
+                    .kerning(2)
+                HStack(spacing: 16) {
+                    if let camera = roll.camera { infoChipLarge(camera) }
+                    infoChipLarge("ISO \(roll.iso)")
+                    infoChipLarge(roll.format)
+                    if let date = roll.startDate {
+                        infoChipLarge(date.formatted(.dateTime.month(.abbreviated).day().year()))
+                    }
+                }
+            }
+            .padding(.vertical, 20)
+
+            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                VStack(spacing: 0) {
+                    sprocketRowLarge
+
+                    HStack(spacing: 3) {
+                        ForEach(row, id: \.id) { frame in
+                            ZStack {
+                                Color(hex: "#1A1A1A")
+                                if let img = loadedImages[frame.number] {
+                                    Image(uiImage: img)
+                                        .resizable()
+                                        .scaledToFill()
+                                }
+                            }
+                            .frame(width: 120, height: 80)
+                            .clipped()
+                            .overlay(alignment: .bottomLeading) {
+                                Text("\(frame.number)")
+                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                    .foregroundColor(Color.filmAccent.opacity(0.9))
+                                    .padding(3)
+                            }
+                        }
+                        if row.count < columns {
+                            ForEach(0..<(columns - row.count), id: \.self) { _ in
+                                Color(hex: "#1A1A1A")
+                                    .frame(width: 120, height: 80)
+                            }
+                        }
+                    }
+
+                    sprocketRowLarge
+                }
+                .background(Color(hex: "#111111"))
+                .padding(.vertical, 3)
+            }
+
+            // Footer
+            HStack {
+                Text("FILMVAULT")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(Color.filmTertiary)
+                Spacer()
+                Text("\(photoFrames.count) FRAMES")
+                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.top, 16)
+        }
+        .padding(20)
+        .background(Color.black)
+    }
+
+    private var sprocketRowLarge: some View {
+        HStack(spacing: 0) {
+            ForEach(0..<(columns * 5), id: \.self) { i in
+                if i % 3 == 1 {
+                    RoundedRectangle(cornerRadius: 1.5)
+                        .fill(Color(hex: "#333333"))
+                        .frame(width: 8, height: 6)
+                } else {
+                    Color.clear.frame(width: 8, height: 6)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 8)
+    }
+
+    private func infoChipLarge(_ text: String) -> some View {
+        Text(text)
+            .font(.system(size: 14, weight: .medium, design: .monospaced))
+            .foregroundColor(Color.filmSecondary)
     }
 }
