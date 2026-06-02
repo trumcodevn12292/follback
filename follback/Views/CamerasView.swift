@@ -251,9 +251,7 @@ struct CamerasView: View {
 
         let camera = Camera(
             name: model.name,
-            brand: model.brand,
-            filmFormat: .mm35,
-            cameraType: .pointAndShoot
+            brand: model.brand
         )
         modelContext.insert(camera)
         try? modelContext.save()
