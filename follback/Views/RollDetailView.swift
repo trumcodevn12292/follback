@@ -1105,7 +1105,7 @@ struct EditRollDetailsView: View {
     }
 }
 
-// MARK: - Contact Sheet View
+// MARK: - Contact Sheet View (Realistic Film Strip)
 
 struct ContactSheetView: View {
     let roll: Roll
@@ -1115,132 +1115,115 @@ struct ContactSheetView: View {
     @State private var savedToPhotos = false
     @State private var isSaving = false
 
+    private let filmBase = Color(hex: "#1C1408")
+    private let filmBorder = Color(hex: "#2A1E0E")
+    private let rebateText = Color(hex: "#C86B28")
+    private let paperBg = Color(hex: "#F5F0E8")
+
     private var photoFrames: [Frame] {
         (roll.frames ?? [])
             .filter { $0.photoAssetID != nil }
             .sorted { $0.number < $1.number }
     }
 
-    private let columns = 6
+    private let columns = 4
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            paperBg.ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
+                // Header bar
                 HStack {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
-                            .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.white)
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(Color(hex: "#3A3228"))
                             .frame(width: 36, height: 36)
-                            .background(Circle().fill(.ultraThinMaterial))
+                            .background(Circle().fill(Color(hex: "#E8E0D4")))
                     }
                     Spacer()
-                    Text("CONTACT SHEET")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.white)
-                        .kerning(1.2)
+                    VStack(spacing: 2) {
+                        Text("CONTACT SHEET")
+                            .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                            .foregroundColor(Color(hex: "#3A3228"))
+                            .kerning(2)
+                        Text(roll.filmName.uppercased())
+                            .font(.system(size: 9, weight: .medium, design: .monospaced))
+                            .foregroundColor(Color(hex: "#8A7E6E"))
+                    }
                     Spacer()
                     Button { saveContactSheet() } label: {
                         if isSaving {
                             ProgressView()
-                                .tint(.white)
+                                .tint(Color(hex: "#3A3228"))
                                 .frame(width: 36, height: 36)
                         } else {
                             Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "square.and.arrow.down")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(savedToPhotos ? .green : .white)
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(savedToPhotos ? .green : Color(hex: "#3A3228"))
                                 .frame(width: 36, height: 36)
-                                .background(Circle().fill(.ultraThinMaterial))
+                                .background(Circle().fill(Color(hex: "#E8E0D4")))
                         }
                     }
                     .disabled(isSaving || isLoading)
                 }
                 .padding(.horizontal, 16)
-                .padding(.top, 12)
-                .padding(.bottom, 8)
+                .padding(.top, 10)
+                .padding(.bottom, 6)
 
-                // Contact sheet content
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 0) {
-                        // Film info header
-                        VStack(spacing: 4) {
-                            Text(roll.filmName.uppercased())
-                                .font(.system(size: 20, weight: .black))
-                                .foregroundColor(Color.filmAccent)
-                                .kerning(1.5)
-                            HStack(spacing: 12) {
-                                if let camera = roll.camera { infoChip(camera.name) }
-                                infoChip("ISO \(roll.iso)")
-                                infoChip(roll.format)
-                                infoChip(roll.startDate.formatted(.dateTime.month(.abbreviated).year()))
-                            }
-                        }
-                        .padding(.vertical, 12)
-
                         // Film strip rows
                         let rows = stride(from: 0, to: photoFrames.count, by: columns).map {
                             Array(photoFrames[$0..<min($0 + columns, photoFrames.count)])
                         }
 
                         ForEach(Array(rows.enumerated()), id: \.offset) { rowIdx, row in
-                            VStack(spacing: 0) {
-                                // Sprocket holes top
-                                sprocketRow
+                            filmStripRow(row: row, rowIndex: rowIdx)
+                                .padding(.vertical, 3)
+                        }
 
-                                // Photo row
-                                HStack(spacing: 2) {
-                                    ForEach(row, id: \.id) { frame in
-                                        ZStack {
-                                            Color(hex: "#1A1A1A")
-                                            if let img = loadedImages[frame.number] {
-                                                Image(uiImage: img)
-                                                    .resizable()
-                                                    .scaledToFill()
-                                            }
-                                        }
-                                        .frame(height: 52)
-                                        .clipped()
-                                        .overlay(alignment: .bottomLeading) {
-                                            Text("\(frame.number)")
-                                                .font(.system(size: 7, weight: .bold, design: .monospaced))
-                                                .foregroundColor(Color.filmAccent.opacity(0.8))
-                                                .padding(2)
-                                        }
-                                    }
-                                    // Fill empty slots in last row
-                                    if row.count < columns {
-                                        ForEach(0..<(columns - row.count), id: \.self) { _ in
-                                            Color(hex: "#1A1A1A")
-                                                .frame(height: 52)
-                                        }
+                        // Darkroom stamp footer
+                        VStack(spacing: 6) {
+                            Rectangle()
+                                .fill(Color(hex: "#C8BAA8"))
+                                .frame(height: 0.5)
+                                .padding(.horizontal, 20)
+
+                            HStack(spacing: 0) {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(roll.filmName.uppercased())
+                                        .font(.system(size: 10, weight: .bold, design: .monospaced))
+                                    if let camera = roll.camera {
+                                        Text(camera.name.uppercased())
+                                            .font(.system(size: 8, weight: .medium, design: .monospaced))
                                     }
                                 }
+                                .foregroundColor(Color(hex: "#8A7E6E"))
 
-                                // Sprocket holes bottom
-                                sprocketRow
+                                Spacer()
+
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("\(photoFrames.count) FRAMES · ISO \(roll.iso)")
+                                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                    Text(roll.startDate.formatted(.dateTime.month(.abbreviated).day().year()).uppercased())
+                                        .font(.system(size: 8, weight: .medium, design: .monospaced))
+                                }
+                                .foregroundColor(Color(hex: "#8A7E6E"))
                             }
-                            .background(Color(hex: "#111111"))
-                            .padding(.vertical, 2)
-                        }
+                            .padding(.horizontal, 20)
 
-                        // Footer
-                        HStack {
                             Text("FILMVAULT")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundColor(Color.filmTertiary)
-                            Spacer()
-                            Text("\(photoFrames.count) FRAMES")
-                                .font(.system(size: 10, weight: .bold, design: .monospaced))
-                                .foregroundColor(Color.filmTertiary)
+                                .font(.system(size: 7, weight: .black, design: .monospaced))
+                                .foregroundColor(Color(hex: "#B8AA98"))
+                                .kerning(4)
+                                .padding(.top, 4)
                         }
-                        .padding(.horizontal, 8)
                         .padding(.top, 12)
+                        .padding(.bottom, 40)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 40)
+                    .padding(.horizontal, 8)
                 }
             }
 
@@ -1254,11 +1237,11 @@ struct ContactSheetView: View {
                             .foregroundColor(.green)
                         Text("Saved to Photos")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color(hex: "#3A3228"))
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
-                    .background(Capsule().fill(Color(hex: "#2A2A2A")))
+                    .background(Capsule().fill(Color(hex: "#E8E0D4")).shadow(color: .black.opacity(0.1), radius: 8))
                     .padding(.bottom, 50)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -1267,28 +1250,119 @@ struct ContactSheetView: View {
         .onAppear { loadAllImages() }
     }
 
-    private var sprocketRow: some View {
+    // MARK: - Realistic Film Strip Row
+    private func filmStripRow(row: [Frame], rowIndex: Int) -> some View {
+        VStack(spacing: 0) {
+            // Top sprocket rail
+            sprocketRail(frameCount: columns)
+
+            // Top rebate area with DX code + frame numbers
+            HStack(spacing: 0) {
+                ForEach(Array(row.enumerated()), id: \.element.id) { idx, frame in
+                    rebateLabel(frame: frame, position: .top)
+                        .frame(maxWidth: .infinity)
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 12)
+                    }
+                }
+            }
+            .frame(height: 14)
+            .background(filmBase)
+
+            // Photo frames
+            HStack(spacing: 1.5) {
+                ForEach(row, id: \.id) { frame in
+                    ZStack {
+                        Color(hex: "#0D0A06")
+                        if let img = loadedImages[frame.number] {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                        }
+                    }
+                    .aspectRatio(3.0/2.0, contentMode: .fit)
+                    .clipped()
+                    .border(filmBase, width: 1)
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color(hex: "#0D0A06")
+                            .aspectRatio(3.0/2.0, contentMode: .fit)
+                            .border(filmBase, width: 1)
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+            .background(filmBase)
+
+            // Bottom rebate area
+            HStack(spacing: 0) {
+                ForEach(Array(row.enumerated()), id: \.element.id) { idx, frame in
+                    rebateLabel(frame: frame, position: .bottom)
+                        .frame(maxWidth: .infinity)
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 12)
+                    }
+                }
+            }
+            .frame(height: 14)
+            .background(filmBase)
+
+            // Bottom sprocket rail
+            sprocketRail(frameCount: columns)
+        }
+        .clipShape(RoundedRectangle(cornerRadius: 2))
+        .shadow(color: .black.opacity(0.08), radius: 4, y: 2)
+    }
+
+    private enum RebatePosition { case top, bottom }
+
+    private func rebateLabel(frame: Frame, position: RebatePosition) -> some View {
         HStack(spacing: 0) {
-            ForEach(0..<(columns * 3), id: \.self) { i in
-                if i % 3 == 1 {
-                    RoundedRectangle(cornerRadius: 1)
-                        .fill(Color(hex: "#333333"))
-                        .frame(width: 6, height: 4)
-                } else {
-                    Color.clear.frame(width: 6, height: 4)
+            if position == .top {
+                Text("\(frame.number)")
+                    .font(.system(size: 6, weight: .bold, design: .monospaced))
+                    .foregroundColor(rebateText.opacity(0.7))
+                Spacer()
+                Text("\(frame.number)A")
+                    .font(.system(size: 5, weight: .medium, design: .monospaced))
+                    .foregroundColor(rebateText.opacity(0.4))
+            } else {
+                Text("◀ \(frame.number)")
+                    .font(.system(size: 5, weight: .medium, design: .monospaced))
+                    .foregroundColor(rebateText.opacity(0.5))
+                Spacer()
+            }
+        }
+        .padding(.horizontal, 4)
+    }
+
+    // MARK: - Realistic Sprocket Holes
+    private func sprocketRail(frameCount: Int) -> some View {
+        GeometryReader { geo in
+            let holeWidth: CGFloat = 4
+            let holeHeight: CGFloat = 2.5
+            let spacing: CGFloat = geo.size.width / CGFloat(frameCount * 2)
+
+            HStack(spacing: 0) {
+                ForEach(0..<(frameCount * 2), id: \.self) { i in
+                    Spacer()
+                    RoundedRectangle(cornerRadius: 0.5)
+                        .fill(paperBg)
+                        .frame(width: holeWidth, height: holeHeight)
+                    Spacer()
                 }
             }
         }
-        .frame(maxWidth: .infinity)
         .frame(height: 6)
+        .background(filmBase)
     }
 
-    private func infoChip(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 10, weight: .medium, design: .monospaced))
-            .foregroundColor(Color.filmSecondary)
-    }
-
+    // MARK: - Load Images
     private func loadAllImages() {
         let frames = photoFrames
 
@@ -1296,7 +1370,6 @@ struct ContactSheetView: View {
             for frame in frames {
                 guard let assetID = frame.photoAssetID else { continue }
 
-                // Local file (saved by import)
                 if assetID.contains("_frame_") {
                     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                         .appendingPathComponent(assetID)
@@ -1306,7 +1379,6 @@ struct ContactSheetView: View {
                     continue
                 }
 
-                // PHAsset identifier
                 let results = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
                 guard let asset = results.firstObject else { continue }
 
@@ -1315,7 +1387,7 @@ struct ContactSheetView: View {
                 options.isSynchronous = false
                 options.resizeMode = .fast
 
-                let targetSize = CGSize(width: 200, height: 200)
+                let targetSize = CGSize(width: 300, height: 300)
                 PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { image, _ in
                     if let image = image {
                         DispatchQueue.main.async {
@@ -1328,10 +1400,11 @@ struct ContactSheetView: View {
         }
     }
 
+    // MARK: - Save
     @MainActor
     private func saveContactSheet() {
         isSaving = true
-        let renderer = ImageRenderer(content: contactSheetImage)
+        let renderer = ImageRenderer(content: exportImage)
         renderer.scale = 3.0
 
         if let uiImage = renderer.uiImage {
@@ -1349,101 +1422,151 @@ struct ContactSheetView: View {
         }
     }
 
+    // MARK: - Export Render
     @MainActor
-    private var contactSheetImage: some View {
+    private var exportImage: some View {
         let rows = stride(from: 0, to: photoFrames.count, by: columns).map {
             Array(photoFrames[$0..<min($0 + columns, photoFrames.count)])
         }
 
         return VStack(spacing: 0) {
-            // Header
-            VStack(spacing: 6) {
+            // Title
+            VStack(spacing: 4) {
                 Text(roll.filmName.uppercased())
-                    .font(.system(size: 28, weight: .black))
-                    .foregroundColor(Color.filmAccent)
-                    .kerning(2)
-                HStack(spacing: 16) {
-                    if let camera = roll.camera { infoChipLarge(camera.name) }
-                    infoChipLarge("ISO \(roll.iso)")
-                    infoChipLarge(roll.format)
-                    infoChipLarge(roll.startDate.formatted(.dateTime.month(.abbreviated).day().year()))
-                }
-            }
-            .padding(.vertical, 20)
-
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                VStack(spacing: 0) {
-                    sprocketRowLarge
-
-                    HStack(spacing: 3) {
-                        ForEach(row, id: \.id) { frame in
-                            ZStack {
-                                Color(hex: "#1A1A1A")
-                                if let img = loadedImages[frame.number] {
-                                    Image(uiImage: img)
-                                        .resizable()
-                                        .scaledToFill()
-                                }
-                            }
-                            .frame(width: 120, height: 80)
-                            .clipped()
-                            .overlay(alignment: .bottomLeading) {
-                                Text("\(frame.number)")
-                                    .font(.system(size: 9, weight: .bold, design: .monospaced))
-                                    .foregroundColor(Color.filmAccent.opacity(0.9))
-                                    .padding(3)
-                            }
-                        }
-                        if row.count < columns {
-                            ForEach(0..<(columns - row.count), id: \.self) { _ in
-                                Color(hex: "#1A1A1A")
-                                    .frame(width: 120, height: 80)
-                            }
-                        }
+                    .font(.system(size: 22, weight: .black, design: .monospaced))
+                    .foregroundColor(Color(hex: "#3A3228"))
+                    .kerning(3)
+                HStack(spacing: 12) {
+                    if let camera = roll.camera {
+                        Text(camera.name)
+                            .font(.system(size: 11, weight: .medium, design: .monospaced))
                     }
-
-                    sprocketRowLarge
+                    Text("ISO \(roll.iso)")
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    Text(roll.format)
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    Text(roll.startDate.formatted(.dateTime.month(.abbreviated).day().year()))
+                        .font(.system(size: 11, weight: .medium, design: .monospaced))
                 }
-                .background(Color(hex: "#111111"))
-                .padding(.vertical, 3)
+                .foregroundColor(Color(hex: "#8A7E6E"))
+            }
+            .padding(.vertical, 16)
+
+            // Film strips
+            ForEach(Array(rows.enumerated()), id: \.offset) { rowIdx, row in
+                exportFilmStrip(row: row, rowIndex: rowIdx)
+                    .padding(.vertical, 3)
             }
 
             // Footer
             HStack {
                 Text("FILMVAULT")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.filmTertiary)
+                    .font(.system(size: 9, weight: .black, design: .monospaced))
+                    .foregroundColor(Color(hex: "#B8AA98"))
+                    .kerning(4)
                 Spacer()
                 Text("\(photoFrames.count) FRAMES")
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
-                    .foregroundColor(Color.filmTertiary)
+                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color(hex: "#B8AA98"))
             }
-            .padding(.horizontal, 12)
-            .padding(.top, 16)
+            .padding(.horizontal, 16)
+            .padding(.top, 12)
         }
-        .padding(20)
-        .background(Color.black)
+        .padding(16)
+        .background(paperBg)
     }
 
-    private var sprocketRowLarge: some View {
-        HStack(spacing: 0) {
-            ForEach(0..<(columns * 5), id: \.self) { i in
-                if i % 3 == 1 {
-                    RoundedRectangle(cornerRadius: 1.5)
-                        .fill(Color(hex: "#333333"))
-                        .frame(width: 8, height: 6)
-                } else {
-                    Color.clear.frame(width: 8, height: 6)
+    @MainActor
+    private func exportFilmStrip(row: [Frame], rowIndex: Int) -> some View {
+        VStack(spacing: 0) {
+            // Top sprocket
+            exportSprocketRail()
+
+            // Top rebate
+            HStack(spacing: 0) {
+                ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
+                    HStack {
+                        Text("\(frame.number)")
+                            .font(.system(size: 8, weight: .bold, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.7))
+                        Spacer()
+                        Text("\(frame.number)A")
+                            .font(.system(size: 6, weight: .medium, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.4))
+                    }
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity)
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity)
+                    }
                 }
             }
+            .frame(height: 16)
+            .background(filmBase)
+
+            // Photos
+            HStack(spacing: 2) {
+                ForEach(row, id: \.id) { frame in
+                    ZStack {
+                        Color(hex: "#0D0A06")
+                        if let img = loadedImages[frame.number] {
+                            Image(uiImage: img)
+                                .resizable()
+                                .scaledToFill()
+                        }
+                    }
+                    .frame(width: 140, height: 93)
+                    .clipped()
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color(hex: "#0D0A06")
+                            .frame(width: 140, height: 93)
+                    }
+                }
+            }
+            .padding(.horizontal, 4)
+            .background(filmBase)
+
+            // Bottom rebate
+            HStack(spacing: 0) {
+                ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
+                    HStack {
+                        Text("◀ \(frame.number)")
+                            .font(.system(size: 6, weight: .medium, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.5))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 4)
+                    .frame(maxWidth: .infinity)
+                }
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity)
+                    }
+                }
+            }
+            .frame(height: 16)
+            .background(filmBase)
+
+            // Bottom sprocket
+            exportSprocketRail()
         }
-        .frame(maxWidth: .infinity)
-        .frame(height: 8)
     }
 
-    private func infoChipLarge(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 14, weight: .medium, design: .monospaced))
-            .foregroundColor(Color.filmSecondary)
+    private func exportSprocketRail() -> some View {
+        HStack(spacing: 0) {
+            ForEach(0..<(columns * 4), id: \.self) { _ in
+                Spacer()
+                RoundedRectangle(cornerRadius: 0.8)
+                    .fill(paperBg)
+                    .frame(width: 6, height: 3.5)
+                Spacer()
+            }
+        }
+        .frame(height: 8)
+        .background(filmBase)
     }
 }
