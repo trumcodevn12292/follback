@@ -1,18 +1,24 @@
 import SwiftUI
 
 struct FilmStock: Identifiable, Hashable, Codable {
-    var id: String
+    let id: String
     let name: String
     let brand: String
     let iso: Int?
     let filmType: String
-    let process: String
+    let process: String?
     let frameCount: Int
     let frameFormats: [String]
     let inProduction: Bool
-    let coverUrl: String
-    let brandLogoUrl: String
-    let description: String
+    let coverUrl: String?
+    let brandLogoUrl: String?
+    let filmDescription: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, brand, iso, filmType, process, frameCount, frameFormats
+        case inProduction, coverUrl, brandLogoUrl
+        case filmDescription = "description"
+    }
 
     var displayName: String { "\(brand) \(name)" }
     var shortName: String { name }
@@ -53,13 +59,13 @@ struct FilmStock: Identifiable, Hashable, Codable {
     }
 
     var fullCoverUrl: String? {
-        guard !coverUrl.isEmpty else { return nil }
-        return "https://api.getfilmer.com\(coverUrl)"
+        guard let url = coverUrl, !url.isEmpty else { return nil }
+        return "https://api.getfilmer.com\(url)"
     }
 
     var fullBrandLogoUrl: String? {
-        guard !brandLogoUrl.isEmpty else { return nil }
-        return "https://api.getfilmer.com\(brandLogoUrl)"
+        guard let url = brandLogoUrl, !url.isEmpty else { return nil }
+        return "https://api.getfilmer.com\(url)"
     }
 
     enum FilmStockType: String {
@@ -86,16 +92,16 @@ struct FilmStock: Identifiable, Hashable, Codable {
         return stocks
     }
 
+    static let popularBrands = [
+        "Kodak", "Fujifilm", "Ilford", "CineStill", "Lomography", "Agfa",
+        "Foma", "Rollei", "Kentmere", "Harman", "ORWO", "Ferrania"
+    ]
+
     static var groupedByBrand: [(brand: String, stocks: [FilmStock])] {
         let grouped = Dictionary(grouping: allStocks) { $0.brand }
         return grouped
             .sorted { $0.key < $1.key }
             .map { (brand: $0.key, stocks: $0.value) }
-    }
-
-    static var popularBrands: [String] {
-        ["Kodak", "Fujifilm", "Ilford", "CineStill", "Lomography", "Agfa",
-         "Foma", "Rollei", "Kentmere", "Harman", "ORWO", "Ferrania"]
     }
 
     static var groupedByBrandPopularFirst: [(brand: String, stocks: [FilmStock])] {

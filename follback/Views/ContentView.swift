@@ -4,13 +4,12 @@ struct ContentView: View {
     @Environment(\.theme) private var theme
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var selectedTab = 0
-    @Namespace private var tabAnimation
 
     var body: some View {
         Group {
             if !hasSeenOnboarding {
                 OnboardingView {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                    withAnimation(.easeInOut(duration: 0.4)) {
                         hasSeenOnboarding = true
                     }
                 }
@@ -22,24 +21,20 @@ struct ContentView: View {
 
     private var mainContent: some View {
         ZStack(alignment: .bottom) {
-            tabContent
+            Group {
+                switch selectedTab {
+                case 0: RollsView()
+                case 1: CamerasView()
+                case 2: SearchView()
+                case 3: SettingsView()
+                default: RollsView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
 
             floatingTabBar
         }
         .ignoresSafeArea(.keyboard)
-    }
-
-    @ViewBuilder
-    private var tabContent: some View {
-        if selectedTab == 0 {
-            RollsView()
-        } else if selectedTab == 1 {
-            CamerasView()
-        } else if selectedTab == 2 {
-            SearchView()
-        } else {
-            SettingsView()
-        }
     }
 
     private var floatingTabBar: some View {
@@ -48,95 +43,66 @@ struct ContentView: View {
                 tabItem(index: index)
             }
         }
-        .padding(.horizontal, 6)
-        .padding(.vertical, 6)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
         .background(
             Capsule()
                 .fill(.ultraThinMaterial)
                 .overlay(
                     Capsule()
-                        .fill(Color.filmGlass.opacity(0.7))
+                        .fill(Color.filmSurface.opacity(0.85))
                 )
                 .overlay(
                     Capsule()
-                        .stroke(
-                            LinearGradient(
-                                colors: [Color.filmBorder.opacity(0.6), Color.filmBorder.opacity(0.2)],
-                                startPoint: .top,
-                                endPoint: .bottom
-                            ),
-                            lineWidth: 0.5
-                        )
+                        .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
                 )
-                .shadow(color: Color.black.opacity(0.25), radius: 24, x: 0, y: 10)
-                .shadow(color: Color.filmAccent.opacity(0.05), radius: 30, x: 0, y: 5)
+                .shadow(color: Color.black.opacity(0.3), radius: 20, x: 0, y: 8)
         )
-        .padding(.horizontal, 20)
+        .padding(.horizontal, 24)
         .padding(.bottom, max(8, bottomSafeArea))
     }
 
     private func tabItem(index: Int) -> some View {
-        let items = [
-            ("film", "Rolls"),
-            ("camera", "Cameras"),
-            ("magnifyingglass", "Find"),
-            ("gearshape", "Settings")
-        ]
+        let icons = ["film", "camera", "magnifyingglass", "gearshape"]
+        let labels = ["Rolls", "Cameras", "Find", "Settings"]
         let isSelected = selectedTab == index
         return Button {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+            withAnimation(.easeInOut(duration: 0.2)) {
                 selectedTab = index
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
             }
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
         } label: {
-            VStack(spacing: 3) {
-                ZStack {
-                    if isSelected {
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [Color.filmAccent.opacity(0.2), Color.clear],
-                                    center: .center,
-                                    startRadius: 0,
-                                    endRadius: 20
-                                )
-                            )
-                            .frame(width: 40, height: 40)
-                            .matchedGeometryEffect(id: "tabGlow", in: tabAnimation)
-                    }
+            VStack(spacing: 4) {
+                Image(systemName: isSelected ? iconFilled(icons[index]) : icons[index])
+                    .font(.system(size: 18, weight: isSelected ? .semibold : .regular))
+                    .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
+                    .frame(height: 22)
 
-                    Image(systemName: isSelected ? items[index].0 + ".fill" : items[index].0)
-                        .font(.system(size: 20, weight: isSelected ? .semibold : .regular))
-                        .foregroundStyle(
-                            isSelected
-                            ? AnyShapeStyle(LinearGradient(
-                                colors: [Color.filmAccent, Color.filmGold],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                              ))
-                            : AnyShapeStyle(Color.filmTertiary)
-                        )
-                        .scaleEffect(isSelected ? 1.1 : 1.0)
-                        .frame(height: 24)
-                }
-
-                Text(items[index].1)
-                    .font(.system(size: 10, weight: isSelected ? .bold : .medium))
+                Text(labels[index])
+                    .font(.system(size: 10, weight: isSelected ? .semibold : .medium))
                     .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
             .background(
-                ZStack {
+                Group {
                     if isSelected {
                         Capsule()
-                            .fill(Color.filmAccent.opacity(0.08))
-                            .matchedGeometryEffect(id: "activeTab", in: tabAnimation)
+                            .fill(Color.filmAccent.opacity(0.1))
                     }
                 }
             )
         }
         .buttonStyle(.plain)
+    }
+
+    private func iconFilled(_ name: String) -> String {
+        switch name {
+        case "camera": return "camera.fill"
+        case "gearshape": return "gearshape.fill"
+        case "magnifyingglass": return "magnifyingglass"
+        default: return name
+        }
     }
 
     private var bottomSafeArea: CGFloat {
