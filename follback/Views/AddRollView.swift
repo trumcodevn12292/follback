@@ -299,6 +299,7 @@ struct AddRollView: View {
                     if let coverUrlString = stock.fullCoverUrl,
                        let coverURL = URL(string: coverUrlString) {
                         KFImage(coverURL)
+                            .requestModifier(FilmerImageAuth.shared.modifier)
                             .resizable()
                             .scaledToFill()
                             .frame(width: 50, height: 50)
@@ -670,6 +671,7 @@ struct AddRollView: View {
                 if let coverUrlString = stock.fullCoverUrl,
                    let coverURL = URL(string: coverUrlString) {
                     KFImage(coverURL)
+                        .requestModifier(FilmerImageAuth.shared.modifier)
                         .resizable()
                         .scaledToFill()
                         .frame(width: 56, height: 56)
