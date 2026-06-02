@@ -1,235 +1,243 @@
 import SwiftUI
 import CoreImage
 import CoreImage.CIFilterBuiltins
-import Photos
 
 struct DarkroomView: View {
     let image: UIImage
     let onSave: (UIImage) -> Void
     @Environment(\.dismiss) private var dismiss
 
-    @State private var selectedFilter: FilmFilter = .none
+    @State private var selectedPreset: FilmPreset = .original
     @State private var intensity: Double = 1.0
     @State private var contrast: Double = 1.0
     @State private var brightness: Double = 0.0
     @State private var processedImage: UIImage?
     @State private var showSaveSuccess = false
 
+    private let context = CIContext()
+
     var body: some View {
-        NavigationStack {
-            ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    previewImage
+        ZStack {
+            Color.filmBackground.ignoresSafeArea()
 
-                    filterPresets
+            VStack(spacing: 0) {
+                headerBar
+                imagePreview
+                controlsPanel
+            }
 
-                    sliderSection("Intensity", value: $intensity, range: 0...1.5)
-                    sliderSection("Contrast", value: $contrast, range: 0.5...2.0)
-                    sliderSection("Brightness", value: $brightness, range: -0.5...0.5)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-                .padding(.bottom, 24)
-            }
-            .navigationTitle("Darkroom")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                        .foregroundColor(Color.filmText)
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") { saveImage() }
-                        .foregroundColor(Color.filmAccent)
-                        .fontWeight(.semibold)
-                }
-            }
-            .overlay {
-                if showSaveSuccess {
-                    saveSuccessToast
-                }
+            if showSaveSuccess {
+                successToast
             }
         }
-        .background(Color.filmBackground.ignoresSafeArea())
-        .onChange(of: selectedFilter) { _, _ in applyFilter() }
-        .onChange(of: intensity) { _, _ in applyFilter() }
-        .onChange(of: contrast) { _, _ in applyFilter() }
-        .onChange(of: brightness) { _, _ in applyFilter() }
-        .onAppear { applyFilter() }
     }
 
-    private var previewImage: some View {
-        Group {
-            if let processed = processedImage {
-                Image(uiImage: processed)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color.filmBorder, lineWidth: 0.5)
+    private var headerBar: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 36, height: 36)
+                    .background(
+                        Circle()
+                            .fill(Color.filmSurface)
+                            .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
                     )
-            } else {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20, style: .continuous)
-                            .stroke(Color.filmBorder, lineWidth: 0.5)
+            }
+            Spacer()
+            Text("Darkroom")
+                .font(.system(size: 17, weight: .bold, design: .serif))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Button {
+                saveToPhotos()
+            } label: {
+                Text("Save")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Color.filmBackground)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 9)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: [Color.filmAccent, Color.filmGold],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
                     )
             }
         }
-        .frame(maxHeight: 400)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
-    private var filterPresets: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Film Presets")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.filmSecondary)
-                .textCase(.uppercase)
-                .tracking(0.5)
+    private var imagePreview: some View {
+        Image(uiImage: processedImage ?? image)
+            .resizable()
+            .scaledToFit()
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .padding(.horizontal, 16)
+            .frame(maxHeight: .infinity)
+    }
 
+    private var controlsPanel: some View {
+        VStack(spacing: 18) {
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    ForEach(FilmFilter.allCases, id: \.self) { filter in
-                        filterButton(filter)
+                HStack(spacing: 10) {
+                    ForEach(FilmPreset.allCases, id: \.self) { preset in
+                        presetButton(preset)
                     }
                 }
-                .padding(.horizontal, 4)
+                .padding(.horizontal, 16)
             }
+
+            VStack(spacing: 14) {
+                sliderRow(label: "Intensity", value: $intensity, range: 0...2, color: Color.filmAccent)
+                sliderRow(label: "Contrast", value: $contrast, range: 0.5...2, color: Color.filmGold)
+                sliderRow(label: "Brightness", value: $brightness, range: -0.5...0.5, color: Color.filmCopper)
+            }
+            .padding(.horizontal, 16)
         }
+        .padding(.vertical, 18)
+        .background(
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(Color.filmSurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.2), radius: 20, x: 0, y: -5)
+                .ignoresSafeArea(edges: .bottom)
+        )
     }
 
-    private func filterButton(_ filter: FilmFilter) -> some View {
-        Button {
-            withAnimation(.spring(response: 0.3)) {
-                selectedFilter = filter
+    private func presetButton(_ preset: FilmPreset) -> some View {
+        let isSelected = selectedPreset == preset
+        return Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
+                selectedPreset = preset
+                applyFilter()
             }
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } label: {
             VStack(spacing: 6) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 14)
-                        .fill(selectedFilter == filter ? Color.filmAccent.opacity(0.12) : Color.filmSurface)
-                        .frame(width: 72, height: 72)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 14)
-                                .stroke(selectedFilter == filter ? Color.filmAccent : Color.filmBorder, lineWidth: selectedFilter == filter ? 1.5 : 0.5)
-                        )
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.filmSprocket)
+                    .frame(width: 56, height: 56)
+                    .overlay(
+                        Text(preset.emoji)
+                            .font(.system(size: 24))
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(
+                                isSelected
+                                ? LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .topLeading, endPoint: .bottomTrailing)
+                                : LinearGradient(colors: [Color.filmBorder, Color.filmBorder], startPoint: .leading, endPoint: .trailing),
+                                lineWidth: isSelected ? 2 : 0.5
+                            )
+                    )
+                    .shadow(color: isSelected ? Color.filmAccent.opacity(0.3) : .clear, radius: 6, x: 0, y: 3)
 
-                    Text(filter.icon)
-                        .font(.system(size: 28))
-                }
-                Text(filter.displayName)
-                    .font(.system(size: 11, weight: .medium))
-                    .foregroundColor(selectedFilter == filter ? Color.filmAccent : Color.filmSecondary)
+                Text(preset.name)
+                    .font(.system(size: 10, weight: isSelected ? .bold : .medium))
+                    .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
             }
         }
         .buttonStyle(.plain)
     }
 
-    private func sliderSection(_ title: String, value: Binding<Double>, range: ClosedRange<Double>) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(title)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color.filmSecondary)
-                    .textCase(.uppercase)
-                Spacer()
-                Text(String(format: "%.2f", value.wrappedValue))
-                    .font(.system(size: 13, design: .monospaced))
-                    .foregroundColor(Color.filmAccent)
-            }
-            Slider(value: value, in: range, step: 0.01)
-                .tint(Color.filmAccent)
+    private func sliderRow(label: String, value: Binding<Double>, range: ClosedRange<Double>, color: Color) -> some View {
+        HStack(spacing: 10) {
+            Text(label)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(Color.filmSecondary)
+                .frame(width: 70, alignment: .leading)
+
+            Slider(value: value, in: range)
+                .tint(color)
+                .onChange(of: value.wrappedValue) { _, _ in
+                    applyFilter()
+                }
+
+            Text(String(format: "%.1f", value.wrappedValue))
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundColor(color)
+                .frame(width: 30)
         }
-        .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
-        )
     }
 
-    private var saveSuccessToast: some View {
+    private var successToast: some View {
         VStack {
             Spacer()
             HStack(spacing: 8) {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(Color.filmSuccess)
                 Text("Saved to Photos")
-                    .font(.system(size: 14, weight: .medium))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Color.filmText)
             }
-            .foregroundColor(Color.filmText)
             .padding(.horizontal, 20)
             .padding(.vertical, 12)
             .background(
                 Capsule()
-                    .fill(Color.filmSurface)
+                    .fill(.ultraThinMaterial)
+                    .overlay(Capsule().fill(Color.filmSurface.opacity(0.8)))
                     .overlay(Capsule().stroke(Color.filmBorder, lineWidth: 0.5))
             )
-            .padding(.bottom, 24)
+            .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 4)
+            .padding(.bottom, 120)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
 
     private func applyFilter() {
-        guard let cgImage = image.cgImage else { return }
-        let ciImage = CIImage(cgImage: cgImage)
-        let context = CIContext()
-        var filtered = ciImage
+        guard let ciImage = CIImage(image: image) else { return }
+        var output = ciImage
 
-        switch selectedFilter {
-        case .none: filtered = ciImage
-        case .blackAndWhite:
-            if let filter = CIFilter(name: "CIPhotoEffectNoir") {
-                filter.setValue(ciImage, forKey: kCIInputImageKey)
-                filtered = filter.outputImage ?? ciImage
-            }
+        switch selectedPreset {
+        case .original:
+            break
+        case .bw:
+            let filter = CIFilter.photoEffectNoir()
+            filter.inputImage = output
+            if let result = filter.outputImage { output = result }
         case .sepia:
-            if let filter = CIFilter(name: "CISepiaTone") {
-                filter.setValue(ciImage, forKey: kCIInputImageKey)
-                filter.setValue(intensity, forKey: kCIInputIntensityKey)
-                filtered = filter.outputImage ?? ciImage
-            }
+            let filter = CIFilter.sepiaTone()
+            filter.inputImage = output
+            filter.intensity = Float(intensity)
+            if let result = filter.outputImage { output = result }
         case .vintage:
-            if let filter = CIFilter(name: "CIPhotoEffectInstant") {
-                filter.setValue(ciImage, forKey: kCIInputImageKey)
-                filtered = filter.outputImage ?? ciImage
-            }
+            let filter = CIFilter.photoEffectTransfer()
+            filter.inputImage = output
+            if let result = filter.outputImage { output = result }
         case .highContrast:
-            if let filter = CIFilter(name: "CIColorControls") {
-                filter.setValue(ciImage, forKey: kCIInputImageKey)
-                filter.setValue(contrast * 1.5, forKey: kCIInputContrastKey)
-                filtered = filter.outputImage ?? ciImage
-            }
+            break
         case .fade:
-            if let filter = CIFilter(name: "CIPhotoEffectFade") {
-                filter.setValue(ciImage, forKey: kCIInputImageKey)
-                filtered = filter.outputImage ?? ciImage
-            }
+            let filter = CIFilter.photoEffectFade()
+            filter.inputImage = output
+            if let result = filter.outputImage { output = result }
         }
 
-        if let colorControls = CIFilter(name: "CIColorControls") {
-            colorControls.setValue(filtered, forKey: kCIInputImageKey)
-            colorControls.setValue(contrast, forKey: kCIInputContrastKey)
-            colorControls.setValue(brightness, forKey: kCIInputBrightnessKey)
-            filtered = colorControls.outputImage ?? filtered
-        }
+        let colorFilter = CIFilter.colorControls()
+        colorFilter.inputImage = output
+        colorFilter.contrast = Float(contrast)
+        colorFilter.brightness = Float(brightness)
+        if let result = colorFilter.outputImage { output = result }
 
-        if let output = context.createCGImage(filtered, from: filtered.extent) {
-            processedImage = UIImage(cgImage: output)
+        if let cgImg = context.createCGImage(output, from: output.extent) {
+            processedImage = UIImage(cgImage: cgImg)
         }
     }
 
-    private func saveImage() {
-        guard let final = processedImage else { return }
-        UIImageWriteToSavedPhotosAlbum(final, nil, nil, nil)
+    private func saveToPhotos() {
+        guard let img = processedImage ?? Optional(image) else { return }
+        UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
         withAnimation(.spring(response: 0.3)) {
             showSaveSuccess = true
         }
@@ -238,28 +246,29 @@ struct DarkroomView: View {
                 showSaveSuccess = false
             }
         }
-        onSave(final)
-        dismiss()
+        onSave(img)
     }
 }
 
-enum FilmFilter: CaseIterable {
-    case none, blackAndWhite, sepia, vintage, highContrast, fade
-    var displayName: String {
+enum FilmPreset: String, CaseIterable {
+    case original, bw, sepia, vintage, highContrast, fade
+
+    var name: String {
         switch self {
-        case .none: return "Original"
-        case .blackAndWhite: return "B&W"
+        case .original: return "Original"
+        case .bw: return "B&W"
         case .sepia: return "Sepia"
         case .vintage: return "Vintage"
         case .highContrast: return "Contrast"
         case .fade: return "Fade"
         }
     }
-    var icon: String {
+
+    var emoji: String {
         switch self {
-        case .none: return "🎞️"
-        case .blackAndWhite: return "◐"
-        case .sepia: return "☕"
+        case .original: return "🎞️"
+        case .bw: return "⬛"
+        case .sepia: return "🟤"
         case .vintage: return "📷"
         case .highContrast: return "◑"
         case .fade: return "🌫️"

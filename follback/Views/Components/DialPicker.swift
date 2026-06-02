@@ -7,38 +7,52 @@ struct DialPicker<T: Hashable>: View {
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 0) {
+            HStack(spacing: 6) {
                 ForEach(items, id: \.self) { item in
                     let isSelected = selected == item
                     Button {
-                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                             selected = item
-                            let impact = UIImpactFeedbackGenerator(style: .rigid)
-                            impact.impactOccurred()
+                            UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
                         }
                     } label: {
                         Text(display(item))
-                            .font(.system(size: 15, weight: isSelected ? .bold : .regular, design: .monospaced))
-                            .scaleEffect(isSelected ? 1.2 : 1.0)
-                            .animation(.spring(response: 0.25, dampingFraction: 0.75), value: isSelected)
-                            .foregroundColor(isSelected ? Color.filmAccent : Color.filmTertiary)
-                            .frame(minWidth: 56)
-                            .padding(.vertical, 8)
+                            .font(.system(size: 14, weight: isSelected ? .bold : .medium, design: .monospaced))
+                            .foregroundColor(isSelected ? Color.filmBackground : Color.filmTertiary)
+                            .frame(minWidth: 52)
+                            .padding(.vertical, 10)
+                            .padding(.horizontal, 4)
                             .background(
                                 ZStack {
                                     if isSelected {
                                         Capsule()
-                                            .fill(Color.filmAccent.opacity(0.15))
-                                            .blur(radius: 4)
+                                            .fill(
+                                                LinearGradient(
+                                                    colors: [Color.filmAccent, Color.filmGold],
+                                                    startPoint: .topLeading,
+                                                    endPoint: .bottomTrailing
+                                                )
+                                            )
+                                            .shadow(color: Color.filmAccent.opacity(0.4), radius: 8, x: 0, y: 3)
+                                    } else {
+                                        Capsule()
+                                            .fill(Color.filmSurfaceSecondary)
+                                            .overlay(
+                                                Capsule()
+                                                    .stroke(Color.filmBorder, lineWidth: 0.5)
+                                            )
                                     }
                                 }
                             )
+                            .scaleEffect(isSelected ? 1.05 : 1.0)
+                            .animation(.spring(response: 0.25, dampingFraction: 0.7), value: isSelected)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding(.horizontal, 8)
+            .padding(.horizontal, 4)
+            .padding(.vertical, 2)
         }
-        .frame(height: 44)
+        .frame(height: 48)
     }
 }

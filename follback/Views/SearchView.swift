@@ -39,9 +39,7 @@ struct SearchView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 0) {
                     headerSection
-
                     searchField
-
                     resultsSection
                 }
                 .padding(.bottom, 100)
@@ -50,6 +48,7 @@ struct SearchView: View {
             .toolbarBackground(.hidden, for: .navigationBar)
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)
+                    .navigationBarBackButtonHidden(true)
             }
             .onAppear {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -61,12 +60,18 @@ struct SearchView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 6) {
             Text("Find")
-                .font(.system(size: 32, weight: .bold, design: .serif))
-                .foregroundColor(Color.filmText)
+                .font(.system(size: 34, weight: .bold, design: .serif))
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [Color.filmText, Color.filmText.opacity(0.85)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
             Text("Search through your rolls and frames")
-                .font(.system(size: 14, weight: .medium))
+                .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(Color.filmSecondary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -80,7 +85,11 @@ struct SearchView: View {
         HStack(spacing: 10) {
             Image(systemName: "magnifyingglass")
                 .font(.system(size: 16, weight: .semibold))
-                .foregroundColor(Color.filmTertiary)
+                .foregroundStyle(
+                    isSearchFocused
+                    ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .topLeading, endPoint: .bottomTrailing))
+                    : AnyShapeStyle(Color.filmTertiary)
+                )
 
             TextField("Search rolls, frames, notes...", text: $searchText)
                 .font(.system(size: 16))
@@ -100,14 +109,20 @@ struct SearchView: View {
             }
         }
         .padding(.horizontal, 14)
-        .padding(.vertical, 12)
+        .padding(.vertical, 13)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.filmSurface)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(isSearchFocused ? Color.filmAccent.opacity(0.5) : Color.filmBorder, lineWidth: isSearchFocused ? 1.5 : 0.5)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .stroke(
+                            isSearchFocused
+                            ? LinearGradient(colors: [Color.filmAccent.opacity(0.5), Color.filmGold.opacity(0.3)], startPoint: .topLeading, endPoint: .bottomTrailing)
+                            : LinearGradient(colors: [Color.filmBorder, Color.filmBorder], startPoint: .leading, endPoint: .trailing),
+                            lineWidth: isSearchFocused ? 1.5 : 0.5
+                        )
                 )
+                .shadow(color: isSearchFocused ? Color.filmAccent.opacity(0.1) : .clear, radius: 12, x: 0, y: 4)
         )
         .padding(.horizontal, 16)
         .padding(.top, 16)
@@ -119,7 +134,7 @@ struct SearchView: View {
         if !searchText.isEmpty {
             VStack(spacing: 20) {
                 if !rollResults.isEmpty {
-                    resultGroup(title: "Rolls", icon: "camera.roll") {
+                    resultGroup(title: "Rolls", icon: "film") {
                         ForEach(rollResults) { roll in
                             NavigationLink(value: roll) {
                                 rollResultRow(roll: roll)
@@ -143,13 +158,21 @@ struct SearchView: View {
                 }
 
                 if rollResults.isEmpty && frameResults.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 40, weight: .light))
-                            .foregroundColor(Color.filmTertiary)
+                    VStack(spacing: 20) {
+                        ZStack {
+                            Circle()
+                                .fill(Color.filmTertiary.opacity(0.08))
+                                .frame(width: 80, height: 80)
+                            Image(systemName: "magnifyingglass")
+                                .font(.system(size: 32, weight: .light))
+                                .foregroundColor(Color.filmTertiary)
+                        }
                         Text("No results found")
-                            .font(.system(size: 16, weight: .medium))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(Color.filmSecondary)
+                        Text("Try a different search term")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color.filmTertiary)
                     }
                     .padding(.top, 60)
                 }
@@ -161,12 +184,18 @@ struct SearchView: View {
 
     private func resultGroup<Content: View>(title: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 6) {
+            HStack(spacing: 8) {
                 Image(systemName: icon)
                     .font(.system(size: 14, weight: .semibold))
-                    .foregroundColor(Color.filmAccent)
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.filmAccent, Color.filmGold],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
                 Text(title)
-                    .font(.system(size: 13, weight: .semibold))
+                    .font(.system(size: 13, weight: .bold))
                     .foregroundColor(Color.filmSecondary)
                     .textCase(.uppercase)
                     .tracking(0.5)
@@ -182,18 +211,24 @@ struct SearchView: View {
         HStack(spacing: 14) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.filmAccent.opacity(0.08))
+                    .fill(
+                        LinearGradient(
+                            colors: [Color.filmAccent.opacity(0.12), Color.filmGold.opacity(0.06)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 48, height: 48)
-                Image(systemName: "camera.roll")
+                Image(systemName: "film")
                     .font(.system(size: 20))
                     .foregroundColor(Color.filmAccent)
             }
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(roll.filmName)
                     .font(.system(size: 16, weight: .semibold))
                     .foregroundColor(Color.filmText)
                 Text("\(roll.camera?.name ?? "No camera") · \(roll.filmFormat.displayName)")
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Color.filmSecondary)
             }
             Spacer()
@@ -203,14 +238,7 @@ struct SearchView: View {
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
-        )
+        .filmCard(cornerRadius: 16)
     }
 
     private func frameResultRow(frame: Frame, roll: Roll) -> some View {
@@ -225,24 +253,28 @@ struct SearchView: View {
                     .frame(width: 48, height: 48)
                     .overlay(
                         Text("\(frame.number)")
-                            .font(.system(size: 12, weight: .bold))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
                             .foregroundColor(Color.filmTertiary)
                     )
             }
 
-            VStack(alignment: .leading, spacing: 3) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text("Frame #\(frame.number) · \(roll.filmName)")
                     .font(.system(size: 15, weight: .semibold))
                     .foregroundColor(Color.filmText)
                 if let ap = frame.apertureDisplay, let sh = frame.shutterDisplay {
                     Text("\(ap)  \(sh)")
-                        .font(.system(size: 12, design: .monospaced))
-                        .foregroundColor(Color.filmSecondary)
+                        .font(.system(size: 12, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color.filmAccent)
                 }
                 if let loc = frame.locationName {
-                    Text(loc)
-                        .font(.system(size: 12))
-                        .foregroundColor(Color.filmTertiary)
+                    HStack(spacing: 4) {
+                        Image(systemName: "mappin")
+                            .font(.system(size: 9))
+                        Text(loc)
+                            .font(.system(size: 12))
+                    }
+                    .foregroundColor(Color.filmTertiary)
                 }
             }
             Spacer()
@@ -252,13 +284,6 @@ struct SearchView: View {
         }
         .padding(.vertical, 10)
         .padding(.horizontal, 14)
-        .background(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
-                )
-        )
+        .filmCard(cornerRadius: 16)
     }
 }

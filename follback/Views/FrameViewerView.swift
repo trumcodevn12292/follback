@@ -1,6 +1,5 @@
 import SwiftUI
 import Photos
-import Kingfisher
 
 struct FrameViewerView: View {
     let frame: Frame
@@ -10,7 +9,7 @@ struct FrameViewerView: View {
     @State private var showInfo = true
     @State private var showDarkroom = false
     @State private var showShare = false
-    @State private var showToast = false
+    @State private var isToastVisible = false
 
     var body: some View {
         ZStack {
@@ -29,11 +28,18 @@ struct FrameViewerView: View {
                 PhotoThumbnail(assetID: assetID)
                     .aspectRatio(contentMode: .fit)
             } else {
-                VStack(spacing: 12) {
+                VStack(spacing: 16) {
                     Image(systemName: "photo")
-                        .font(.system(size: 48))
-                        .foregroundColor(Color.filmTertiary)
+                        .font(.system(size: 52, weight: .light))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [Color.filmTertiary, Color.filmTertiary.opacity(0.5)],
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
                     Text("No photo")
+                        .font(.system(size: 16, weight: .medium))
                         .foregroundColor(Color.filmSecondary)
                 }
             }
@@ -44,9 +50,15 @@ struct FrameViewerView: View {
                         Button {
                             dismiss()
                         } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .font(.system(size: 28))
-                                .foregroundColor(Color.filmText.opacity(0.8))
+                            Image(systemName: "xmark")
+                                .font(.system(size: 16, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .frame(width: 36, height: 36)
+                                .background(
+                                    Circle()
+                                        .fill(.ultraThinMaterial)
+                                        .overlay(Circle().stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5))
+                                )
                         }
                         Spacer()
                         if image != nil {
@@ -54,19 +66,32 @@ struct FrameViewerView: View {
                                 showDarkroom = true
                             } label: {
                                 Image(systemName: "wand.and.stars.inverse")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(Color.filmText.opacity(0.8))
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Color.filmText)
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(.ultraThinMaterial)
+                                            .overlay(Circle().stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5))
+                                    )
                             }
                             Button {
                                 showShare = true
                             } label: {
-                                Image(systemName: "square.and.arrow.up.circle.fill")
-                                    .font(.system(size: 28))
-                                    .foregroundColor(Color.filmText.opacity(0.8))
+                                Image(systemName: "square.and.arrow.up")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Color.filmText)
+                                    .frame(width: 36, height: 36)
+                                    .background(
+                                        Circle()
+                                            .fill(.ultraThinMaterial)
+                                            .overlay(Circle().stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5))
+                                    )
                             }
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
 
                     Spacer()
 
@@ -80,7 +105,7 @@ struct FrameViewerView: View {
         .sheet(isPresented: $showDarkroom) {
             if let img = image {
                 DarkroomView(image: img) { _ in
-                    showToast("Applied filter")
+                    displayToast()
                 }
             }
         }
@@ -90,22 +115,27 @@ struct FrameViewerView: View {
             }
         }
         .overlay {
-            if showToast {
+            if isToastVisible {
                 toastView
             }
         }
     }
 
     private var infoPanel: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 10) {
             Text("Frame #\(frame.number) · \(frame.roll?.filmName ?? "")")
-                .font(.system(size: 16, weight: .semibold))
+                .font(.system(size: 17, weight: .bold, design: .serif))
                 .foregroundColor(Color.filmText)
 
             if let camera = frame.roll?.camera {
-                Text("\(camera.name) · \(frame.capturedAt ?? Date(), style: .date)")
-                    .font(.system(size: 13))
-                    .foregroundColor(Color.filmSecondary)
+                HStack(spacing: 6) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 11))
+                        .foregroundColor(Color.filmAccent)
+                    Text("\(camera.name) · \(frame.capturedAt ?? Date(), style: .date)")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color.filmSecondary)
+                }
             }
 
             HStack(spacing: 8) {
@@ -119,53 +149,73 @@ struct FrameViewerView: View {
                     infoChip(text: focus)
                 }
                 if frame.flashUsed {
-                    infoChip(text: "Flash")
+                    infoChip(text: "Flash", icon: "bolt.fill")
                 }
             }
 
             if !frame.notes.isEmpty {
                 Text(frame.notes)
-                    .font(.system(size: 13))
+                    .font(.system(size: 13, weight: .medium))
                     .foregroundColor(Color.filmSecondary)
                     .padding(.top, 4)
             }
         }
-        .padding()
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             LinearGradient(
-                colors: [.clear, Color.filmBackground.opacity(0.95)],
+                colors: [.clear, Color.filmBackground.opacity(0.9), Color.filmBackground],
                 startPoint: .top,
                 endPoint: .bottom
             )
         )
     }
 
-    private func infoChip(text: String) -> some View {
-        Text(text)
-            .font(.system(size: 12, weight: .medium, design: .monospaced))
-            .foregroundColor(Color.filmText)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
-            .background(
-                Capsule()
-                    .fill(Color.filmSurface)
-            )
+    private func infoChip(text: String, icon: String? = nil) -> some View {
+        HStack(spacing: 4) {
+            if let icon = icon {
+                Image(systemName: icon)
+                    .font(.system(size: 9))
+            }
+            Text(text)
+                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+        }
+        .foregroundColor(Color.filmText)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 5)
+        .background(
+            Capsule()
+                .fill(.ultraThinMaterial)
+                .overlay(
+                    Capsule()
+                        .stroke(Color.filmBorder.opacity(0.5), lineWidth: 0.5)
+                )
+        )
     }
 
     private var toastView: some View {
         VStack {
             Spacer()
-            Text("Saved to Photos")
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(Color.filmText)
-                .padding(.horizontal, 20)
-                .padding(.vertical, 10)
-                .background(
-                    Capsule()
-                        .fill(Color.filmSurface)
-                        .overlay(Capsule().stroke(Color.filmBorder, lineWidth: 1))
-                )
-                .padding(.bottom, 40)
+            HStack(spacing: 8) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundColor(Color.filmSuccess)
+                Text("Saved to Photos")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+            .background(
+                Capsule()
+                    .fill(.ultraThinMaterial)
+                    .overlay(
+                        Capsule()
+                            .fill(Color.filmSurface.opacity(0.8))
+                    )
+                    .overlay(Capsule().stroke(Color.filmBorder, lineWidth: 0.5))
+            )
+            .shadow(color: Color.black.opacity(0.2), radius: 12, x: 0, y: 4)
+            .padding(.bottom, 40)
         }
         .transition(.move(edge: .bottom).combined(with: .opacity))
     }
@@ -202,13 +252,13 @@ struct FrameViewerView: View {
         }
     }
 
-    private func showToast(_ message: String) {
+    private func displayToast() {
         withAnimation(.spring(response: 0.3)) {
-            showToast = true
+            isToastVisible = true
         }
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
             withAnimation(.easeOut) {
-                showToast = false
+                isToastVisible = false
             }
         }
     }
