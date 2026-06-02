@@ -59,11 +59,17 @@ class Roll {
     }
 
     var filledFrames: Int {
-        frames?.count ?? 0
+        frames?.filter { $0.photoAssetID != nil }.count ?? 0
     }
 
     var isCompleted: Bool {
         filledFrames >= capacity
+    }
+
+    func checkAutoComplete() {
+        if filledFrames >= capacity && rollStatus == .inProgress {
+            updateStatus(.completed)
+        }
     }
 
     func updateStatus(_ newStatus: RollStatus) {

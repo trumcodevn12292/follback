@@ -11,6 +11,7 @@ enum FilmFormat: String, Codable, CaseIterable {
 
 enum RollStatus: String, Codable, CaseIterable {
     case inProgress = "In Progress"
+    case completed = "Completed"
     case developed = "Developed"
     case archived = "Archived"
     

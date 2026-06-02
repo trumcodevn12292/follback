@@ -8,47 +8,80 @@ struct RollCard: View {
     let onArchive: () -> Void
     @Environment(\.modelContext) private var modelContext
 
-    var body: some View {
-        HStack(spacing: 14) {
-            filmCoverThumbnail
+    private var photoFrames: [Frame] {
+        (roll.frames ?? [])
+            .filter { $0.photoAssetID != nil }
+            .sorted { $0.number < $1.number }
+    }
 
-            VStack(alignment: .leading, spacing: 6) {
-                HStack {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Top section: cover + info
+            HStack(alignment: .top, spacing: 14) {
+                filmCoverThumbnail
+
+                VStack(alignment: .leading, spacing: 6) {
                     Text(roll.filmName)
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 22, weight: .bold))
                         .foregroundColor(Color.filmText)
                         .lineLimit(1)
 
+                    Text(rollDateText)
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                if roll.filledFrames > 0 {
+                    Text("\(roll.filledFrames) photos")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color.filmSecondary)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+
+            // Photo preview row
+            if !photoFrames.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 2) {
+                        ForEach(photoFrames.prefix(4), id: \.id) { frame in
+                            if let assetID = frame.photoAssetID {
+                                PhotoThumbnail(assetID: assetID)
+                                    .frame(width: photoPreviewSize, height: photoPreviewSize)
+                                    .clipped()
+                            }
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+                .padding(.bottom, 16)
+            } else {
+                // Empty state inside card
+                HStack {
                     Spacer()
-
-                    statusBadge
+                    VStack(spacing: 8) {
+                        Text("No rolls yet")
+                            .font(.system(size: 14, weight: .medium))
+                            .foregroundColor(Color.filmTertiary)
+                        Text("Start documenting your analog\nphotography journey")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.filmTertiary.opacity(0.6))
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.vertical, 20)
+                    Spacer()
                 }
-
-                HStack(spacing: 4) {
-                    Image(systemName: "camera")
-                        .font(.system(size: 10))
-                    Text(roll.camera?.name ?? "No camera")
-                        .font(.system(size: 12, weight: .medium))
-                }
-                .foregroundColor(Color.filmTertiary)
-
-                HStack(spacing: 12) {
-                    specLabel("ISO \(roll.iso)")
-                    specLabel(roll.filmFormat.displayName)
-                    specLabel("\(roll.filledFrames)/\(roll.capacity)")
-                }
-
-                progressBar
+                .padding(.horizontal, 16)
+                .padding(.bottom, 16)
             }
         }
-        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(Color.filmSurface)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
-                )
         )
         .contextMenu {
             Button(role: .destructive, action: onDelete) {
@@ -62,6 +95,10 @@ struct RollCard: View {
 
     // MARK: - Components
 
+    private var photoPreviewSize: CGFloat {
+        (UIScreen.main.bounds.width - 32 - 16 - 6) / 4
+    }
+
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
             stock.displayName.lowercased() == roll.filmName.lowercased() ||
@@ -73,7 +110,7 @@ struct RollCard: View {
         ZStack {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.filmSurfaceSecondary)
-                .frame(width: 48, height: 48)
+                .frame(width: 80, height: 80)
 
             if let stock = matchingFilmStock,
                let coverUrlString = stock.fullCoverUrl,
@@ -82,57 +119,19 @@ struct RollCard: View {
                     .requestModifier(FilmerImageAuth.shared.modifier)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 48, height: 48)
+                    .frame(width: 80, height: 80)
                     .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             } else {
                 Image(systemName: "film")
-                    .font(.system(size: 18, weight: .light))
+                    .font(.system(size: 24, weight: .light))
                     .foregroundColor(Color.filmTertiary)
             }
         }
     }
 
-    private var statusBadge: some View {
-        Text(roll.rollStatus.displayName)
-            .font(.system(size: 10, weight: .semibold))
-            .foregroundColor(statusColor)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 3)
-            .background(
-                Capsule().fill(statusColor.opacity(0.1))
-            )
-    }
-
-    private var progressBar: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.filmSprocket)
-                    .frame(height: 3)
-
-                RoundedRectangle(cornerRadius: 2)
-                    .fill(Color.filmAccent)
-                    .frame(
-                        width: geo.size.width * CGFloat(roll.filledFrames) / CGFloat(max(roll.capacity, 1)),
-                        height: 3
-                    )
-                    .animation(.easeOut(duration: 0.5), value: roll.filledFrames)
-            }
-        }
-        .frame(height: 3)
-    }
-
-    private func specLabel(_ text: String) -> some View {
-        Text(text)
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
-            .foregroundColor(Color.filmSecondary)
-    }
-
-    private var statusColor: Color {
-        switch roll.rollStatus {
-        case .inProgress: return Color.filmAccent
-        case .developed: return Color.filmSuccess
-        case .archived: return Color.filmTertiary
-        }
+    private var rollDateText: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "d MMM yyyy"
+        return formatter.string(from: roll.startDate)
     }
 }
