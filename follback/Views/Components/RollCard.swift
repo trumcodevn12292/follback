@@ -30,6 +30,17 @@ struct RollCard: View {
                         .font(.system(size: 13))
                         .foregroundColor(Color.filmTertiary)
                         .lineLimit(2)
+
+                    if let location = roll.locationName {
+                        HStack(spacing: 4) {
+                            Image(systemName: "location.fill")
+                                .font(.system(size: 10))
+                            Text(location)
+                                .font(.system(size: 12))
+                                .lineLimit(1)
+                        }
+                        .foregroundColor(Color.filmTertiary)
+                    }
                 }
 
                 Spacer()

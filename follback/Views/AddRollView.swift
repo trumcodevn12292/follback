@@ -12,6 +12,7 @@ struct AddRollView: View {
     @State private var customFilmName = ""
     @State private var searchText = ""
     @State private var selectedCamera: Camera?
+    @State private var selectedCameraModelName: String?
     @State private var capacity = 36
     @State private var iso = 400
     @State private var format: FilmFormat = .mm35
@@ -19,8 +20,13 @@ struct AddRollView: View {
     @State private var pushPull: Float = 0
     @State private var startDate = Date()
     @State private var notes = ""
+    @State private var locationName: String?
+    @State private var locationLatitude: Double?
+    @State private var locationLongitude: Double?
     @State private var appeared = false
     @State private var showCustomInput = false
+    @State private var showCameraPicker = false
+    @State private var showLocationPicker = false
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -57,6 +63,16 @@ struct AddRollView: View {
         }
         .navigationTitle("")
         .navigationBarHidden(true)
+        .sheet(isPresented: $showCameraPicker) {
+            CameraPickerView(selectedCameraName: $selectedCameraModelName)
+        }
+        .sheet(isPresented: $showLocationPicker) {
+            LocationPickerView(
+                locationName: $locationName,
+                latitude: $locationLatitude,
+                longitude: $locationLongitude
+            )
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
@@ -370,9 +386,26 @@ struct AddRollView: View {
                     .padding(.horizontal, 4)
 
                 VStack(spacing: 0) {
-                    // Camera Model
-                    settingsRow(label: "Camera Model",
-                                value: selectedCamera?.name ?? "None")
+                    // Camera Model (tappable → picker sheet)
+                    Button {
+                        showCameraPicker = true
+                    } label: {
+                        HStack {
+                            Text("Camera Model")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Text(selectedCameraModelName ?? "None")
+                                .font(.system(size: 16))
+                                .foregroundColor(Color.filmSecondary)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.plain)
                     settingsDivider
 
                     // Film
@@ -494,6 +527,30 @@ struct AddRollView: View {
                     }
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
+
+                    settingsDivider
+
+                    // Location
+                    Button {
+                        showLocationPicker = true
+                    } label: {
+                        HStack {
+                            Text("Location")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Text(locationName ?? "Add Location")
+                                .font(.system(size: 14))
+                                .foregroundColor(locationName != nil ? Color.filmSecondary : Color.filmTertiary)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -517,21 +574,6 @@ struct AddRollView: View {
                             .fill(Color.filmSurface)
                     )
 
-                // Camera selection (if cameras exist)
-                if !cameras.isEmpty {
-                    Text("Camera")
-                        .font(.system(size: 14, weight: .medium))
-                        .foregroundColor(Color.filmTertiary)
-                        .padding(.horizontal, 4)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(cameras) { camera in
-                                cameraChip(camera)
-                            }
-                        }
-                    }
-                }
                 // Confirm button
                 Button {
                     saveRoll()
@@ -752,34 +794,6 @@ struct AddRollView: View {
         .filmCard(cornerRadius: 18)
     }
 
-    private func cameraChip(_ camera: Camera) -> some View {
-        let isSelected = selectedCamera?.id == camera.id
-        return Button {
-            withAnimation(.spring(response: 0.25)) {
-                selectedCamera = isSelected ? nil : camera
-            }
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-        } label: {
-            HStack(spacing: 8) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 12))
-                Text(camera.name)
-                    .font(.system(size: 13, weight: .semibold))
-            }
-            .foregroundColor(isSelected ? Color.filmBackground : Color.filmText)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(isSelected
-                          ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                          : AnyShapeStyle(Color.filmSurface))
-            )
-            .overlay(Capsule().stroke(isSelected ? Color.clear : Color.filmBorder, lineWidth: 0.5))
-        }
-        .buttonStyle(.plain)
-    }
-
     private func summaryRow(icon: String, label: String, value: String) -> some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
@@ -806,16 +820,24 @@ struct AddRollView: View {
 
     // MARK: - Save
     private func saveRoll() {
+        // Match camera from database by selectedCameraModelName
+        let matchedCamera = selectedCameraModelName.flatMap { name in
+            cameras.first { $0.name == name || name.contains($0.name) }
+        } ?? selectedCamera
+
         let roll = Roll(
             filmName: filmDisplayName,
-            camera: selectedCamera,
+            camera: matchedCamera,
             capacity: capacity,
             iso: iso,
             format: format,
             evCompensation: evCompensation,
             pushPull: pushPull,
             startDate: startDate,
-            notes: notes
+            notes: notes,
+            locationName: locationName,
+            latitude: locationLatitude,
+            longitude: locationLongitude
         )
         modelContext.insert(roll)
         try? modelContext.save()

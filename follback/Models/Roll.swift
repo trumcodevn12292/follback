@@ -13,6 +13,9 @@ class Roll {
     var startDate: Date
     var status: String
     var notes: String
+    var locationName: String?
+    var latitude: Double?
+    var longitude: Double?
     var createdAt: Date
     var updatedAt: Date
 
@@ -33,7 +36,10 @@ class Roll {
         pushPull: Float = 0,
         startDate: Date = Date(),
         status: RollStatus = .inProgress,
-        notes: String = ""
+        notes: String = "",
+        locationName: String? = nil,
+        latitude: Double? = nil,
+        longitude: Double? = nil
     ) {
         self.id = id
         self.filmName = filmName
@@ -45,6 +51,9 @@ class Roll {
         self.startDate = startDate
         self.status = status.rawValue
         self.notes = notes
+        self.locationName = locationName
+        self.latitude = latitude
+        self.longitude = longitude
         self.createdAt = Date()
         self.updatedAt = Date()
         self.camera = camera
