@@ -828,7 +828,7 @@ struct EditRollDetailsView: View {
     @State private var evCompensation: Float = 0
     @State private var pushPull: Float = 0
     @State private var notes: String = ""
-    @State private var locationName: String = ""
+    @State private var locationName: String?
     @State private var locationLatitude: Double?
     @State private var locationLongitude: Double?
     @State private var showFilmPicker = false
@@ -972,14 +972,14 @@ struct EditRollDetailsView: View {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: 14))
                                     .foregroundColor(Color.filmAccent)
-                                Text(locationName.isEmpty ? "Add Location" : locationName)
+                                Text((locationName ?? "").isEmpty ? "Add Location" : (locationName ?? ""))
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor(locationName.isEmpty ? Color.filmTertiary : Color.filmText)
                                     .lineLimit(1)
                                 Spacer()
-                                if !locationName.isEmpty {
+                                if !(locationName ?? "").isEmpty {
                                     Button {
-                                        locationName = ""
+                                        locationName = nil
                                         locationLatitude = nil
                                         locationLongitude = nil
                                     } label: {
@@ -1068,7 +1068,7 @@ struct EditRollDetailsView: View {
             evCompensation = roll.evCompensation
             pushPull = roll.pushPull
             notes = roll.notes
-            locationName = roll.locationName ?? ""
+            locationName = roll.locationName
             locationLatitude = roll.latitude
             locationLongitude = roll.longitude
         }
@@ -1156,7 +1156,7 @@ struct EditRollDetailsView: View {
         roll.evCompensation = evCompensation
         roll.pushPull = pushPull
         roll.notes = notes
-        roll.locationName = locationName.isEmpty ? nil : locationName
+        roll.locationName = (locationName ?? "").isEmpty ? nil : locationName
         roll.latitude = locationLatitude
         roll.longitude = locationLongitude
         roll.updatedAt = Date()
