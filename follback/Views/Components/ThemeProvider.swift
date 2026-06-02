@@ -1,7 +1,14 @@
 import SwiftUI
+import Combine
 
 class ThemeManager: ObservableObject {
-    @AppStorage("darkMode") var isDarkMode: Bool = true
+    @Published var isDarkMode: Bool {
+        didSet { UserDefaults.standard.set(isDarkMode, forKey: "darkMode") }
+    }
+
+    init() {
+        self.isDarkMode = UserDefaults.standard.object(forKey: "darkMode") as? Bool ?? true
+    }
 }
 
 struct ThemeKey: EnvironmentKey {

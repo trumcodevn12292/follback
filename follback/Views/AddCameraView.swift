@@ -226,7 +226,7 @@ struct AddCameraView: View {
             brand: brand,
             format: format,
             type: cameraType,
-            fixedFocalLength: fixedFocalLength.isEmpty ? nil : fixedFocalLength,
+            fixedFocalLength: fixedFocalLength.isEmpty ? nil : Int(fixedFocalLength),
             notes: notes
         )
         modelContext.insert(camera)

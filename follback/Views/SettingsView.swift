@@ -330,7 +330,7 @@ struct LineChartWrapper: UIViewRepresentable {
         dataSet.drawFilledEnabled = true
         let gradientColors = [UIColor(Color.filmAccent.opacity(0.3)).cgColor, UIColor.clear.cgColor] as CFArray
         if let gradient = CGGradient(colorsSpace: nil, colors: gradientColors, locations: nil) {
-            dataSet.fill = LinearChartFill(gradient: gradient, angle: 90)
+            dataSet.fill = LinearGradientFill(gradient: gradient, angle: 90)
         }
         let chartData = LineChartData(dataSet: dataSet)
         let labels = sortedKeys.map { "\($0.month!)/\($0.year! % 100)" }

@@ -9,15 +9,15 @@ struct AddRollView: View {
     @State private var filmName = ""
     @State private var selectedCamera: Camera?
     @State private var capacity = 36
-    @State private var iso = "400"
+    @State private var iso = 400
     @State private var format: FilmFormat = .mm35
-    @State private var evCompensation: Double = 0
-    @State private var pushPull: Double = 0
+    @State private var evCompensation: Float = 0
+    @State private var pushPull: Float = 0
     @State private var startDate = Date()
     @State private var notes = ""
     @State private var cardAppeared = false
 
-    let isoOptions = ["50", "100", "200", "400", "800", "1600", "3200"]
+    let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -126,7 +126,7 @@ struct AddRollView: View {
                                 }
                                 UIImpactFeedbackGenerator(style: .soft).impactOccurred()
                             } label: {
-                                Text(option)
+                                Text("\(option)")
                                     .font(.system(size: 13, weight: isSelected ? .bold : .medium, design: .monospaced))
                                     .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
                                     .padding(.horizontal, 14)
