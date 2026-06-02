@@ -1166,62 +1166,6 @@ struct EditRollDetailsView: View {
     }
 }
 
-// MARK: - Contact Sheet Aspect Ratio
-
-enum ContactSheetRatio: String, CaseIterable, Identifiable {
-    case square = "1:1"
-    case portrait = "4:5"
-    case story = "9:16"
-    case landscape = "16:9"
-
-    var id: String { rawValue }
-
-    var label: String {
-        switch self {
-        case .square: return "Instagram"
-        case .portrait: return "Portrait"
-        case .story: return "Story"
-        case .landscape: return "Landscape"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .square: return "square"
-        case .portrait: return "rectangle.portrait"
-        case .story: return "rectangle.portrait"
-        case .landscape: return "rectangle"
-        }
-    }
-
-    var aspectRatio: CGFloat {
-        switch self {
-        case .square: return 1.0
-        case .portrait: return 4.0 / 5.0
-        case .story: return 9.0 / 16.0
-        case .landscape: return 16.0 / 9.0
-        }
-    }
-
-    var exportSize: CGSize {
-        switch self {
-        case .square: return CGSize(width: 1080, height: 1080)
-        case .portrait: return CGSize(width: 1080, height: 1350)
-        case .story: return CGSize(width: 1080, height: 1920)
-        case .landscape: return CGSize(width: 1920, height: 1080)
-        }
-    }
-
-    var columns: Int {
-        switch self {
-        case .square: return 4
-        case .portrait: return 3
-        case .story: return 2
-        case .landscape: return 5
-        }
-    }
-}
-
 // MARK: - Contact Sheet View
 
 struct ContactSheetView: View {
@@ -1231,8 +1175,8 @@ struct ContactSheetView: View {
     @State private var isLoading = true
     @State private var savedToPhotos = false
     @State private var isSaving = false
-    @State private var selectedRatio: ContactSheetRatio = .square
 
+    private let columns = 4
     private let filmBase = Color(hex: "#1C1408")
     private let rebateText = Color(hex: "#C86B28")
     private let paperBg = Color(hex: "#F5F0E8")
@@ -1259,12 +1203,10 @@ struct ContactSheetView: View {
                             .background(Circle().fill(Color.white.opacity(0.1)))
                     }
                     Spacer()
-                    VStack(spacing: 2) {
-                        Text("CONTACT SHEET")
-                            .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                            .foregroundColor(.white)
-                            .kerning(2)
-                    }
+                    Text("CONTACT SHEET")
+                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                        .foregroundColor(.white)
+                        .kerning(2)
                     Spacer()
                     Button { saveContactSheet() } label: {
                         if isSaving {
@@ -1283,45 +1225,11 @@ struct ContactSheetView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 10)
-                .padding(.bottom, 8)
-
-                // Aspect ratio picker
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(ContactSheetRatio.allCases) { ratio in
-                            Button {
-                                withAnimation(.easeInOut(duration: 0.25)) {
-                                    selectedRatio = ratio
-                                }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Image(systemName: ratio.icon)
-                                        .font(.system(size: 11))
-                                    VStack(alignment: .leading, spacing: 1) {
-                                        Text(ratio.rawValue)
-                                            .font(.system(size: 12, weight: .bold, design: .monospaced))
-                                        Text(ratio.label)
-                                            .font(.system(size: 9, weight: .medium))
-                                    }
-                                }
-                                .foregroundColor(selectedRatio == ratio ? Color(hex: "#0A0908") : .white.opacity(0.7))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 8)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        .fill(selectedRatio == ratio ? Color.filmAccent : Color.white.opacity(0.08))
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(.horizontal, 16)
-                }
                 .padding(.bottom, 12)
 
                 // Preview
                 ScrollView(showsIndicators: false) {
-                    contactSheetPreview
+                    contactSheetContent(fontSize: 1.0)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
                         .padding(.horizontal, 16)
@@ -1352,172 +1260,163 @@ struct ContactSheetView: View {
         .onAppear { loadAllImages() }
     }
 
-    // MARK: - Preview
-    private var contactSheetPreview: some View {
-        let cols = selectedRatio.columns
-        let rows = stride(from: 0, to: photoFrames.count, by: cols).map {
-            Array(photoFrames[$0..<min($0 + cols, photoFrames.count)])
+    // MARK: - Shared Content
+    private func contactSheetContent(fontSize: CGFloat) -> some View {
+        let rows = stride(from: 0, to: photoFrames.count, by: columns).map {
+            Array(photoFrames[$0..<min($0 + columns, photoFrames.count)])
         }
 
         return VStack(spacing: 0) {
             // Title area
-            VStack(spacing: 5) {
+            VStack(spacing: 5 * fontSize) {
                 Text(roll.filmName.uppercased())
-                    .font(.system(size: 16, weight: .black, design: .monospaced))
+                    .font(.system(size: 16 * fontSize, weight: .black, design: .monospaced))
                     .foregroundColor(inkColor)
-                    .kerning(2)
+                    .kerning(2 * fontSize)
 
-                HStack(spacing: 10) {
+                HStack(spacing: 10 * fontSize) {
                     if let camera = roll.camera {
-                        chipLabel(camera.name)
+                        Text(camera.name.uppercased())
+                            .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
+                            .foregroundColor(Color(hex: "#6A5E4E"))
                     }
-                    chipLabel("ISO \(roll.iso)")
-                    chipLabel(roll.format)
+                    Text("ISO \(roll.iso)")
+                        .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
+                        .foregroundColor(Color(hex: "#6A5E4E"))
+                    Text(roll.format.uppercased())
+                        .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
+                        .foregroundColor(Color(hex: "#6A5E4E"))
                 }
 
                 Text(roll.startDate.formatted(.dateTime.month(.wide).day().year()).uppercased())
-                    .font(.system(size: 8, weight: .medium, design: .monospaced))
+                    .font(.system(size: 8 * fontSize, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#9A8E7E"))
-                    .kerning(1)
+                    .kerning(1 * fontSize)
 
                 if let loc = roll.locationName, !loc.isEmpty {
-                    HStack(spacing: 3) {
+                    HStack(spacing: 3 * fontSize) {
                         Image(systemName: "mappin")
-                            .font(.system(size: 6))
+                            .font(.system(size: 6 * fontSize))
                         Text(loc.uppercased())
-                            .font(.system(size: 7, weight: .medium, design: .monospaced))
+                            .font(.system(size: 7 * fontSize, weight: .medium, design: .monospaced))
                     }
                     .foregroundColor(Color(hex: "#9A8E7E"))
                 }
             }
-            .padding(.top, 16)
-            .padding(.bottom, 10)
+            .padding(.top, 16 * fontSize)
+            .padding(.bottom, 10 * fontSize)
 
             // Film strips
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                filmStripRow(row: row, cols: cols)
-                    .padding(.vertical, 2)
+                filmStripRow(row: row, scale: fontSize)
+                    .padding(.vertical, 2 * fontSize)
             }
 
             // Footer
             HStack(spacing: 0) {
                 Text("FILMVAULT")
-                    .font(.system(size: 6, weight: .black, design: .monospaced))
+                    .font(.system(size: 6 * fontSize, weight: .black, design: .monospaced))
                     .foregroundColor(Color(hex: "#C8BAA8"))
-                    .kerning(3)
+                    .kerning(3 * fontSize)
                 Spacer()
                 Text("\(photoFrames.count) EXPOSURES")
-                    .font(.system(size: 6, weight: .medium, design: .monospaced))
+                    .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#C8BAA8"))
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 10)
+            .padding(.horizontal, 12 * fontSize)
+            .padding(.vertical, 10 * fontSize)
         }
-        .padding(.horizontal, 6)
+        .padding(.horizontal, 6 * fontSize)
         .background(paperBg)
     }
 
-    private func chipLabel(_ text: String) -> some View {
-        Text(text.uppercased())
-            .font(.system(size: 7, weight: .semibold, design: .monospaced))
-            .foregroundColor(Color(hex: "#6A5E4E"))
-    }
-
     // MARK: - Film Strip Row
-    private func filmStripRow(row: [Frame], cols: Int) -> some View {
+    private func filmStripRow(row: [Frame], scale: CGFloat) -> some View {
         VStack(spacing: 0) {
-            sprocketRail(count: cols * 2)
+            sprocketRail(count: columns * 2, scale: scale)
 
             HStack(spacing: 0) {
                 ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
-                    rebateTop(frame: frame)
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 0) {
+                        Text("\(frame.number)")
+                            .font(.system(size: 5 * scale, weight: .bold, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.7))
+                        Spacer()
+                        Text("\(frame.number)A")
+                            .font(.system(size: 4 * scale, weight: .medium, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.35))
+                    }
+                    .padding(.horizontal, 3 * scale)
+                    .frame(maxWidth: .infinity)
                 }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
-                        Color.clear.frame(maxWidth: .infinity, minHeight: 10)
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 10 * scale)
                     }
                 }
             }
-            .frame(height: 12)
+            .frame(height: 12 * scale)
             .background(filmBase)
 
-            HStack(spacing: 1) {
+            HStack(spacing: 1 * scale) {
                 ForEach(row, id: \.id) { frame in
                     ZStack {
                         Color(hex: "#0D0A06")
                         if let img = loadedImages[frame.number] {
                             Image(uiImage: img)
                                 .resizable()
-                                .scaledToFit()
+                                .scaledToFill()
                         }
                     }
                     .aspectRatio(3.0/2.0, contentMode: .fit)
                     .clipped()
                 }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
                         Color(hex: "#0D0A06")
                             .aspectRatio(3.0/2.0, contentMode: .fit)
                     }
                 }
             }
-            .padding(.horizontal, 3)
+            .padding(.horizontal, 3 * scale)
             .background(filmBase)
 
             HStack(spacing: 0) {
                 ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
-                    rebateBottom(frame: frame)
-                        .frame(maxWidth: .infinity)
+                    HStack(spacing: 0) {
+                        Text("◀ \(frame.number)")
+                            .font(.system(size: 4 * scale, weight: .medium, design: .monospaced))
+                            .foregroundColor(rebateText.opacity(0.4))
+                        Spacer()
+                    }
+                    .padding(.horizontal, 3 * scale)
+                    .frame(maxWidth: .infinity)
                 }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
-                        Color.clear.frame(maxWidth: .infinity, minHeight: 10)
+                if row.count < columns {
+                    ForEach(0..<(columns - row.count), id: \.self) { _ in
+                        Color.clear.frame(maxWidth: .infinity, minHeight: 10 * scale)
                     }
                 }
             }
-            .frame(height: 12)
+            .frame(height: 12 * scale)
             .background(filmBase)
 
-            sprocketRail(count: cols * 2)
+            sprocketRail(count: columns * 2, scale: scale)
         }
-        .clipShape(RoundedRectangle(cornerRadius: 1.5))
+        .clipShape(RoundedRectangle(cornerRadius: 1.5 * scale))
     }
 
-    private func rebateTop(frame: Frame) -> some View {
-        HStack(spacing: 0) {
-            Text("\(frame.number)")
-                .font(.system(size: 5, weight: .bold, design: .monospaced))
-                .foregroundColor(rebateText.opacity(0.7))
-            Spacer()
-            Text("\(frame.number)A")
-                .font(.system(size: 4, weight: .medium, design: .monospaced))
-                .foregroundColor(rebateText.opacity(0.35))
-        }
-        .padding(.horizontal, 3)
-    }
-
-    private func rebateBottom(frame: Frame) -> some View {
-        HStack(spacing: 0) {
-            Text("◀ \(frame.number)")
-                .font(.system(size: 4, weight: .medium, design: .monospaced))
-                .foregroundColor(rebateText.opacity(0.4))
-            Spacer()
-        }
-        .padding(.horizontal, 3)
-    }
-
-    private func sprocketRail(count: Int) -> some View {
+    private func sprocketRail(count: Int, scale: CGFloat) -> some View {
         HStack(spacing: 0) {
             ForEach(0..<count, id: \.self) { _ in
                 Spacer()
-                RoundedRectangle(cornerRadius: 0.4)
+                RoundedRectangle(cornerRadius: 0.4 * scale)
                     .fill(paperBg)
-                    .frame(width: 3.5, height: 2)
+                    .frame(width: 3.5 * scale, height: 2 * scale)
                 Spacer()
             }
         }
-        .frame(height: 5)
+        .frame(height: 5 * scale)
         .background(filmBase)
     }
 
@@ -1546,7 +1445,7 @@ struct ContactSheetView: View {
                 options.isSynchronous = false
                 options.resizeMode = .fast
 
-                let targetSize = CGSize(width: 400, height: 400)
+                let targetSize = CGSize(width: 600, height: 600)
                 PHImageManager.default().requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFill, options: options) { image, _ in
                     if let image = image {
                         DispatchQueue.main.async {
@@ -1563,8 +1462,12 @@ struct ContactSheetView: View {
     @MainActor
     private func saveContactSheet() {
         isSaving = true
-        let renderer = ImageRenderer(content: exportImage)
-        renderer.scale = 3.0
+
+        let exportView = contactSheetContent(fontSize: 2.0)
+            .frame(width: 540)
+
+        let renderer = ImageRenderer(content: exportView)
+        renderer.scale = 2.0
 
         if let uiImage = renderer.uiImage {
             UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
@@ -1579,172 +1482,5 @@ struct ContactSheetView: View {
         } else {
             isSaving = false
         }
-    }
-
-    // MARK: - Export Image
-    @MainActor
-    private var exportImage: some View {
-        let cols = selectedRatio.columns
-        let rows = stride(from: 0, to: photoFrames.count, by: cols).map {
-            Array(photoFrames[$0..<min($0 + cols, photoFrames.count)])
-        }
-        let size = selectedRatio.exportSize
-
-        return VStack(spacing: 0) {
-            Spacer(minLength: 0)
-
-            // Header
-            VStack(spacing: 8) {
-                Text(roll.filmName.uppercased())
-                    .font(.system(size: 24, weight: .black, design: .monospaced))
-                    .foregroundColor(inkColor)
-                    .kerning(3)
-
-                HStack(spacing: 14) {
-                    if let camera = roll.camera {
-                        exportChip(camera.name)
-                    }
-                    exportChip("ISO \(roll.iso)")
-                    exportChip(roll.format)
-                }
-
-                Text(roll.startDate.formatted(.dateTime.month(.wide).day().year()).uppercased())
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "#9A8E7E"))
-                    .kerning(1.5)
-
-                if let loc = roll.locationName, !loc.isEmpty {
-                    HStack(spacing: 4) {
-                        Image(systemName: "mappin")
-                            .font(.system(size: 8))
-                        Text(loc.uppercased())
-                            .font(.system(size: 9, weight: .medium, design: .monospaced))
-                    }
-                    .foregroundColor(Color(hex: "#9A8E7E"))
-                }
-            }
-            .padding(.top, 20)
-            .padding(.bottom, 12)
-
-            // Film strips
-            ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
-                exportFilmStrip(row: row, cols: cols)
-                    .padding(.vertical, 3)
-            }
-
-            Spacer(minLength: 0)
-
-            // Footer
-            HStack {
-                Text("FILMVAULT")
-                    .font(.system(size: 10, weight: .black, design: .monospaced))
-                    .foregroundColor(Color(hex: "#C8BAA8"))
-                    .kerning(4)
-                Spacer()
-                Text("\(photoFrames.count) EXPOSURES · \(selectedRatio.rawValue)")
-                    .font(.system(size: 10, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "#C8BAA8"))
-            }
-            .padding(.horizontal, 16)
-            .padding(.bottom, 16)
-        }
-        .padding(.horizontal, 12)
-        .frame(width: size.width / 3, height: size.height / 3)
-        .background(paperBg)
-    }
-
-    private func exportChip(_ text: String) -> some View {
-        Text(text.uppercased())
-            .font(.system(size: 9, weight: .semibold, design: .monospaced))
-            .foregroundColor(Color(hex: "#6A5E4E"))
-    }
-
-    @MainActor
-    private func exportFilmStrip(row: [Frame], cols: Int) -> some View {
-        VStack(spacing: 0) {
-            exportSprocketRail(count: cols * 3)
-
-            HStack(spacing: 0) {
-                ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
-                    HStack {
-                        Text("\(frame.number)")
-                            .font(.system(size: 7, weight: .bold, design: .monospaced))
-                            .foregroundColor(rebateText.opacity(0.7))
-                        Spacer()
-                        Text("\(frame.number)A")
-                            .font(.system(size: 5, weight: .medium, design: .monospaced))
-                            .foregroundColor(rebateText.opacity(0.4))
-                    }
-                    .padding(.horizontal, 4)
-                    .frame(maxWidth: .infinity)
-                }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
-                        Color.clear.frame(maxWidth: .infinity)
-                    }
-                }
-            }
-            .frame(height: 14)
-            .background(filmBase)
-
-            HStack(spacing: 1.5) {
-                ForEach(row, id: \.id) { frame in
-                    ZStack {
-                        Color(hex: "#0D0A06")
-                        if let img = loadedImages[frame.number] {
-                            Image(uiImage: img)
-                                .resizable()
-                                .scaledToFit()
-                        }
-                    }
-                    .aspectRatio(3.0/2.0, contentMode: .fit)
-                    .clipped()
-                }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
-                        Color(hex: "#0D0A06")
-                            .aspectRatio(3.0/2.0, contentMode: .fit)
-                    }
-                }
-            }
-            .padding(.horizontal, 4)
-            .background(filmBase)
-
-            HStack(spacing: 0) {
-                ForEach(Array(row.enumerated()), id: \.element.id) { _, frame in
-                    HStack {
-                        Text("◀ \(frame.number)")
-                            .font(.system(size: 5, weight: .medium, design: .monospaced))
-                            .foregroundColor(rebateText.opacity(0.5))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 4)
-                    .frame(maxWidth: .infinity)
-                }
-                if row.count < cols {
-                    ForEach(0..<(cols - row.count), id: \.self) { _ in
-                        Color.clear.frame(maxWidth: .infinity)
-                    }
-                }
-            }
-            .frame(height: 14)
-            .background(filmBase)
-
-            exportSprocketRail(count: cols * 3)
-        }
-    }
-
-    private func exportSprocketRail(count: Int) -> some View {
-        HStack(spacing: 0) {
-            ForEach(0..<count, id: \.self) { _ in
-                Spacer()
-                RoundedRectangle(cornerRadius: 0.6)
-                    .fill(paperBg)
-                    .frame(width: 5, height: 3)
-                Spacer()
-            }
-        }
-        .frame(height: 7)
-        .background(filmBase)
     }
 }
