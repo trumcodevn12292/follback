@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct FilmStock: Identifiable, Hashable, Codable {
     let id: String
