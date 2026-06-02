@@ -19,8 +19,9 @@ struct RollsView: View {
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
+                VStack(spacing: 20) {
                     headerSection
+                    filterSection
 
                     if rolls.isEmpty && !isLoading {
                         emptyState
@@ -31,36 +32,23 @@ struct RollsView: View {
                     }
                 }
                 .padding(.top, 8)
-                .padding(.bottom, 100)
+                .padding(.bottom, 20)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        withAnimation(.spring(response: 0.35)) {
-                            showAddSheet = true
-                        }
+                        showAddSheet = true
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                     } label: {
                         Image(systemName: "plus")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.filmAccent, Color.filmGold],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(width: 40, height: 40)
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 36, height: 36)
                             .background(
                                 Circle()
-                                    .fill(Color.filmSurface)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.filmBorder, lineWidth: 0.5)
-                                    )
-                                    .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 3)
+                                    .fill(Color.filmAccent.opacity(0.1))
                             )
                     }
                     .buttonStyle(.plain)
@@ -76,8 +64,8 @@ struct RollsView: View {
                     .navigationBarBackButtonHidden(true)
             }
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                    withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                    withAnimation(.easeOut(duration: 0.4)) {
                         isLoading = false
                         appeared = true
                     }
@@ -87,118 +75,89 @@ struct RollsView: View {
         .background(Color.filmBackground.ignoresSafeArea())
     }
 
-    private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        Text("FilmVault")
-                            .font(.system(size: 34, weight: .bold, design: .serif))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.filmText, Color.filmText.opacity(0.85)],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
-                    }
-                    HStack(spacing: 6) {
-                        Image(systemName: "film")
-                            .font(.system(size: 12))
-                            .foregroundColor(Color.filmAccent)
-                        Text("\(rolls.count) rolls")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(Color.filmSecondary)
-                        Text("·")
-                            .foregroundColor(Color.filmTertiary)
-                        Text("\(totalFrames) frames")
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(Color.filmSecondary)
-                    }
-                }
-                Spacer()
-            }
+    // MARK: - Header
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 10) {
-                    filterPill(nil, label: "All", count: rolls.count)
-                    filterPill(.inProgress, label: "Active", count: rolls.filter { $0.rollStatus == .inProgress }.count)
-                    filterPill(.developed, label: "Developed", count: rolls.filter { $0.rollStatus == .developed }.count)
-                    filterPill(.archived, label: "Archived", count: rolls.filter { $0.rollStatus == .archived }.count)
-                }
-                .padding(.horizontal, 16)
-            }
-            .padding(.horizontal, -16)
+    private var headerSection: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text("FilmVault")
+                .font(.system(size: 32, weight: .bold, design: .serif))
+                .foregroundColor(Color.filmText)
+
+            Text("\(rolls.count) rolls · \(totalFrames) frames")
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
         }
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 20)
         .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : -20)
+        .offset(y: appeared ? 0 : -10)
+        .animation(.easeOut(duration: 0.3), value: appeared)
     }
 
     private var totalFrames: Int {
         rolls.reduce(0) { $0 + ($1.frames?.count ?? 0) }
     }
 
+    // MARK: - Filters
+
+    private var filterSection: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                filterPill(nil, label: "All", count: rolls.count)
+                filterPill(.inProgress, label: "Active", count: rolls.filter { $0.rollStatus == .inProgress }.count)
+                filterPill(.developed, label: "Developed", count: rolls.filter { $0.rollStatus == .developed }.count)
+                filterPill(.archived, label: "Archived", count: rolls.filter { $0.rollStatus == .archived }.count)
+            }
+            .padding(.horizontal, 20)
+        }
+        .opacity(appeared ? 1 : 0)
+        .animation(.easeOut(duration: 0.3).delay(0.05), value: appeared)
+    }
+
     private func filterPill(_ status: RollStatus?, label: String, count: Int) -> some View {
         let isActive = selectedFilter == status
         return Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                if status == nil {
-                    selectedFilter = nil
-                } else {
-                    selectedFilter = (selectedFilter == status) ? nil : status
-                }
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            withAnimation(.easeInOut(duration: 0.2)) {
+                selectedFilter = (selectedFilter == status) ? nil : status
             }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } label: {
-            HStack(spacing: 6) {
+            HStack(spacing: 5) {
                 Text(label)
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .font(.system(size: 13, weight: isActive ? .bold : .medium))
                 if count > 0 {
                     Text("\(count)")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundColor(isActive ? Color.filmBackground : Color.filmAccent)
-                        .padding(.horizontal, 7)
-                        .padding(.vertical, 2)
-                        .background(
-                            Capsule()
-                                .fill(isActive ? Color.filmBackground.opacity(0.25) : Color.filmAccent.opacity(0.12))
-                        )
+                        .font(.system(size: 11, weight: .bold, design: .monospaced))
                 }
             }
-            .foregroundColor(isActive ? Color.filmBackground : Color.filmText)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 9)
+            .foregroundColor(isActive ? Color.filmBackground : Color.filmSecondary)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 7)
             .background(
                 Capsule()
-                    .fill(
-                        isActive
-                        ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
-                        : AnyShapeStyle(Color.filmSurface)
-                    )
+                    .fill(isActive ? Color.filmAccent : Color.filmSurface)
             )
             .overlay(
                 Capsule()
-                    .stroke(isActive ? Color.clear : Color.filmBorder, lineWidth: 0.5)
+                    .stroke(isActive ? Color.clear : Color.filmBorder.opacity(0.5), lineWidth: 0.5)
             )
-            .shadow(color: isActive ? Color.filmAccent.opacity(0.25) : Color.clear, radius: 8, x: 0, y: 3)
         }
         .buttonStyle(.plain)
     }
 
+    // MARK: - Roll List
+
     private var rollList: some View {
-        LazyVStack(spacing: 16) {
+        LazyVStack(spacing: 12) {
             ForEach(Array(filteredRolls.enumerated()), id: \.element.id) { index, roll in
                 NavigationLink(value: roll) {
                     RollCard(roll: roll, onDelete: { deleteRoll(roll) }, onArchive: { archiveRoll(roll) })
                 }
                 .buttonStyle(.plain)
                 .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 30)
-                .scaleEffect(appeared ? 1 : 0.96)
+                .offset(y: appeared ? 0 : 15)
                 .animation(
-                    .spring(response: 0.55, dampingFraction: 0.75)
-                    .delay(Double(index) * 0.06),
+                    .easeOut(duration: 0.35).delay(Double(index) * 0.04),
                     value: appeared
                 )
             }
@@ -206,98 +165,51 @@ struct RollsView: View {
         .padding(.horizontal, 16)
     }
 
+    // MARK: - Empty State
+
     private var emptyState: some View {
-        VStack(spacing: 28) {
-            // Film canister visual
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [Color.filmAccent.opacity(0.1), Color.filmAccent.opacity(0.02)],
-                            center: .center,
-                            startRadius: 20,
-                            endRadius: 70
-                        )
-                    )
-                    .frame(width: 140, height: 140)
+        VStack(spacing: 24) {
+            Image(systemName: "film")
+                .font(.system(size: 44, weight: .thin))
+                .foregroundColor(Color.filmTertiary)
 
-                Circle()
-                    .stroke(Color.filmAccent.opacity(0.15), lineWidth: 1)
-                    .frame(width: 120, height: 120)
-
-                // Film canister icon
-                VStack(spacing: 8) {
-                    Circle()
-                        .fill(
-                            LinearGradient(colors: [Color.filmAccent, Color.filmGold],
-                                           startPoint: .topLeading, endPoint: .bottomTrailing)
-                        )
-                        .frame(width: 40, height: 40)
-                        .overlay(
-                            Circle()
-                                .fill(Color.filmBackground.opacity(0.4))
-                                .frame(width: 14, height: 14)
-                        )
-                    RoundedRectangle(cornerRadius: 2)
-                        .fill(Color.filmAccent.opacity(0.4))
-                        .frame(width: 30, height: 4)
-                }
-            }
-
-            VStack(spacing: 10) {
+            VStack(spacing: 6) {
                 Text("No rolls yet")
-                    .font(.system(size: 24, weight: .bold, design: .serif))
+                    .font(.system(size: 20, weight: .semibold))
                     .foregroundColor(Color.filmText)
-                Text("Start documenting your analog\nphotography journey")
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(Color.filmSecondary)
-                    .multilineTextAlignment(.center)
-                    .lineSpacing(3)
+                Text("Start your analog journey")
+                    .font(.system(size: 15))
+                    .foregroundColor(Color.filmTertiary)
             }
 
             Button {
-                withAnimation(.spring(response: 0.35)) {
-                    showAddSheet = true
-                }
+                showAddSheet = true
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             } label: {
-                HStack(spacing: 8) {
-                    Image(systemName: "plus")
-                    Text("Create Roll")
-                }
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color.filmBackground)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 15)
-                .background(
-                    Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.filmAccent, Color.filmGold],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
-                )
+                Text("Create Roll")
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(Color.filmBackground)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 12)
+                    .background(
+                        Capsule().fill(Color.filmAccent)
+                    )
             }
             .buttonStyle(.plain)
         }
-        .padding(.top, 60)
+        .padding(.top, 80)
     }
 
+    // MARK: - Shimmer
+
     private var shimmerContent: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 12) {
             ForEach(0..<4, id: \.self) { _ in
-                RoundedRectangle(cornerRadius: 22, style: .continuous)
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
                     .fill(Color.filmSurface)
-                    .frame(height: 150)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .stroke(Color.filmBorder, lineWidth: 0.5)
-                    )
+                    .frame(height: 120)
                     .shimmering(
-                        gradient: Gradient(colors: [.clear, Color.filmAccent.opacity(0.06), .clear]),
+                        gradient: Gradient(colors: [.clear, Color.filmAccent.opacity(0.04), .clear]),
                         bandSize: 0.5
                     )
             }
@@ -305,15 +217,17 @@ struct RollsView: View {
         .padding(.horizontal, 16)
     }
 
+    // MARK: - Actions
+
     private func deleteRoll(_ roll: Roll) {
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(.easeInOut(duration: 0.2)) {
             modelContext.delete(roll)
             try? modelContext.save()
         }
     }
 
     private func archiveRoll(_ roll: Roll) {
-        withAnimation(.easeInOut(duration: 0.25)) {
+        withAnimation(.easeInOut(duration: 0.2)) {
             roll.updateStatus(.archived)
             try? modelContext.save()
         }

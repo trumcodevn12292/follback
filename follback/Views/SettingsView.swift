@@ -23,7 +23,7 @@ struct SettingsView: View {
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
-                .padding(.bottom, 100)
+                .padding(.bottom, 20)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -37,24 +37,18 @@ struct SettingsView: View {
     }
 
     private var headerSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 4) {
             Text("Settings")
-                .font(.system(size: 34, weight: .bold, design: .serif))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [Color.filmText, Color.filmText.opacity(0.85)],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(.system(size: 32, weight: .bold, design: .serif))
+                .foregroundColor(Color.filmText)
             Text("Preferences & stats")
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(Color.filmSecondary)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.top, 8)
         .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : -15)
+        .offset(y: appeared ? 0 : -10)
     }
 
     private var statsCards: some View {
@@ -73,58 +67,36 @@ struct SettingsView: View {
     }
 
     private func statCard(_ title: String, value: String, icon: String, color: Color) -> some View {
-        VStack(spacing: 12) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [color.opacity(0.15), color.opacity(0.03)],
-                            center: .center,
-                            startRadius: 5,
-                            endRadius: 22
-                        )
-                    )
-                    .frame(width: 44, height: 44)
-                Image(systemName: icon)
-                    .font(.system(size: 20))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [color, color.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
+        VStack(spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 18, weight: .light))
+                .foregroundColor(color)
             Text(value)
-                .font(.system(size: 24, weight: .bold, design: .rounded))
+                .font(.system(size: 22, weight: .bold, design: .monospaced))
                 .foregroundColor(Color.filmText)
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
-                .foregroundColor(Color.filmSecondary)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
-        .filmCard(cornerRadius: 18)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.filmSurface)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
+                )
+        )
     }
 
     private var chartSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: "chart.line.uptrend.xyaxis")
-                    .font(.system(size: 14))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                Text("Film Activity")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(Color.filmSecondary)
-                    .textCase(.uppercase)
-                    .tracking(0.5)
-            }
+            Text("Film Activity")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(Color.filmTertiary)
+                .textCase(.uppercase)
+                .tracking(0.5)
 
             LineChartWrapper(rolls: rolls)
                 .frame(height: 200)
@@ -139,50 +111,38 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 12) {
             sectionLabel("About")
 
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    HStack(spacing: 10) {
-                        ZStack {
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.filmAccent.opacity(0.15), Color.filmGold.opacity(0.08)],
-                                        startPoint: .topLeading,
-                                        endPoint: .bottomTrailing
-                                    )
-                                )
-                                .frame(width: 36, height: 36)
-                            Image(systemName: "camera.aperture")
-                                .font(.system(size: 18))
-                                .foregroundColor(Color.filmAccent)
-                        }
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("FilmVault")
-                                .foregroundColor(Color.filmText)
-                                .font(.system(size: 18, weight: .bold, design: .serif))
-                            Text("A journal for your analog photography.")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(Color.filmSecondary)
-                        }
-                    }
-                    Spacer()
-                    Text("3.0")
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+            HStack {
+                HStack(spacing: 10) {
+                    Image(systemName: "camera.aperture")
+                        .font(.system(size: 18))
                         .foregroundColor(Color.filmAccent)
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(
-                            Capsule()
-                                .fill(Color.filmAccent.opacity(0.1))
-                        )
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("FilmVault")
+                            .foregroundColor(Color.filmText)
+                            .font(.system(size: 16, weight: .semibold))
+                        Text("Analog photography journal")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.filmTertiary)
+                    }
                 }
+                Spacer()
+                Text("v3.0")
+                    .font(.system(size: 12, weight: .medium, design: .monospaced))
+                    .foregroundColor(Color.filmTertiary)
             }
-            .padding(18)
-            .filmCard(cornerRadius: 18)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
+                    )
+            )
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.15), value: appeared)
+        .animation(.easeOut(duration: 0.35).delay(0.1), value: appeared)
     }
 
     private var dataCard: some View {
@@ -191,15 +151,22 @@ struct SettingsView: View {
 
             VStack(spacing: 0) {
                 rowButton("Export Rolls JSON", icon: "arrow.up.doc", color: Color.filmAccent)
-                Divider().background(Color.filmBorder)
-                rowButton("Import Rolls JSON", icon: "arrow.down.doc", color: Color.filmGold)
+                Divider().background(Color.filmBorder.opacity(0.3))
+                rowButton("Import Rolls JSON", icon: "arrow.down.doc", color: Color.filmAccent)
             }
-            .padding(.horizontal, 18)
-            .filmCard(cornerRadius: 18)
+            .padding(.horizontal, 16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
+                    )
+            )
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.2), value: appeared)
+        .animation(.easeOut(duration: 0.35).delay(0.12), value: appeared)
     }
 
     private var appearanceCard: some View {
@@ -207,30 +174,12 @@ struct SettingsView: View {
             sectionLabel("Appearance")
 
             HStack {
-                HStack(spacing: 12) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                RadialGradient(
-                                    colors: [Color.filmAccent.opacity(0.15), Color.clear],
-                                    center: .center,
-                                    startRadius: 5,
-                                    endRadius: 20
-                                )
-                            )
-                            .frame(width: 40, height: 40)
-                        Image(systemName: theme.isDarkMode ? "moon.fill" : "sun.max.fill")
-                            .font(.system(size: 18))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [Color.filmAccent, Color.filmGold],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
+                HStack(spacing: 10) {
+                    Image(systemName: theme.isDarkMode ? "moon.fill" : "sun.max.fill")
+                        .font(.system(size: 16))
+                        .foregroundColor(Color.filmAccent)
                     Text("Dark Mode")
-                        .font(.system(size: 16, weight: .semibold))
+                        .font(.system(size: 15, weight: .medium))
                         .foregroundColor(Color.filmText)
                 }
                 Spacer()
@@ -241,42 +190,45 @@ struct SettingsView: View {
                 .labelsHidden()
                 .tint(Color.filmAccent)
             }
-            .padding(18)
-            .filmCard(cornerRadius: 18)
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
+                    )
+            )
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
-        .animation(.spring(response: 0.5, dampingFraction: 0.8).delay(0.25), value: appeared)
+        .animation(.easeOut(duration: 0.35).delay(0.15), value: appeared)
     }
 
     private func sectionLabel(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 13, weight: .bold))
-            .foregroundColor(Color.filmSecondary)
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(Color.filmTertiary)
             .textCase(.uppercase)
-            .tracking(0.5)
+            .tracking(0.8)
     }
 
     private func rowButton(_ title: String, icon: String, color: Color) -> some View {
         Button {} label: {
-            HStack(spacing: 14) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 8)
-                        .fill(color.opacity(0.1))
-                        .frame(width: 32, height: 32)
-                    Image(systemName: icon)
-                        .font(.system(size: 16))
-                        .foregroundColor(color)
-                }
+            HStack(spacing: 12) {
+                Image(systemName: icon)
+                    .font(.system(size: 15))
+                    .foregroundColor(color)
+                    .frame(width: 24)
                 Text(title)
-                    .font(.system(size: 15, weight: .medium))
+                    .font(.system(size: 15))
                     .foregroundColor(Color.filmText)
                 Spacer()
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color.filmTertiary)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(Color.filmTertiary.opacity(0.5))
             }
-            .padding(.vertical, 14)
+            .padding(.vertical, 13)
         }
         .buttonStyle(.plain)
     }

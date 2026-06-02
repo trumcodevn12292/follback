@@ -4,21 +4,26 @@ struct CameraModel: Identifiable, Hashable, Codable {
     let id: String
     let name: String
     let brand: String
-    let cameraType: String
-    let coverUrl: String
-    let brandLogoUrl: String
-    let description: String
+    let cameraType: String?
+    let coverUrl: String?
+    let brandLogoUrl: String?
+    let cameraDescription: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, brand, cameraType, coverUrl, brandLogoUrl
+        case cameraDescription = "description"
+    }
 
     var displayName: String { "\(brand) \(name)" }
 
     var fullCoverUrl: String? {
-        guard !coverUrl.isEmpty else { return nil }
-        return "https://api.getfilmer.com\(coverUrl)"
+        guard let url = coverUrl, !url.isEmpty else { return nil }
+        return "https://api.getfilmer.com\(url)"
     }
 
     var fullBrandLogoUrl: String? {
-        guard !brandLogoUrl.isEmpty else { return nil }
-        return "https://api.getfilmer.com\(brandLogoUrl)"
+        guard let url = brandLogoUrl, !url.isEmpty else { return nil }
+        return "https://api.getfilmer.com\(url)"
     }
 
     // MARK: - Data Loading
@@ -36,16 +41,16 @@ struct CameraModel: Identifiable, Hashable, Codable {
         return models
     }
 
+    static let popularBrands = [
+        "Canon", "Nikon", "Leica", "Olympus", "Pentax", "Minolta",
+        "Contax", "Hasselblad", "Mamiya", "Fujifilm", "Yashica", "Rollei"
+    ]
+
     static var groupedByBrand: [(brand: String, models: [CameraModel])] {
         let grouped = Dictionary(grouping: allModels) { $0.brand }
         return grouped
             .sorted { $0.key < $1.key }
             .map { (brand: $0.key, models: $0.value) }
-    }
-
-    static var popularBrands: [String] {
-        ["Canon", "Nikon", "Leica", "Olympus", "Pentax", "Minolta",
-         "Contax", "Hasselblad", "Mamiya", "Fujifilm", "Yashica", "Rollei"]
     }
 
     static var groupedByBrandPopularFirst: [(brand: String, models: [CameraModel])] {

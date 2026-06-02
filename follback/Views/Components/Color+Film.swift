@@ -121,7 +121,7 @@ extension LinearGradient {
 
 // MARK: - Reusable View Modifiers
 struct FilmCardStyle: ViewModifier {
-    var cornerRadius: CGFloat = 20
+    var cornerRadius: CGFloat = 16
 
     func body(content: Content) -> some View {
         content
@@ -130,23 +130,14 @@ struct FilmCardStyle: ViewModifier {
                     .fill(Color.filmSurface)
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(.linearGradient(
-                                colors: [Color.white.opacity(0.03), Color.clear],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            ))
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                            .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
                     )
             )
-            .shadow(color: Color.black.opacity(0.12), radius: 16, x: 0, y: 6)
     }
 }
 
 struct FilmGlassStyle: ViewModifier {
-    var cornerRadius: CGFloat = 20
+    var cornerRadius: CGFloat = 16
 
     func body(content: Content) -> some View {
         content
@@ -155,14 +146,13 @@ struct FilmGlassStyle: ViewModifier {
                     .fill(.ultraThinMaterial)
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .fill(Color.filmGlass.opacity(0.6))
+                            .fill(Color.filmGlass.opacity(0.5))
                     )
                     .overlay(
                         RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .stroke(Color.filmBorder.opacity(0.6), lineWidth: 0.5)
+                            .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
                     )
             )
-            .shadow(color: Color.black.opacity(0.15), radius: 20, x: 0, y: 8)
     }
 }
 
