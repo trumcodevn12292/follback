@@ -42,7 +42,7 @@ struct SearchView: View {
                     searchField
                     resultsSection
                 }
-                .padding(.bottom, 100)
+                .padding(.bottom, 20)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)

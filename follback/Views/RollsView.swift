@@ -32,7 +32,7 @@ struct RollsView: View {
                     }
                 }
                 .padding(.top, 8)
-                .padding(.bottom, 100)
+                .padding(.bottom, 20)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)

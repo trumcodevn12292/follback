@@ -35,7 +35,7 @@ struct RollDetailView: View {
                 tabPicker
                 tabContent
             }
-            .padding(.bottom, 100)
+            .padding(.bottom, 20)
         }
         .background(Color.filmBackground.ignoresSafeArea())
         .navigationBarHidden(true)
@@ -657,13 +657,12 @@ struct FullScreenPhotoView: View {
 struct SegmentedPicker: View {
     @Binding var selection: Int
     let options: [(String, String)]
-    @Namespace private var animation
 
     var body: some View {
         HStack(spacing: 4) {
             ForEach(0..<options.count, id: \.self) { index in
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                    withAnimation(.easeInOut(duration: 0.2)) {
                         selection = index
                     }
                     UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -674,24 +673,12 @@ struct SegmentedPicker: View {
                         Text(options[index].0)
                             .font(.system(size: 13, weight: .semibold))
                     }
-                    .foregroundColor(selection == index ? Color.filmBackground : Color.filmSecondary)
+                    .foregroundColor(selection == index ? Color.filmBackground : Color.filmTertiary)
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
                     .background(
-                        ZStack {
-                            if selection == index {
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [Color.filmAccent, Color.filmGold],
-                                            startPoint: .leading,
-                                            endPoint: .trailing
-                                        )
-                                    )
-                                    .matchedGeometryEffect(id: "pickerBg", in: animation)
-                                    .shadow(color: Color.filmAccent.opacity(0.3), radius: 8, x: 0, y: 3)
-                            }
-                        }
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .fill(selection == index ? Color.filmAccent : Color.clear)
                     )
                 }
                 .buttonStyle(.plain)
@@ -703,7 +690,7 @@ struct SegmentedPicker: View {
                 .fill(Color.filmSurface)
                 .overlay(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                        .stroke(Color.filmBorder.opacity(0.4), lineWidth: 0.5)
                 )
         )
     }

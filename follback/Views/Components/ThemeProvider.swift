@@ -1,7 +1,10 @@
 import SwiftUI
 import Combine
 
+@MainActor
 class ThemeManager: ObservableObject {
+    static let shared = ThemeManager()
+
     @Published var isDarkMode: Bool {
         didSet { UserDefaults.standard.set(isDarkMode, forKey: "darkMode") }
     }
@@ -12,7 +15,7 @@ class ThemeManager: ObservableObject {
 }
 
 struct ThemeKey: EnvironmentKey {
-    static let defaultValue = ThemeManager()
+    static let defaultValue = ThemeManager.shared
 }
 
 extension EnvironmentValues {
@@ -24,7 +27,7 @@ extension EnvironmentValues {
 
 extension View {
     func withTheme() -> some View {
-        let manager = ThemeManager()
+        let manager = ThemeManager.shared
         return self
             .environmentObject(manager)
             .environment(\.theme, manager)
