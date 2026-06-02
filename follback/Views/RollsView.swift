@@ -66,12 +66,10 @@ struct RollsView: View {
                     .buttonStyle(.plain)
                 }
             }
-            .sheet(isPresented: $showAddSheet) {
+            .fullScreenCover(isPresented: $showAddSheet) {
                 NavigationStack {
                     AddRollView()
                 }
-                .presentationDetents([.large])
-                .presentationDragIndicator(.visible)
             }
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)
@@ -210,6 +208,7 @@ struct RollsView: View {
 
     private var emptyState: some View {
         VStack(spacing: 28) {
+            // Film canister visual
             ZStack {
                 Circle()
                     .fill(
@@ -226,15 +225,23 @@ struct RollsView: View {
                     .stroke(Color.filmAccent.opacity(0.15), lineWidth: 1)
                     .frame(width: 120, height: 120)
 
-                Image(systemName: "film")
-                    .font(.system(size: 48, weight: .light))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+                // Film canister icon
+                VStack(spacing: 8) {
+                    Circle()
+                        .fill(
+                            LinearGradient(colors: [Color.filmAccent, Color.filmGold],
+                                           startPoint: .topLeading, endPoint: .bottomTrailing)
                         )
-                    )
+                        .frame(width: 40, height: 40)
+                        .overlay(
+                            Circle()
+                                .fill(Color.filmBackground.opacity(0.4))
+                                .frame(width: 14, height: 14)
+                        )
+                    RoundedRectangle(cornerRadius: 2)
+                        .fill(Color.filmAccent.opacity(0.4))
+                        .frame(width: 30, height: 4)
+                }
             }
 
             VStack(spacing: 10) {
@@ -256,7 +263,7 @@ struct RollsView: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "plus")
-                    Text("New Roll")
+                    Text("Create Roll")
                 }
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(Color.filmBackground)
