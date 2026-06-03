@@ -121,6 +121,7 @@ struct CameraPickerView: View {
                let url = URL(string: logoUrl) {
                 KFImage(url)
                     .requestModifier(FilmerImageAuth.shared.modifier)
+                    .downsampling(size: CGSize(width: 80, height: 40))
                     .resizable()
                     .scaledToFit()
                     .frame(height: 20)
@@ -149,6 +150,8 @@ struct CameraPickerView: View {
                        let url = URL(string: coverUrl) {
                         KFImage(url)
                             .requestModifier(FilmerImageAuth.shared.modifier)
+                            .downsampling(size: CGSize(width: 112, height: 112))
+                            .cacheOriginalImage()
                             .resizable()
                             .scaledToFill()
                             .frame(width: 56, height: 56)

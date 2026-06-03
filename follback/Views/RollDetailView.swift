@@ -330,6 +330,8 @@ struct RollDetailView: View {
                let coverURL = URL(string: coverUrlString) {
                 KFImage(coverURL)
                     .requestModifier(FilmerImageAuth.shared.modifier)
+                    .downsampling(size: CGSize(width: 144, height: 144))
+                    .cacheOriginalImage()
                     .resizable()
                     .scaledToFill()
                     .frame(width: 72, height: 72)
@@ -571,34 +573,36 @@ struct RollDetailView: View {
             guard index < emptySlots.count else { break }
             let slotNumber = emptySlots[index]
 
-            let accessing = url.startAccessingSecurityScopedResource()
-            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+            autoreleasepool {
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
 
-            guard let data = try? Data(contentsOf: url),
-                  let uiImage = UIImage(data: data),
-                  let jpegData = uiImage.jpegData(compressionQuality: 0.9) else { continue }
+                guard let data = try? Data(contentsOf: url),
+                      let uiImage = UIImage(data: data),
+                      let jpegData = uiImage.jpegData(compressionQuality: 0.8) else { return }
 
-            let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
-            let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent(filename)
-            try? jpegData.write(to: destURL)
+                let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+                let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent(filename)
+                try? jpegData.write(to: destURL)
 
-            if importMode == "Reference" {
-                saveToPhotoAlbum(data: jpegData)
+                if importMode == "Reference" {
+                    saveToPhotoAlbum(data: jpegData)
+                }
+
+                if shouldUploadToDrive {
+                    Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+                }
+
+                if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+                    existingFrame.photoAssetID = filename
+                } else {
+                    let newFrame = Frame(number: slotNumber, photoAssetID: filename)
+                    newFrame.roll = roll
+                    modelContext.insert(newFrame)
+                }
+                importedCount += 1
             }
-
-            if shouldUploadToDrive {
-                Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
-            }
-
-            if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
-                existingFrame.photoAssetID = filename
-            } else {
-                let newFrame = Frame(number: slotNumber, photoAssetID: filename)
-                newFrame.roll = roll
-                modelContext.insert(newFrame)
-            }
-            importedCount += 1
         }
 
         await finishImport(count: importedCount)
@@ -628,26 +632,28 @@ struct RollDetailView: View {
             guard index < emptySlots.count else { break }
             let slotNumber = emptySlots[index]
 
-            guard let uiImage = UIImage(data: file.data),
-                  let jpegData = uiImage.jpegData(compressionQuality: 0.9) else { continue }
+            autoreleasepool {
+                guard let uiImage = UIImage(data: file.data),
+                      let jpegData = uiImage.jpegData(compressionQuality: 0.8) else { return }
 
-            let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
-            let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent(filename)
-            try? jpegData.write(to: destURL)
+                let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+                let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                    .appendingPathComponent(filename)
+                try? jpegData.write(to: destURL)
 
-            if shouldUploadToDrive {
-                Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+                if shouldUploadToDrive {
+                    Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+                }
+
+                if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+                    existingFrame.photoAssetID = filename
+                } else {
+                    let newFrame = Frame(number: slotNumber, photoAssetID: filename)
+                    newFrame.roll = roll
+                    modelContext.insert(newFrame)
+                }
+                importedCount += 1
             }
-
-            if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
-                existingFrame.photoAssetID = filename
-            } else {
-                let newFrame = Frame(number: slotNumber, photoAssetID: filename)
-                newFrame.roll = roll
-                modelContext.insert(newFrame)
-            }
-            importedCount += 1
         }
 
         await finishImport(count: importedCount)
@@ -949,22 +955,29 @@ private struct PhotoPageView: View {
             }
         }
         .onAppear { loadImage() }
+        .onDisappear { image = nil }
     }
 
     private func loadImage() {
-        guard let assetID = frame.photoAssetID else { return }
+        guard image == nil, let assetID = frame.photoAssetID else { return }
+
+        let screenScale = UIScreen.main.scale
+        let screenWidth = UIScreen.main.bounds.width * screenScale
+        let screenHeight = UIScreen.main.bounds.height * screenScale
+        let maxDimension = max(screenWidth, screenHeight)
 
         // Local file
         if assetID.contains("_frame_") {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(assetID)
-            if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
-                self.image = img
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let img = downsampledImage(at: url, maxPixel: maxDimension) else { return }
+                DispatchQueue.main.async { self.image = img }
             }
             return
         }
 
-        // PHAsset
+        // PHAsset — request screen-sized, not maximum
         let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
         guard let asset = result.firstObject else { return }
         let manager = PHImageManager.default()
@@ -972,7 +985,8 @@ private struct PhotoPageView: View {
         options.isSynchronous = false
         options.deliveryMode = .highQualityFormat
         options.isNetworkAccessAllowed = true
-        manager.requestImage(for: asset, targetSize: PHImageManagerMaximumSize, contentMode: .aspectFit, options: options) { img, _ in
+        let targetSize = CGSize(width: maxDimension, height: maxDimension)
+        manager.requestImage(for: asset, targetSize: targetSize, contentMode: .aspectFit, options: options) { img, _ in
             DispatchQueue.main.async {
                 self.image = img
             }
@@ -1367,6 +1381,8 @@ struct EditRollDetailsView: View {
                                            let url = URL(string: coverUrl) {
                                             KFImage(url)
                                                 .requestModifier(FilmerImageAuth.shared.modifier)
+                                                .downsampling(size: CGSize(width: 88, height: 88))
+                                                .cacheOriginalImage()
                                                 .resizable()
                                                 .scaledToFill()
                                                 .frame(width: 44, height: 44)
@@ -1476,6 +1492,8 @@ struct EditRollDetailsView: View {
     private func labAvatar(_ lab: FilmLab) -> some View {
         if let logoUrlString = lab.logoUrl, let url = URL(string: logoUrlString) {
             KFImage(url)
+                .downsampling(size: CGSize(width: 72, height: 72))
+                .cacheOriginalImage()
                 .resizable()
                 .scaledToFill()
                 .frame(width: 36, height: 36)
@@ -1769,14 +1787,17 @@ struct ContactSheetView: View {
     private func loadAllImages() {
         let frames = photoFrames
 
-        Task {
+        Task.detached(priority: .userInitiated) {
             for frame in frames {
                 guard let assetID = frame.photoAssetID else { continue }
 
                 if assetID.contains("_frame_") {
                     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                         .appendingPathComponent(assetID)
-                    if let data = try? Data(contentsOf: url), let img = UIImage(data: data) {
+                    let img = autoreleasepool {
+                        downsampledImage(at: url, maxPixel: 600)
+                    }
+                    if let img {
                         await MainActor.run { loadedImages[frame.number] = img }
                     }
                     continue

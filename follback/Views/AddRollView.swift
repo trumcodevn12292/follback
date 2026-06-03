@@ -416,6 +416,8 @@ struct AddRollView: View {
                        let coverURL = URL(string: coverUrlString) {
                         KFImage(coverURL)
                             .requestModifier(FilmerImageAuth.shared.modifier)
+                            .downsampling(size: CGSize(width: 100, height: 100))
+                            .cacheOriginalImage()
                             .resizable()
                             .scaledToFill()
                             .frame(width: 50, height: 50)
@@ -1048,6 +1050,8 @@ struct AddRollView: View {
     private func labAvatarView(_ lab: FilmLab) -> some View {
         if let logoUrlString = lab.logoUrl, let url = URL(string: logoUrlString) {
             KFImage(url)
+                .downsampling(size: CGSize(width: 72, height: 72))
+                .cacheOriginalImage()
                 .resizable()
                 .scaledToFill()
                 .frame(width: 36, height: 36)
