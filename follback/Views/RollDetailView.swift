@@ -487,6 +487,10 @@ struct RollDetailView: View {
                 filmDetailStock = stock
             }
         }
+        .onLongPressGesture(minimumDuration: 0.4) {
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            showFilmPicker = true
+        }
     }
 
     private func infoChipView(label: String, value: String) -> some View {
@@ -1094,6 +1098,13 @@ struct RollDetailView: View {
                 get: { roll.filmName },
                 set: { newName in
                     roll.filmName = newName
+                    if let stock = FilmStock.allStocks.first(where: {
+                        $0.displayName.lowercased() == newName.lowercased() ||
+                        "\($0.brand) \($0.name)".lowercased() == newName.lowercased()
+                    }) {
+                        roll.iso = stock.isoValue
+                    }
+                    roll.updatedAt = Date()
                     try? modelContext.save()
                     NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
                     showFilmPicker = false
