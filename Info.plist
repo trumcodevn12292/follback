@@ -17,5 +17,26 @@
 	<string>FilmVault uses your location to tag where you shot your film rolls.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>FilmVault needs access to your photo library to attach images to film frames.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>FilmVault uses the camera to capture photos directly into your film rolls.</string>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.williamcachamwri.FilmVault.newRoll</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New Roll</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>plus.circle.fill</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.williamcachamwri.FilmVault.settings</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Settings</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>gearshape.fill</string>
+		</dict>
+	</array>
 </dict>
 </plist>
