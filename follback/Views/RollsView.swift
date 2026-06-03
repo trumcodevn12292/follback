@@ -112,7 +112,7 @@ struct RollsView: View {
     private var headerSection: some View {
         HStack {
             Text("FILMVAULT")
-                .font(.system(size: 28, weight: .black))
+                .font(.system(size: 22, weight: .black))
                 .foregroundColor(Color.filmText)
                 .kerning(1.5)
 

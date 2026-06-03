@@ -28,9 +28,9 @@ struct FilmDetailPopup: View {
                     // Description text
                     if let description = stock.filmDescription, !description.isEmpty {
                         Text(description)
-                            .font(.system(size: 22, weight: .regular))
+                            .font(.system(size: 15, weight: .regular))
                             .foregroundColor(.white)
-                            .lineSpacing(8)
+                            .lineSpacing(5)
                             .multilineTextAlignment(.leading)
                             .padding(.horizontal, 20)
                     }
