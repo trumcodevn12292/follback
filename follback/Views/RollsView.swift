@@ -89,10 +89,12 @@ struct RollsView: View {
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
-            .fullScreenCover(isPresented: $showAddSheet) {
+            .sheet(isPresented: $showAddSheet) {
                 NavigationStack {
                     AddRollView()
                 }
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
             .navigationDestination(for: Roll.self) { roll in
                 RollDetailView(roll: roll)

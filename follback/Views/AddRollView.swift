@@ -955,6 +955,7 @@ private struct AddCustomFilmSheet: View {
     @State private var type = "COLOR_NEGATIVE"
     @State private var coverItem: PhotosPickerItem?
     @State private var coverData: Data?
+    @State private var showPhotoPicker = false
 
     var body: some View {
         ZStack {
@@ -971,7 +972,9 @@ private struct AddCustomFilmSheet: View {
                                 .kerning(0.8)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            PhotosPicker(selection: $coverItem, matching: .images) {
+                            Button {
+                                showPhotoPicker = true
+                            } label: {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                                         .fill(Color.filmSurface)
@@ -1001,6 +1004,7 @@ private struct AddCustomFilmSheet: View {
                             }
                             .buttonStyle(.plain)
                         }
+                        .photosPicker(isPresented: $showPhotoPicker, selection: $coverItem, matching: .images)
 
                         // Film name
                         VStack(alignment: .leading, spacing: 6) {
