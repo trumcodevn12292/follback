@@ -1,6 +1,7 @@
 import WidgetKit
 import SwiftUI
 import UIKit
+import AppIntents
 
 // MARK: - Shared Data Model
 
@@ -139,6 +140,12 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 12, weight: .heavy, design: .rounded))
                     .foregroundColor(.white.opacity(0.9))
                 Spacer()
+                Button(intent: RefreshWidgetIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .buttonStyle(.plain)
             }
 
             Spacer()
@@ -192,6 +199,13 @@ struct FilmVaultWidgetEntryView: View {
                     Text("FilmVault")
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
+                    Spacer()
+                    Button(intent: RefreshWidgetIntent()) {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.5))
+                    }
+                    .buttonStyle(.plain)
                 }
 
                 Spacer()
@@ -252,6 +266,12 @@ struct FilmVaultWidgetEntryView: View {
                         .foregroundColor(.white)
                 }
                 Spacer()
+                Button(intent: RefreshWidgetIntent()) {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white.opacity(0.5))
+                }
+                .buttonStyle(.plain)
                 HStack(spacing: 12) {
                     statBadge(value: "\(entry.data.totalRolls)", label: "rolls", color: .white)
                     statBadge(value: "\(entry.data.totalPhotos)", label: "photos", color: .orange)
@@ -436,6 +456,18 @@ struct FilmVaultWidgetEntryView: View {
         case "archived": return .gray
         default: return .orange
         }
+    }
+}
+
+// MARK: - Refresh Intent
+
+struct RefreshWidgetIntent: AppIntent {
+    static var title: LocalizedStringResource = "Refresh Widget"
+    static var description = IntentDescription("Refreshes the FilmVault widget data.")
+
+    func perform() async throws -> some IntentResult {
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
     }
 }
 

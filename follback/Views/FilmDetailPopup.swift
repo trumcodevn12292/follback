@@ -84,11 +84,10 @@ struct FilmDetailPopup: View {
 
     @ViewBuilder
     private var backdropView: some View {
-        if let coverUrlString = stock.fullCoverUrl,
+        if let coverUrlString = stock.githubCoverUrl,
            let coverURL = URL(string: coverUrlString) {
             ZStack {
                 KFImage(coverURL)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
                     .downsampling(size: CGSize(width: 200, height: 200))
                     .resizable()
                     .scaledToFill()
@@ -112,10 +111,9 @@ struct FilmDetailPopup: View {
 
     @ViewBuilder
     private var coverImageView: some View {
-        if let coverUrlString = stock.fullCoverUrl,
+        if let coverUrlString = stock.githubCoverUrl,
            let coverURL = URL(string: coverUrlString) {
             KFImage(coverURL)
-                .requestModifier(FilmerImageAuth.shared.modifier)
                 .downsampling(size: CGSize(width: 800, height: 800))
                 .cacheOriginalImage()
                 .resizable()

@@ -129,10 +129,9 @@ struct RollCard: View {
                 .frame(width: 80, height: 80)
 
             if let stock = matchingFilmStock,
-               let coverUrlString = stock.fullCoverUrl,
+               let coverUrlString = stock.githubCoverUrl,
                let coverURL = URL(string: coverUrlString) {
                 KFImage(coverURL)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
                     .downsampling(size: CGSize(width: 160, height: 160))
                     .cacheOriginalImage()
                     .resizable()

@@ -64,6 +64,17 @@ struct FilmStock: Identifiable, Hashable, Codable {
         return "https://api.getfilmer.com\(url)"
     }
 
+    var githubCoverUrl: String? {
+        guard coverUrl != nil, !coverUrl!.isEmpty else { return nil }
+        let fileName = "\(brand)_\(name)"
+            .replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "/", with: "_")
+            .replacingOccurrences(of: "(", with: "")
+            .replacingOccurrences(of: ")", with: "")
+            .replacingOccurrences(of: "'", with: "")
+        return "https://raw.githubusercontent.com/williamcachamwri/film_covers/main/\(fileName).png"
+    }
+
     var fullBrandLogoUrl: String? {
         guard let url = brandLogoUrl, !url.isEmpty else { return nil }
         return "https://api.getfilmer.com\(url)"
