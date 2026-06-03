@@ -207,7 +207,7 @@ struct LocationPickerView: View {
 
     private func selectMapItem(_ item: MKMapItem) {
         hasUserSelection = true
-        guard let coord = item.location?.coordinate else { return }
+        let coord = item.location.coordinate
         withAnimation {
             selectedPin = coord
             cameraPosition = .region(MKCoordinateRegion(
@@ -233,7 +233,7 @@ struct LocationPickerView: View {
     }
 
     private func formattedAddress(for item: MKMapItem) -> String? {
-        let addr = item.address
+        guard let addr = item.address else { return nil }
         if let short = addr.shortAddress, !short.isEmpty {
             return short
         }
