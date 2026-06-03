@@ -4,63 +4,90 @@ struct OnboardingView: View {
     let onComplete: () -> Void
     @State private var currentPage = 0
     @State private var appeared = false
-    @State private var pulseAmount: CGFloat = 1.0
 
-    let pages = [
-        (icon: "camera.aperture", title: "FilmVault", subtitle: "Your personal darkroom journal for analog photography", accent: Color.filmAccent),
-        (icon: "film.stack", title: "Track Every Roll", subtitle: "Log film stocks, cameras, exposure settings, and locations", accent: Color.filmGold),
-        (icon: "photo.stack", title: "Relive the Journey", subtitle: "Attach photos, view stats, and share your story", accent: Color.filmCopper)
+    private let pages: [(icon: String, title: String, subtitle: String)] = [
+        ("camera.aperture", "FilmVault", "Your analog film journal"),
+        ("film.stack", "Track Every Roll", "Film stocks, cameras, and locations"),
+        ("photo.stack", "Relive the Journey", "Photos, stats, and contact sheets")
     ]
 
     var body: some View {
         ZStack {
             Color.filmBackground.ignoresSafeArea()
 
-            backgroundOrbs
-
             VStack(spacing: 0) {
                 Spacer()
 
-                TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        pageContent(index: index)
-                            .tag(index)
+                // Page content
+                VStack(spacing: 40) {
+                    // Icon
+                    Image(systemName: pages[currentPage].icon)
+                        .font(.system(size: 56, weight: .thin))
+                        .foregroundColor(Color.filmAccent)
+                        .frame(height: 64)
+                        .id(currentPage) // force re-render for transition
+                        .transition(.opacity)
+
+                    // Text
+                    VStack(spacing: 12) {
+                        Text(pages[currentPage].title)
+                            .font(.system(size: 32, weight: .bold))
+                            .foregroundColor(Color.filmText)
+                            .id("title-\(currentPage)")
+                            .transition(.opacity)
+
+                        Text(pages[currentPage].subtitle)
+                            .font(.system(size: 16))
+                            .foregroundColor(Color.filmSecondary)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 48)
+                            .id("sub-\(currentPage)")
+                            .transition(.opacity)
                     }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: 500)
+                .animation(.easeInOut(duration: 0.3), value: currentPage)
 
-                VStack(spacing: 24) {
-                    pageIndicator
+                Spacer()
+                Spacer()
 
+                // Bottom controls
+                VStack(spacing: 20) {
+                    // Page dots
+                    HStack(spacing: 8) {
+                        ForEach(0..<pages.count, id: \.self) { i in
+                            Circle()
+                                .fill(currentPage == i ? Color.filmAccent : Color.filmBorder.opacity(0.4))
+                                .frame(width: 8, height: 8)
+                                .scaleEffect(currentPage == i ? 1.2 : 1)
+                                .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
+                        }
+                    }
+
+                    // Continue / Get Started button
                     Button {
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         if currentPage < pages.count - 1 {
-                            withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                            withAnimation(.easeInOut(duration: 0.3)) {
                                 currentPage += 1
                             }
                         } else {
                             onComplete()
                         }
-                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                     } label: {
-                        HStack(spacing: 10) {
-                            Text(currentPage < pages.count - 1 ? "Continue" : "Get Started")
-                                .font(.system(size: 17, weight: .bold))
-                            Image(systemName: currentPage < pages.count - 1 ? "arrow.right" : "sparkles")
-                                .font(.system(size: 15, weight: .semibold))
-                        }
-                        .foregroundColor(Color.filmBackground)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 18)
-                        .background(
-                            Capsule()
-                                .fill(Color.filmAccent)
-                                .shadow(color: Color.filmAccent.opacity(0.3), radius: 12, x: 0, y: 4)
-                        )
+                        Text(currentPage < pages.count - 1 ? "Continue" : "Get Started")
+                            .font(.system(size: 17, weight: .bold))
+                            .foregroundColor(Color.filmBackground)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                            .background(
+                                Capsule()
+                                    .fill(Color.filmAccent)
+                            )
                     }
                     .buttonStyle(.plain)
                     .padding(.horizontal, 32)
 
+                    // Skip
                     if currentPage < pages.count - 1 {
                         Button {
                             onComplete()
@@ -72,135 +99,24 @@ struct OnboardingView: View {
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(.bottom, max(28, bottomSafeArea))
+                .padding(.bottom, 48)
             }
+            .opacity(appeared ? 1 : 0)
         }
         .onAppear {
-            withAnimation(.spring(response: 0.8, dampingFraction: 0.7)) {
+            withAnimation(.easeOut(duration: 0.4)) {
                 appeared = true
             }
-            withAnimation(.easeInOut(duration: 3).repeatForever(autoreverses: true)) {
-                pulseAmount = 1.15
-            }
         }
-    }
-
-    private var backgroundOrbs: some View {
-        ZStack {
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.filmAccent.opacity(0.08), Color.clear],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 200
-                    )
-                )
-                .frame(width: 400, height: 400)
-                .offset(x: -80, y: -200)
-                .scaleEffect(pulseAmount)
-
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.filmGold.opacity(0.06), Color.clear],
-                        center: .center,
-                        startRadius: 20,
-                        endRadius: 180
-                    )
-                )
-                .frame(width: 350, height: 350)
-                .offset(x: 100, y: 150)
-                .scaleEffect(pulseAmount * 0.9)
-
-            Circle()
-                .fill(
-                    RadialGradient(
-                        colors: [Color.filmCopper.opacity(0.04), Color.clear],
-                        center: .center,
-                        startRadius: 10,
-                        endRadius: 150
-                    )
-                )
-                .frame(width: 300, height: 300)
-                .offset(x: -50, y: 300)
-                .scaleEffect(pulseAmount * 1.1)
-        }
-    }
-
-    private func pageContent(index: Int) -> some View {
-        let page = pages[index]
-        return VStack(spacing: 32) {
-            ZStack {
-                Circle()
-                    .fill(
-                        RadialGradient(
-                            colors: [page.accent.opacity(0.15), page.accent.opacity(0.02)],
-                            center: .center,
-                            startRadius: 20,
-                            endRadius: 100
-                        )
-                    )
-                    .frame(width: 180, height: 180)
-                    .scaleEffect(pulseAmount)
-
-                Circle()
-                    .stroke(
-                        LinearGradient(
-                            colors: [page.accent.opacity(0.3), page.accent.opacity(0.05)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1
-                    )
-                    .frame(width: 140, height: 140)
-
-                Image(systemName: page.icon)
-                    .font(.system(size: 52, weight: .light))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [page.accent, page.accent.opacity(0.7)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-
-            VStack(spacing: 14) {
-                Text(page.title)
-                    .font(.system(size: 30, weight: .bold, design: .serif))
-                    .foregroundColor(Color.filmText)
-
-                Text(page.subtitle)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(Color.filmSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 40)
-                    .lineSpacing(5)
-            }
-        }
-        .opacity(appeared ? 1 : 0)
-        .offset(y: appeared ? 0 : 30)
-    }
-
-    private var pageIndicator: some View {
-        HStack(spacing: 8) {
-            ForEach(0..<pages.count, id: \.self) { i in
-                Capsule()
-                    .fill(
-                        currentPage == i
-                        ? Color.filmAccent
-                        : Color.filmBorder.opacity(0.4)
-                    )
-                    .frame(width: currentPage == i ? 32 : 8, height: 8)
-                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)
-            }
-        }
-    }
-
-    private var bottomSafeArea: CGFloat {
-        UIApplication.shared.connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .first?.keyWindow?.safeAreaInsets.bottom ?? 0
+        .gesture(
+            DragGesture(minimumDistance: 30)
+                .onEnded { value in
+                    if value.translation.width < -30 && currentPage < pages.count - 1 {
+                        withAnimation(.easeInOut(duration: 0.3)) { currentPage += 1 }
+                    } else if value.translation.width > 30 && currentPage > 0 {
+                        withAnimation(.easeInOut(duration: 0.3)) { currentPage -= 1 }
+                    }
+                }
+        )
     }
 }
