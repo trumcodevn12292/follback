@@ -48,7 +48,7 @@ struct WidgetDataService {
         guard let stock = FilmStock.allStocks.first(where: { stock in
             stock.displayName.lowercased() == filmName.lowercased() ||
             "\(stock.brand) \(stock.name)".lowercased() == filmName.lowercased()
-        }), stock.fullCoverUrl != nil else { return nil }
+        }), stock.githubCoverUrl != nil else { return nil }
         let safeName = filmName.replacingOccurrences(of: " ", with: "_")
             .replacingOccurrences(of: "/", with: "_")
         return "cover_\(safeName).jpg"
@@ -66,25 +66,17 @@ struct WidgetDataService {
             guard let fileName = roll.coverImageFile else { continue }
             let fileURL = cacheDir.appendingPathComponent(fileName)
 
-            // Skip if already cached
             if FileManager.default.fileExists(atPath: fileURL.path) { continue }
 
-            // Find matching film stock
             guard let stock = FilmStock.allStocks.first(where: { stock in
                 stock.displayName.lowercased() == roll.filmName.lowercased() ||
                 "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
             }),
-            let coverUrlString = stock.fullCoverUrl,
+            let coverUrlString = stock.githubCoverUrl,
             let url = URL(string: coverUrlString) else { continue }
 
-            // Download with auth
-            var request = URLRequest(url: url)
-            if let token = FilmerImageAuth.shared.currentToken {
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            }
-
             do {
-                let (data, _) = try await URLSession.shared.data(for: request)
+                let (data, _) = try await URLSession.shared.data(from: url)
                 try data.write(to: fileURL)
             } catch {
                 continue

@@ -412,10 +412,9 @@ struct AddRollView: View {
                                 .stroke(stock.color.opacity(0.3), lineWidth: 0.5)
                         )
 
-                    if let coverUrlString = stock.fullCoverUrl,
+                    if let coverUrlString = stock.githubCoverUrl,
                        let coverURL = URL(string: coverUrlString) {
                         KFImage(coverURL)
-                            .requestModifier(FilmerImageAuth.shared.modifier)
                             .downsampling(size: CGSize(width: 100, height: 100))
                             .cacheOriginalImage()
                             .resizable()

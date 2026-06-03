@@ -382,10 +382,9 @@ struct RollDetailView: View {
                 .frame(width: 72, height: 72)
 
             if let stock = matchingFilmStock,
-               let coverUrlString = stock.fullCoverUrl,
+               let coverUrlString = stock.githubCoverUrl,
                let coverURL = URL(string: coverUrlString) {
                 KFImage(coverURL)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
                     .downsampling(size: CGSize(width: 144, height: 144))
                     .cacheOriginalImage()
                     .resizable()
@@ -1774,10 +1773,9 @@ struct EditRollDetailsView: View {
                                     showFilmPicker = false
                                 } label: {
                                     HStack(spacing: 12) {
-                                        if let coverUrl = stock.fullCoverUrl,
+                                        if let coverUrl = stock.githubCoverUrl,
                                            let url = URL(string: coverUrl) {
                                             KFImage(url)
-                                                .requestModifier(FilmerImageAuth.shared.modifier)
                                                 .downsampling(size: CGSize(width: 88, height: 88))
                                                 .cacheOriginalImage()
                                                 .resizable()
@@ -2168,30 +2166,11 @@ struct ContactSheetView: View {
 
     private func loadCoverImage() {
         guard let stock = matchingFilmStock,
-              let coverUrlString = stock.fullCoverUrl,
+              let coverUrlString = stock.githubCoverUrl,
               let url = URL(string: coverUrlString) else { return }
         Task {
-            await FilmerImageAuth.shared.ensureToken()
-            var request = URLRequest(url: url)
-            if let token = FilmerImageAuth.shared.currentToken {
-                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            }
-            request.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
-            guard let (data, response) = try? await URLSession.shared.data(for: request) else { return }
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 401 {
-                FilmerImageAuth.shared.clearToken()
-                await FilmerImageAuth.shared.ensureToken()
-                var retryRequest = URLRequest(url: url)
-                if let newToken = FilmerImageAuth.shared.currentToken {
-                    retryRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
-                }
-                retryRequest.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
-                guard let (retryData, _) = try? await URLSession.shared.data(for: retryRequest),
-                      let img = UIImage(data: retryData) else { return }
-                await MainActor.run { coverImage = img }
-                return
-            }
-            guard let img = UIImage(data: data) else { return }
+            guard let (data, _) = try? await URLSession.shared.data(from: url),
+                  let img = UIImage(data: data) else { return }
             await MainActor.run { coverImage = img }
         }
     }
