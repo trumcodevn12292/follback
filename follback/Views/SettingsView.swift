@@ -91,10 +91,18 @@ struct SettingsView: View {
 
     private var headerSection: some View {
         HStack {
-            Text("SETTINGS")
-                .font(.system(size: 28, weight: .black))
-                .foregroundColor(Color.filmText)
-                .kerning(1.5)
+            HStack(spacing: 8) {
+                Image("AppIconSmall")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                Text("SETTINGS")
+                    .font(.system(size: 28, weight: .black))
+                    .foregroundColor(Color.filmText)
+                    .kerning(1.5)
+            }
             Spacer()
         }
         .padding(.horizontal, 4)
@@ -379,6 +387,24 @@ struct SettingsView: View {
                     .padding(16)
                 }
                 .buttonStyle(.plain)
+
+                Divider().background(Color.filmBorder.opacity(0.3))
+
+                // Copyright
+                HStack(spacing: 12) {
+                    Image(systemName: "c.circle")
+                        .font(.system(size: 15))
+                        .foregroundColor(Color.filmAccent)
+                        .frame(width: 24)
+                    Text("Copyright")
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color.filmText)
+                    Spacer()
+                    Text("\(Calendar.current.component(.year, from: Date())) FilmVault")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(Color.filmTertiary)
+                }
+                .padding(16)
             }
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)

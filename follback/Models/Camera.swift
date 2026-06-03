@@ -11,6 +11,7 @@ class Camera {
     var fixedFocalLength: Int?
     var photoAssetID: String?
     var notes: String
+    var lens: String?
     var addedAt: Date
 
     @Relationship(inverse: \Roll.camera)
@@ -24,7 +25,8 @@ class Camera {
         type: CameraType = .slr,
         fixedFocalLength: Int? = nil,
         photoAssetID: String? = nil,
-        notes: String = ""
+        notes: String = "",
+        lens: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -34,6 +36,7 @@ class Camera {
         self.fixedFocalLength = fixedFocalLength
         self.photoAssetID = photoAssetID
         self.notes = notes
+        self.lens = lens
         self.addedAt = Date()
     }
 
@@ -43,5 +46,12 @@ class Camera {
 
     var cameraType: CameraType {
         CameraType(rawValue: type) ?? .slr
+    }
+
+    var displayNameWithLens: String {
+        if let lens = lens, !lens.isEmpty {
+            return "\(name) + \(lens)"
+        }
+        return name
     }
 }

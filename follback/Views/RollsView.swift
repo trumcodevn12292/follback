@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Shimmer
+import Combine
 
 struct RollsView: View {
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
@@ -14,6 +15,9 @@ struct RollsView: View {
     @State private var searchText = ""
     @State private var editingRoll: Roll?
     @State private var filmDetailStock: FilmStock?
+    @State private var shakeDropOffsets: [UUID: CGFloat] = [:]
+    @State private var shakeDropRotations: [UUID: Double] = [:]
+    @State private var isShaking = false
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -110,18 +114,60 @@ struct RollsView: View {
                     }
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in
+                triggerShakeAnimation()
+            }
         }
         .background(Color.filmBackground.ignoresSafeArea())
+    }
+
+    private func triggerShakeAnimation() {
+        guard !isShaking else { return }
+        isShaking = true
+        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+
+        for (index, roll) in filteredRolls.enumerated() {
+            let delay = Double(index) * 0.06
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.5).delay(delay)) {
+                shakeDropOffsets[roll.id] = 800
+                shakeDropRotations[roll.id] = Double.random(in: -15...15)
+            }
+        }
+
+        let totalDuration = Double(filteredRolls.count) * 0.06 + 0.6
+        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 0.3) {
+            for roll in filteredRolls {
+                shakeDropOffsets[roll.id] = -50
+            }
+            for (index, roll) in filteredRolls.enumerated() {
+                let delay = Double(index) * 0.04
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.7).delay(delay)) {
+                    shakeDropOffsets[roll.id] = 0
+                    shakeDropRotations[roll.id] = 0
+                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                isShaking = false
+            }
+        }
     }
 
     // MARK: - Header
 
     private var headerSection: some View {
         HStack {
-            Text("FILMVAULT")
-                .font(.system(size: 22, weight: .black))
-                .foregroundColor(Color.filmText)
-                .kerning(1.5)
+            HStack(spacing: 8) {
+                Image("AppIconSmall")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 28, height: 28)
+                    .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                Text("FILMVAULT")
+                    .font(.system(size: 22, weight: .black))
+                    .foregroundColor(Color.filmText)
+                    .kerning(1.5)
+            }
 
             Spacer()
 
@@ -237,7 +283,8 @@ struct RollsView: View {
                 }
                 .buttonStyle(.plain)
                 .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 18)
+                .offset(y: (appeared ? 0 : 18) + (shakeDropOffsets[roll.id] ?? 0))
+                .rotationEffect(.degrees(shakeDropRotations[roll.id] ?? 0))
                 .scaleEffect(appeared ? 1 : 0.97)
                 .animation(
                     .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
