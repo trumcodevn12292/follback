@@ -1,10 +1,17 @@
 import SwiftUI
 import SwiftData
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
+    @Environment(\.modelContext) private var modelContext
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
     @Query(sort: \Camera.name) var cameras: [Camera]
     @State private var appeared = false
+    @State private var showExporter = false
+    @State private var backupDocument: BackupDocument?
+    @State private var showImporter = false
+    @State private var backupResultMessage: String?
+    @State private var showBackupResult = false
     @AppStorage("photoImportMode") private var photoImportModeRaw: String = PhotoImportMode.copy.rawValue
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showResetOnboardingAlert = false
@@ -47,6 +54,7 @@ struct SettingsView: View {
                     headerSection
                     storageCard
                     googleDriveCard
+                    dataCard
                     generalCard
                     aboutCard
                 }
@@ -84,6 +92,31 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("You will be signed out of Google Drive. Photos already uploaded will remain on Drive.")
+            }
+            .fileExporter(
+                isPresented: $showExporter,
+                document: backupDocument,
+                contentType: .json,
+                defaultFilename: BackupService.suggestedFileName()
+            ) { result in
+                switch result {
+                case .success:
+                    backupResultMessage = "Backup saved successfully."
+                case .failure(let error):
+                    backupResultMessage = "Export failed: \(error.localizedDescription)"
+                }
+                showBackupResult = true
+            }
+            .fileImporter(
+                isPresented: $showImporter,
+                allowedContentTypes: [.json]
+            ) { result in
+                handleImport(result)
+            }
+            .alert("Data", isPresented: $showBackupResult) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(backupResultMessage ?? "")
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
@@ -341,6 +374,116 @@ struct SettingsView: View {
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
+    }
+
+    // MARK: - Data Card
+
+    private var dataCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("DATA")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                Button {
+                    exportBackup()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Export Data")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Text("\(rolls.count) rolls · \(cameras.count) cameras")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color.filmTertiary.opacity(0.5))
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(Color.filmBorder.opacity(0.3))
+
+                Button {
+                    showImporter = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "square.and.arrow.down")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Import Data")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Text("Restore from a backup file")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color.filmTertiary.opacity(0.5))
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+
+            Text("Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data.")
+                .font(.system(size: 12))
+                .foregroundColor(Color.filmTertiary)
+                .padding(.horizontal, 4)
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.09), value: appeared)
+    }
+
+    private func exportBackup() {
+        let backup = BackupService.makeBackup(rolls: rolls, cameras: cameras)
+        do {
+            let data = try BackupService.encode(backup)
+            backupDocument = BackupDocument(data: data)
+            showExporter = true
+        } catch {
+            backupResultMessage = "Export failed: \(error.localizedDescription)"
+            showBackupResult = true
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    private func handleImport(_ result: Result<URL, Error>) {
+        switch result {
+        case .success(let url):
+            let needsStop = url.startAccessingSecurityScopedResource()
+            defer { if needsStop { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                let backup = try BackupService.decode(data)
+                let summary = BackupService.restore(backup, into: modelContext)
+                backupResultMessage = "Imported \(summary.rollsAdded) rolls, \(summary.camerasAdded) cameras, \(summary.customFilmsAdded) custom films."
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            } catch {
+                backupResultMessage = "Import failed: \(error.localizedDescription)"
+            }
+        case .failure(let error):
+            backupResultMessage = "Import failed: \(error.localizedDescription)"
+        }
+        showBackupResult = true
     }
 
     // MARK: - About Card
