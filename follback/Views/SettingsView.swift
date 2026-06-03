@@ -16,6 +16,12 @@ struct SettingsView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showResetOnboardingAlert = false
     @ObservedObject private var driveService = GoogleDriveService.shared
+    @ObservedObject private var reminderManager = ReminderManager.shared
+    @AppStorage(ReminderDefaults.enabledKey) private var remindersEnabled = false
+    @AppStorage(ReminderDefaults.staleDaysKey) private var staleDays = ReminderDefaults.defaultStaleDays
+    @AppStorage(ReminderDefaults.developDaysKey) private var developDays = ReminderDefaults.defaultDevelopDays
+    @AppStorage(ReminderDefaults.hourKey) private var reminderHour = ReminderDefaults.defaultHour
+    @State private var showNotifPermissionAlert = false
 
     private var photoImportMode: Binding<PhotoImportMode> {
         Binding(
@@ -53,6 +59,7 @@ struct SettingsView: View {
                 VStack(spacing: 24) {
                     headerSection
                     storageCard
+                    remindersCard
                     googleDriveCard
                     dataCard
                     generalCard
@@ -68,6 +75,7 @@ struct SettingsView: View {
                 withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
                     appeared = true
                 }
+                reminderManager.refreshAuthorizationStatus()
             }
             .alert("Clear Cache", isPresented: $showClearCacheAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -117,6 +125,16 @@ struct SettingsView: View {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(backupResultMessage ?? "")
+            }
+            .alert("Notifications Off", isPresented: $showNotifPermissionAlert) {
+                Button("Open Settings") {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Enable notifications for FilmVault in iOS Settings to receive roll reminders.")
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
@@ -374,6 +392,133 @@ struct SettingsView: View {
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
+    }
+
+    // MARK: - Reminders Card
+
+    private var remindersCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("REMINDERS")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                // Master toggle
+                VStack(alignment: .leading, spacing: 8) {
+                    Toggle(isOn: $remindersEnabled) {
+                        Text("Enable Reminders")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color.filmText)
+                    }
+                    .tint(Color.filmAccent)
+                    .onChange(of: remindersEnabled) { _, newValue in
+                        handleRemindersToggle(newValue)
+                    }
+
+                    Text("Get notified about rolls you're still shooting and finished rolls waiting to be developed.")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                }
+                .padding(16)
+
+                if remindersEnabled {
+                    Divider().background(Color.filmBorder.opacity(0.3))
+
+                    reminderStepperRow(
+                        title: "Shooting nudge",
+                        subtitle: "After a roll stays in progress",
+                        value: $staleDays,
+                        range: 3...120,
+                        unit: "days"
+                    )
+
+                    Divider().background(Color.filmBorder.opacity(0.3))
+
+                    reminderStepperRow(
+                        title: "Develop reminder",
+                        subtitle: "After a roll is finished",
+                        value: $developDays,
+                        range: 1...60,
+                        unit: "days"
+                    )
+
+                    Divider().background(Color.filmBorder.opacity(0.3))
+
+                    HStack(spacing: 12) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Time of day")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Text("When reminders are delivered")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        Spacer()
+                        Picker("", selection: $reminderHour) {
+                            ForEach(0..<24, id: \.self) { hour in
+                                Text(String(format: "%02d:00", hour)).tag(hour)
+                            }
+                        }
+                        .pickerStyle(.menu)
+                        .tint(Color.filmAccent)
+                        .onChange(of: reminderHour) { _, _ in
+                            reminderManager.reschedule(rolls: rolls)
+                        }
+                    }
+                    .padding(16)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.06), value: appeared)
+    }
+
+    private func reminderStepperRow(title: String, subtitle: String, value: Binding<Int>, range: ClosedRange<Int>, unit: String) -> some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color.filmText)
+                Text(subtitle)
+                    .font(.system(size: 13))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            Spacer()
+            Stepper(value: value, in: range) {
+                Text("\(value.wrappedValue) \(unit)")
+                    .font(.system(size: 14, weight: .semibold, design: .monospaced))
+                    .foregroundColor(Color.filmAccent)
+            }
+            .labelsHidden()
+            .fixedSize()
+            .onChange(of: value.wrappedValue) { _, _ in
+                reminderManager.reschedule(rolls: rolls)
+            }
+        }
+        .padding(16)
+    }
+
+    private func handleRemindersToggle(_ newValue: Bool) {
+        if newValue {
+            Task {
+                let granted = await reminderManager.requestAuthorization()
+                if granted {
+                    reminderManager.reschedule(rolls: rolls)
+                } else {
+                    remindersEnabled = false
+                    showNotifPermissionAlert = true
+                }
+            }
+        } else {
+            reminderManager.cancelAll()
+        }
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     // MARK: - Data Card

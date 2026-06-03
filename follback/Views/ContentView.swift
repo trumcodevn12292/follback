@@ -89,6 +89,7 @@ struct ContentView: View {
         guard let rolls = try? modelContext.fetch(descriptor) else { return }
         WidgetDataService.updateWidget(rolls: rolls)
         updateQuickActions(rolls: rolls)
+        ReminderManager.shared.reschedule(rolls: rolls)
     }
 
     private func updateQuickActions(rolls: [Roll]) {
