@@ -62,13 +62,7 @@ struct DarkroomView: View {
                     .padding(.vertical, 9)
                     .background(
                         Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: [Color.filmAccent, Color.filmGold],
-                                    startPoint: .leading,
-                                    endPoint: .trailing
-                                )
-                            )
+                            .fill(Color.filmAccent)
                     )
             }
         }
@@ -137,8 +131,8 @@ struct DarkroomView: View {
                         RoundedRectangle(cornerRadius: 10)
                             .stroke(
                                 isSelected
-                                ? LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .topLeading, endPoint: .bottomTrailing)
-                                : LinearGradient(colors: [Color.filmBorder, Color.filmBorder], startPoint: .leading, endPoint: .trailing),
+                                ? Color.filmAccent
+                                : Color.filmBorder,
                                 lineWidth: isSelected ? 2 : 0.5
                             )
                     )

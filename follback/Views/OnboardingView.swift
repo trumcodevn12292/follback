@@ -54,14 +54,8 @@ struct OnboardingView: View {
                         .padding(.vertical, 18)
                         .background(
                             Capsule()
-                                .fill(
-                                    LinearGradient(
-                                        colors: [Color.filmAccent, Color.filmGold],
-                                        startPoint: .leading,
-                                        endPoint: .trailing
-                                    )
-                                )
-                                .shadow(color: Color.filmAccent.opacity(0.4), radius: 16, x: 0, y: 6)
+                                .fill(Color.filmAccent)
+                                .shadow(color: Color.filmAccent.opacity(0.3), radius: 12, x: 0, y: 4)
                         )
                     }
                     .buttonStyle(.plain)
@@ -195,8 +189,8 @@ struct OnboardingView: View {
                 Capsule()
                     .fill(
                         currentPage == i
-                        ? LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing)
-                        : LinearGradient(colors: [Color.filmBorder, Color.filmBorder], startPoint: .leading, endPoint: .trailing)
+                        ? Color.filmAccent
+                        : Color.filmBorder.opacity(0.4)
                     )
                     .frame(width: currentPage == i ? 32 : 8, height: 8)
                     .animation(.spring(response: 0.3, dampingFraction: 0.7), value: currentPage)

@@ -3,19 +3,21 @@ import SwiftUI
 struct ContentView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var selectedTab = 0
+    @State private var tabAppeared = false
 
     var body: some View {
         if !hasSeenOnboarding {
             OnboardingView {
-                withAnimation(.easeInOut(duration: 0.4)) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.85)) {
                     hasSeenOnboarding = true
                 }
             }
+            .transition(.opacity.combined(with: .scale(scale: 0.95)))
         } else {
             TabView(selection: $selectedTab) {
                 RollsView()
                     .tabItem {
-                        Image(systemName: "film")
+                        Image(systemName: selectedTab == 0 ? "film.fill" : "film")
                         Text("Rolls")
                     }
                     .tag(0)
@@ -35,6 +37,12 @@ struct ContentView: View {
                     .tag(2)
             }
             .tint(Color.filmAccent)
+            .opacity(tabAppeared ? 1 : 0)
+            .onAppear {
+                withAnimation(.easeOut(duration: 0.35)) {
+                    tabAppeared = true
+                }
+            }
         }
     }
 }

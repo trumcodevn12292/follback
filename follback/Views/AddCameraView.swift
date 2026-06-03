@@ -76,13 +76,7 @@ struct AddCameraView: View {
                 } else {
                     Image(systemName: "camera")
                         .font(.system(size: 30, weight: .light))
-                        .foregroundStyle(
-                            LinearGradient(
-                                colors: [Color.filmAccent, Color.filmGold],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                        )
+                        .foregroundColor(Color.filmAccent)
                 }
             }
             Text("New Camera")
@@ -298,9 +292,7 @@ struct AddCameraView: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .top, endPoint: .bottom)
-                        )
+                        .foregroundColor(Color.filmAccent)
                 }
             }
             .padding(12)
@@ -369,7 +361,7 @@ struct AddCameraView: View {
                                         Capsule()
                                             .fill(
                                                 isSelected
-                                                ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                                                ? AnyShapeStyle(Color.filmAccent)
                                                 : AnyShapeStyle(Color.filmSurfaceSecondary)
                                             )
                                     )
@@ -435,7 +427,7 @@ struct AddCameraView: View {
                     .fill(
                         name.isEmpty
                         ? AnyShapeStyle(Color.filmTertiary)
-                        : AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                        : AnyShapeStyle(Color.filmAccent)
                     )
                     .shadow(color: name.isEmpty ? .clear : Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
             )

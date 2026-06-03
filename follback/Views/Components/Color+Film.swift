@@ -175,4 +175,25 @@ extension View {
     func filmGlow() -> some View {
         modifier(FilmAccentGlow())
     }
+
+    func filmFadeIn(appeared: Bool, delay: Double = 0) -> some View {
+        self
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 12)
+            .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(delay), value: appeared)
+    }
+
+    func filmScaleIn(appeared: Bool, delay: Double = 0) -> some View {
+        self
+            .opacity(appeared ? 1 : 0)
+            .scaleEffect(appeared ? 1 : 0.92)
+            .animation(.spring(response: 0.45, dampingFraction: 0.78).delay(delay), value: appeared)
+    }
+}
+
+// MARK: - Custom Animation Presets
+extension Animation {
+    static let filmSpring = Animation.spring(response: 0.45, dampingFraction: 0.82)
+    static let filmSnappy = Animation.spring(response: 0.35, dampingFraction: 0.85)
+    static let filmSmooth = Animation.easeInOut(duration: 0.3)
 }

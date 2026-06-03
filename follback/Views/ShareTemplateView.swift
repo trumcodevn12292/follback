@@ -100,7 +100,7 @@ struct ShareTemplateView: View {
                         RoundedRectangle(cornerRadius: 14)
                             .fill(
                                 isSelected
-                                ? AnyShapeStyle(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .topLeading, endPoint: .bottomTrailing))
+                                ? AnyShapeStyle(Color.filmAccent)
                                 : AnyShapeStyle(Color.filmSurface)
                             )
                     )
@@ -130,14 +130,8 @@ struct ShareTemplateView: View {
             .padding(.vertical, 18)
             .background(
                 Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
+                    .fill(Color.filmAccent)
+                    .shadow(color: Color.filmAccent.opacity(0.25), radius: 8, x: 0, y: 4)
             )
         }
         .buttonStyle(.plain)

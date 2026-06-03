@@ -40,7 +40,7 @@ struct CamerasView: View {
                 .padding(.bottom, 12)
                 .opacity(appeared ? 1 : 0)
                 .offset(y: appeared ? 0 : -10)
-                .animation(.easeOut(duration: 0.3), value: appeared)
+                .animation(.spring(response: 0.45, dampingFraction: 0.82), value: appeared)
 
                 // My cameras section
                 if !cameras.isEmpty {
@@ -110,7 +110,7 @@ struct CamerasView: View {
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {
-                withAnimation(.easeOut(duration: 0.4)) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
                     appeared = true
                 }
             }

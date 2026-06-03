@@ -38,7 +38,6 @@ struct AddRollView: View {
     @State private var newCustomType = "COLOR_NEGATIVE"
     @State private var newCustomCoverItem: PhotosPickerItem?
     @State private var newCustomCoverData: Data?
-    @State private var showCoverPicker = false
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -137,7 +136,7 @@ struct AddRollView: View {
                         .padding(.vertical, 9)
                         .background(
                             Capsule()
-                                .fill(LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing))
+                                .fill(Color.filmAccent)
                         )
                 }
             } else {
@@ -170,10 +169,7 @@ struct AddRollView: View {
         HStack(spacing: 6) {
             ForEach(0..<2) { i in
                 Capsule()
-                    .fill(i <= step
-                          ? LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .leading, endPoint: .trailing)
-                          : LinearGradient(colors: [Color.filmBorder, Color.filmBorder], startPoint: .leading, endPoint: .trailing)
-                    )
+                    .fill(i <= step ? Color.filmAccent : Color.filmBorder.opacity(0.4))
                     .frame(height: 3)
                     .animation(.spring(response: 0.4), value: step)
             }
@@ -349,9 +345,7 @@ struct AddRollView: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .top, endPoint: .bottom)
-                        )
+                        .foregroundColor(Color.filmAccent)
                 }
             }
             .padding(12)
@@ -452,9 +446,7 @@ struct AddRollView: View {
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.system(size: 22))
-                        .foregroundStyle(
-                            LinearGradient(colors: [Color.filmAccent, Color.filmGold], startPoint: .top, endPoint: .bottom)
-                        )
+                        .foregroundColor(Color.filmAccent)
                 }
             }
             .padding(12)
@@ -486,9 +478,7 @@ struct AddRollView: View {
                                 .kerning(0.8)
                                 .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Button {
-                                showCoverPicker = true
-                            } label: {
+                            PhotosPicker(selection: $newCustomCoverItem, matching: .images) {
                                 ZStack {
                                     RoundedRectangle(cornerRadius: 16, style: .continuous)
                                         .fill(Color.filmSurface)
@@ -636,11 +626,7 @@ struct AddRollView: View {
                                 .padding(.vertical, 16)
                                 .background(
                                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(LinearGradient(
-                                            colors: newCustomName.isEmpty
-                                                ? [Color.filmTertiary, Color.filmTertiary]
-                                                : [Color.filmAccent, Color.filmGold],
-                                            startPoint: .leading, endPoint: .trailing))
+                                        .fill(newCustomName.isEmpty ? Color.filmTertiary : Color.filmAccent)
                                 )
                         }
                         .disabled(newCustomName.isEmpty)
@@ -662,7 +648,6 @@ struct AddRollView: View {
                     .foregroundColor(Color.filmAccent)
                 }
             }
-            .photosPicker(isPresented: $showCoverPicker, selection: $newCustomCoverItem, matching: .images)
             .onChange(of: newCustomCoverItem) { _, item in
                 Task {
                     if let data = try? await item?.loadTransferable(type: Data.self) {
