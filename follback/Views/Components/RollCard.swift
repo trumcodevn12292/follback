@@ -8,6 +8,8 @@ struct RollCard: View {
     let onArchive: () -> Void
     let onEditDetails: () -> Void
     var onCoverTap: ((FilmStock) -> Void)? = nil
+    var onUploadToDrive: (() -> Void)? = nil
+    var onCopyDriveLink: (() -> Void)? = nil
     @Environment(\.modelContext) private var modelContext
 
     private var photoFrames: [Frame] {
@@ -99,6 +101,15 @@ struct RollCard: View {
         .contextMenu {
             Button(action: onEditDetails) {
                 Label("Edit Details", systemImage: "pencil")
+            }
+            if let driveLink = roll.driveFolderLink, !driveLink.isEmpty {
+                Button(action: { onCopyDriveLink?() }) {
+                    Label("Copy Drive Link", systemImage: "doc.on.doc")
+                }
+            } else {
+                Button(action: { onUploadToDrive?() }) {
+                    Label("Upload to Drive", systemImage: "icloud.and.arrow.up")
+                }
             }
             Button(action: onArchive) {
                 Label("Archive", systemImage: "archivebox")

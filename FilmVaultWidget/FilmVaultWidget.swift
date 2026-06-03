@@ -63,6 +63,8 @@ extension FilmVaultWidgetData {
                 WidgetRollItem(id: "1", filmName: "Portra 400", photoCount: 32, capacity: 36, status: "completed"),
                 WidgetRollItem(id: "2", filmName: "HP5 Plus", photoCount: 24, capacity: 36, status: "inProgress"),
                 WidgetRollItem(id: "3", filmName: "Ektar 100", photoCount: 36, capacity: 36, status: "developed"),
+                WidgetRollItem(id: "4", filmName: "Gold 200", photoCount: 12, capacity: 36, status: "inProgress"),
+                WidgetRollItem(id: "5", filmName: "Tri-X 400", photoCount: 36, capacity: 36, status: "completed"),
             ]
         )
     }
@@ -82,6 +84,12 @@ struct FilmVaultWidgetEntryView: View {
             mediumWidget
         case .systemLarge:
             largeWidget
+        case .accessoryCircular:
+            lockScreenCircular
+        case .accessoryRectangular:
+            lockScreenRectangular
+        case .accessoryInline:
+            lockScreenInline
         default:
             smallWidget
         }
@@ -89,151 +97,278 @@ struct FilmVaultWidgetEntryView: View {
 
     // MARK: - Small Widget
     private var smallWidget: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Image(systemName: "film")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.orange)
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
+            HStack(spacing: 6) {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(Color.orange)
+                    .frame(width: 14, height: 14)
+                    .overlay(
+                        Image(systemName: "film")
+                            .font(.system(size: 8, weight: .bold))
+                            .foregroundColor(.black)
+                    )
                 Text("FilmVault")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white)
+                    .font(.system(size: 12, weight: .heavy, design: .rounded))
+                    .foregroundColor(.white.opacity(0.9))
+                Spacer()
             }
 
             Spacer()
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(spacing: 4) {
+            // Stats
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(alignment: .firstTextBaseline, spacing: 3) {
                     Text("\(entry.data.totalRolls)")
-                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                     Text("rolls")
-                        .font(.system(size: 13))
-                        .foregroundColor(.gray)
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundColor(.white.opacity(0.5))
                 }
+
+                // Mini progress bar
                 HStack(spacing: 4) {
-                    Text("\(entry.data.totalPhotos)")
-                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 10))
                         .foregroundColor(.orange)
-                    Text("photos")
-                        .font(.system(size: 12))
-                        .foregroundColor(.gray)
+                    Text("\(entry.data.totalPhotos) photos")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                        .foregroundColor(.orange)
                 }
             }
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color.black
+            LinearGradient(
+                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 
     // MARK: - Medium Widget
     private var mediumWidget: some View {
-        HStack(spacing: 16) {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Image(systemName: "film")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(.orange)
+        HStack(spacing: 0) {
+            // Left: Stats
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(spacing: 6) {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(Color.orange)
+                        .frame(width: 14, height: 14)
+                        .overlay(
+                            Image(systemName: "film")
+                                .font(.system(size: 8, weight: .bold))
+                                .foregroundColor(.black)
+                        )
                     Text("FilmVault")
-                        .font(.system(size: 13, weight: .bold))
-                        .foregroundColor(.white)
+                        .font(.system(size: 12, weight: .heavy, design: .rounded))
+                        .foregroundColor(.white.opacity(0.9))
                 }
 
                 Spacer()
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(entry.data.totalRolls) rolls")
-                        .font(.system(size: 20, weight: .bold, design: .rounded))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(entry.data.totalRolls)")
+                        .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
                     Text("\(entry.data.totalPhotos) photos")
-                        .font(.system(size: 14, weight: .medium))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundColor(.orange)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.trailing, 12)
 
-            VStack(alignment: .leading, spacing: 6) {
-                ForEach(entry.data.recentRolls.prefix(3)) { roll in
-                    rollRow(roll)
+            // Divider
+            RoundedRectangle(cornerRadius: 1)
+                .fill(Color.white.opacity(0.08))
+                .frame(width: 1)
+                .padding(.vertical, 4)
+
+            // Right: Roll list
+            VStack(alignment: .leading, spacing: 7) {
+                ForEach(entry.data.recentRolls.prefix(4)) { roll in
+                    rollRowMedium(roll)
                 }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.leading, 12)
         }
         .padding(14)
         .containerBackground(for: .widget) {
-            Color.black
+            LinearGradient(
+                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 
     // MARK: - Large Widget
     private var largeWidget: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 0) {
+            // Header
             HStack {
-                Image(systemName: "film")
-                    .font(.system(size: 16, weight: .bold))
-                    .foregroundColor(.orange)
-                Text("FilmVault")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
-                Spacer()
-                VStack(alignment: .trailing, spacing: 2) {
-                    Text("\(entry.data.totalRolls) rolls")
-                        .font(.system(size: 13, weight: .semibold))
+                HStack(spacing: 8) {
+                    RoundedRectangle(cornerRadius: 4, style: .continuous)
+                        .fill(Color.orange)
+                        .frame(width: 18, height: 18)
+                        .overlay(
+                            Image(systemName: "film")
+                                .font(.system(size: 10, weight: .bold))
+                                .foregroundColor(.black)
+                        )
+                    Text("FilmVault")
+                        .font(.system(size: 14, weight: .heavy, design: .rounded))
                         .foregroundColor(.white)
-                    Text("\(entry.data.totalPhotos) photos")
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.orange)
+                }
+                Spacer()
+                HStack(spacing: 12) {
+                    statBadge(value: "\(entry.data.totalRolls)", label: "rolls", color: .white)
+                    statBadge(value: "\(entry.data.totalPhotos)", label: "photos", color: .orange)
                 }
             }
 
-            Divider().background(Color.gray.opacity(0.3))
+            // Separator
+            RoundedRectangle(cornerRadius: 1)
+                .fill(Color.white.opacity(0.06))
+                .frame(height: 1)
+                .padding(.vertical, 12)
 
-            VStack(alignment: .leading, spacing: 8) {
-                ForEach(entry.data.recentRolls.prefix(6)) { roll in
+            // Roll list
+            VStack(alignment: .leading, spacing: 0) {
+                ForEach(Array(entry.data.recentRolls.prefix(6).enumerated()), id: \.element.id) { index, roll in
                     rollRowLarge(roll)
+                    if index < min(entry.data.recentRolls.count - 1, 5) {
+                        Divider()
+                            .background(Color.white.opacity(0.04))
+                            .padding(.vertical, 6)
+                    }
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
-        .padding(14)
+        .padding(16)
         .containerBackground(for: .widget) {
-            Color.black
+            LinearGradient(
+                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         }
     }
 
-    // MARK: - Row Components
+    // MARK: - Lock Screen Widgets
 
-    private func rollRow(_ roll: WidgetRollItem) -> some View {
-        HStack(spacing: 6) {
+    private var lockScreenCircular: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            VStack(spacing: 1) {
+                Image(systemName: "film")
+                    .font(.system(size: 12, weight: .bold))
+                Text("\(entry.data.totalRolls)")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+            }
+        }
+    }
+
+    private var lockScreenRectangular: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: "film")
+                    .font(.system(size: 11, weight: .bold))
+                Text("FilmVault")
+                    .font(.system(size: 12, weight: .bold))
+            }
+            HStack(spacing: 8) {
+                Text("\(entry.data.totalRolls) rolls")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                Text("•")
+                    .foregroundColor(.secondary)
+                Text("\(entry.data.totalPhotos) photos")
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+            }
+            if let recent = entry.data.recentRolls.first {
+                Text(recent.filmName)
+                    .font(.system(size: 11))
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+
+    private var lockScreenInline: some View {
+        HStack(spacing: 4) {
+            Image(systemName: "film")
+            Text("\(entry.data.totalRolls) rolls • \(entry.data.totalPhotos) photos")
+        }
+    }
+
+    // MARK: - Components
+
+    private func rollRowMedium(_ roll: WidgetRollItem) -> some View {
+        HStack(spacing: 8) {
             Circle()
                 .fill(statusColor(roll.status))
                 .frame(width: 6, height: 6)
             Text(roll.filmName)
                 .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white)
+                .foregroundColor(.white.opacity(0.9))
                 .lineLimit(1)
             Spacer()
             Text("\(roll.photoCount)/\(roll.capacity)")
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
-                .foregroundColor(.gray)
+                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .foregroundColor(.white.opacity(0.4))
         }
     }
 
     private func rollRowLarge(_ roll: WidgetRollItem) -> some View {
         HStack(spacing: 10) {
-            Circle()
-                .fill(statusColor(roll.status))
-                .frame(width: 8, height: 8)
-            Text(roll.filmName)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.white)
-                .lineLimit(1)
+            // Film icon
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(statusColor(roll.status).opacity(0.15))
+                .frame(width: 28, height: 28)
+                .overlay(
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundColor(statusColor(roll.status))
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(roll.filmName)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                Text("\(roll.photoCount) of \(roll.capacity) frames")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundColor(.white.opacity(0.4))
+            }
+
             Spacer()
-            Text("\(roll.photoCount)/\(roll.capacity)")
-                .font(.system(size: 12, weight: .medium, design: .monospaced))
-                .foregroundColor(.gray)
-            statusLabel(roll.status)
+
+            // Progress ring
+            ZStack {
+                Circle()
+                    .stroke(Color.white.opacity(0.08), lineWidth: 2.5)
+                Circle()
+                    .trim(from: 0, to: CGFloat(roll.photoCount) / CGFloat(max(roll.capacity, 1)))
+                    .stroke(statusColor(roll.status), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+            }
+            .frame(width: 22, height: 22)
+        }
+    }
+
+    private func statBadge(value: String, label: String, color: Color) -> some View {
+        VStack(spacing: 1) {
+            Text(value)
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .foregroundColor(color)
+            Text(label)
+                .font(.system(size: 9, weight: .medium))
+                .foregroundColor(color.opacity(0.6))
         }
     }
 
@@ -245,17 +380,6 @@ struct FilmVaultWidgetEntryView: View {
         case "archived": return .gray
         default: return .orange
         }
-    }
-
-    private func statusLabel(_ status: String) -> some View {
-        Text(status == "inProgress" ? "In Progress" :
-             status == "completed" ? "Done" :
-             status == "developed" ? "Developed" : "Archived")
-            .font(.system(size: 10, weight: .medium))
-            .foregroundColor(statusColor(status))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(Capsule().fill(statusColor(status).opacity(0.15)))
     }
 }
 
@@ -270,6 +394,13 @@ struct FilmVaultWidget: Widget {
         }
         .configurationDisplayName("FilmVault")
         .description("View your film rolls and photo count.")
-        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
+        .supportedFamilies([
+            .systemSmall,
+            .systemMedium,
+            .systemLarge,
+            .accessoryCircular,
+            .accessoryRectangular,
+            .accessoryInline
+        ])
     }
 }
