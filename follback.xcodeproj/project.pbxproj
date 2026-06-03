@@ -279,10 +279,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = follback/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "FilmVault uses your location to tag where you shot your film rolls.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "FilmVault needs access to your photo library to attach images to film frames.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -296,8 +297,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.FilmVault;
+				MARKETING_VERSION = 1.0.48;
+				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -315,10 +316,11 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = follback/Info.plist;
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "FilmVault uses your location to tag where you shot your film rolls.";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "FilmVault needs access to your photo library to attach images to film frames.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -332,8 +334,8 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.FilmVault;
+				MARKETING_VERSION = 1.0.48;
+				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;

@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage("photoImportMode") private var photoImportModeRaw: String = PhotoImportMode.copy.rawValue
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showResetOnboardingAlert = false
+    @ObservedObject private var driveService = GoogleDriveService.shared
 
     private var photoImportMode: Binding<PhotoImportMode> {
         Binding(
@@ -18,6 +19,8 @@ struct SettingsView: View {
     @State private var showClearCacheAlert = false
     @State private var cacheCleared = false
     @State private var cacheSizeText = "Calculating..."
+    @State private var versionCopied = false
+    @State private var showSignOutAlert = false
 
     enum PhotoImportMode: String, CaseIterable {
         case copy = "Copy"
@@ -31,13 +34,21 @@ struct SettingsView: View {
         }
     }
 
+    private var appVersion: String {
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0.48"
+        let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "48"
+        return "v\(version) (\(build))"
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     headerSection
                     storageCard
+                    googleDriveCard
                     generalCard
+                    aboutCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -65,6 +76,14 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("The onboarding screen will show again next time you open the app.")
+            }
+            .alert("Sign Out", isPresented: $showSignOutAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Sign Out", role: .destructive) {
+                    driveService.signOut()
+                }
+            } message: {
+                Text("You will be signed out of Google Drive. Photos already uploaded will remain on Drive.")
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
@@ -157,6 +176,127 @@ struct SettingsView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
     }
 
+    // MARK: - Google Drive Card
+
+    private var googleDriveCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("GOOGLE DRIVE")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                if driveService.isSignedIn {
+                    // Account info
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.circle.fill")
+                            .font(.system(size: 32))
+                            .foregroundColor(Color.filmAccent)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(driveService.userName ?? "Google Account")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color.filmText)
+                            Text(driveService.userEmail ?? "")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        Spacer()
+                    }
+                    .padding(16)
+
+                    Divider().background(Color.filmBorder.opacity(0.3))
+
+                    // Storage info
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Storage")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(Color.filmSecondary)
+                            Spacer()
+                            Text("\(driveService.usedStorageFormatted) / \(driveService.totalStorageFormatted)")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+
+                        GeometryReader { geo in
+                            ZStack(alignment: .leading) {
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.filmBorder.opacity(0.3))
+                                    .frame(height: 6)
+                                RoundedRectangle(cornerRadius: 4)
+                                    .fill(Color.filmAccent)
+                                    .frame(width: driveService.totalStorage > 0
+                                        ? geo.size.width * CGFloat(Double(driveService.usedStorage) / Double(driveService.totalStorage))
+                                        : 0,
+                                        height: 6)
+                            }
+                        }
+                        .frame(height: 6)
+
+                        Text("\(driveService.remainingStorageFormatted) remaining")
+                            .font(.system(size: 12))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                    .padding(16)
+
+                    Divider().background(Color.filmBorder.opacity(0.3))
+
+                    // Sign out
+                    Button {
+                        showSignOutAlert = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "rectangle.portrait.and.arrow.right")
+                                .font(.system(size: 15))
+                                .foregroundColor(.red.opacity(0.8))
+                                .frame(width: 24)
+                            Text("Sign Out")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(.red.opacity(0.8))
+                            Spacer()
+                        }
+                        .padding(16)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    // Sign in button
+                    Button {
+                        Task { await driveService.signIn() }
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "externaldrive.badge.plus")
+                                .font(.system(size: 18))
+                                .foregroundColor(Color.filmAccent)
+                                .frame(width: 24)
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Sign in to Google Drive")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Color.filmText)
+                                Text("Upload film photos to your Drive")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmTertiary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color.filmTertiary.opacity(0.5))
+                        }
+                        .padding(16)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.07), value: appeared)
+    }
+
     private var generalCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("GENERAL")
@@ -195,6 +335,61 @@ struct SettingsView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
     }
 
+    // MARK: - About Card
+
+    private var aboutCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("ABOUT")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                Button {
+                    UIPasteboard.general.string = appVersion
+                    withAnimation(.spring(response: 0.3)) { versionCopied = true }
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation(.spring(response: 0.3)) { versionCopied = false }
+                    }
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "info.circle")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 24)
+                        Text("Version")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        if versionCopied {
+                            Text("Copied!")
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color.filmAccent)
+                                .transition(.opacity.combined(with: .scale))
+                        } else {
+                            Text(appVersion)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                            Image(systemName: "doc.on.doc")
+                                .font(.system(size: 11))
+                                .foregroundColor(Color.filmTertiary.opacity(0.5))
+                        }
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.12), value: appeared)
+    }
+
     private func calculateCacheSize() {
         var totalSize: UInt64 = 0
 
@@ -212,18 +407,6 @@ struct SettingsView: View {
         }
 
         cacheSizeText = formatBytes(totalSize)
-    }
-
-    private func folderSize(at url: URL) -> UInt64 {
-        var size: UInt64 = 0
-        if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
-            for case let fileURL as URL in enumerator {
-                if let fileSize = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                    size += UInt64(fileSize)
-                }
-            }
-        }
-        return size
     }
 
     private func formatBytes(_ bytes: UInt64) -> String {
