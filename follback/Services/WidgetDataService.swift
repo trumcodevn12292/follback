@@ -15,12 +15,14 @@ struct WidgetDataService {
             .sorted { $0.startDate > $1.startDate }
             .prefix(6)
             .map { roll in
-                WidgetRollData(
+                let coverFileName = coverImageFileName(for: roll.filmName)
+                return WidgetRollData(
                     id: roll.id.uuidString,
                     filmName: roll.filmName,
                     photoCount: (roll.frames ?? []).filter { $0.photoAssetID != nil }.count,
                     capacity: roll.capacity,
-                    status: roll.status
+                    status: roll.status,
+                    coverImageFile: coverFileName
                 )
             }
 
@@ -35,6 +37,59 @@ struct WidgetDataService {
         }
 
         WidgetCenter.shared.reloadAllTimelines()
+
+        // Cache cover images for widget
+        Task {
+            await cacheCoverImages(for: Array(recentRolls))
+        }
+    }
+
+    private static func coverImageFileName(for filmName: String) -> String? {
+        guard let stock = FilmStock.allStocks.first(where: { stock in
+            stock.displayName.lowercased() == filmName.lowercased() ||
+            "\(stock.brand) \(stock.name)".lowercased() == filmName.lowercased()
+        }), stock.fullCoverUrl != nil else { return nil }
+        let safeName = filmName.replacingOccurrences(of: " ", with: "_")
+            .replacingOccurrences(of: "/", with: "_")
+        return "cover_\(safeName).jpg"
+    }
+
+    private static func cacheCoverImages(for rolls: [WidgetRollData]) async {
+        guard let containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
+        ) else { return }
+
+        let cacheDir = containerURL.appendingPathComponent("WidgetCovers")
+        try? FileManager.default.createDirectory(at: cacheDir, withIntermediateDirectories: true)
+
+        for roll in rolls {
+            guard let fileName = roll.coverImageFile else { continue }
+            let fileURL = cacheDir.appendingPathComponent(fileName)
+
+            // Skip if already cached
+            if FileManager.default.fileExists(atPath: fileURL.path) { continue }
+
+            // Find matching film stock
+            guard let stock = FilmStock.allStocks.first(where: { stock in
+                stock.displayName.lowercased() == roll.filmName.lowercased() ||
+                "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+            }),
+            let coverUrlString = stock.fullCoverUrl,
+            let url = URL(string: coverUrlString) else { continue }
+
+            // Download with auth
+            var request = URLRequest(url: url)
+            if let token = FilmerImageAuth.shared.currentToken {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+
+            do {
+                let (data, _) = try await URLSession.shared.data(for: request)
+                try data.write(to: fileURL)
+            } catch {
+                continue
+            }
+        }
     }
 }
 
@@ -50,4 +105,5 @@ struct WidgetRollData: Codable {
     let photoCount: Int
     let capacity: Int
     let status: String
+    let coverImageFile: String?
 }

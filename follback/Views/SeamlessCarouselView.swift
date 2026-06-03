@@ -10,9 +10,9 @@ struct SeamlessCarouselView: View {
     @State private var slideCount = 3
     @State private var isSaving = false
     @State private var savedToPhotos = false
-    @State private var previewOffset: CGFloat = 0
+    @State private var currentPreviewSlide = 0
 
-    private let slideRatio: CGFloat = 4.0 / 5.0 // Instagram portrait
+    private let slideRatio: CGFloat = 4.0 / 5.0
 
     private var photoFrames: [Frame] {
         (roll.frames ?? [])
@@ -26,49 +26,29 @@ struct SeamlessCarouselView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "#0A0908").ignoresSafeArea()
+            // Background gradient
+            LinearGradient(
+                colors: [Color(hex: "#0A0908"), Color(hex: "#141210"), Color(hex: "#0A0908")],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
 
             VStack(spacing: 0) {
                 // Header
-                HStack {
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 36, height: 36)
-                            .background(Circle().fill(Color.white.opacity(0.1)))
-                    }
-                    Spacer()
-                    Text("CREATE POST")
-                        .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                        .foregroundColor(.white)
-                        .kerning(2)
-                    Spacer()
-                    Button { saveCarousel() } label: {
-                        if isSaving {
-                            ProgressView().tint(.white).frame(width: 36, height: 36)
-                        } else {
-                            Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "square.and.arrow.down")
-                                .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(savedToPhotos ? .green : .white)
-                                .frame(width: 36, height: 36)
-                                .background(Circle().fill(Color.white.opacity(0.1)))
-                        }
-                    }
-                    .disabled(isSaving || orderedSelected.isEmpty)
-                }
-                .padding(.horizontal, 16)
-                .padding(.top, 10)
-                .padding(.bottom, 12)
+                headerBar
+                    .padding(.horizontal, 16)
+                    .padding(.top, 10)
+                    .padding(.bottom, 16)
 
                 ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 24) {
                         // Carousel preview
                         carouselPreview
                             .padding(.horizontal, 16)
 
-                        // Slide count control
-                        slideCountControl
+                        // Controls
+                        controlSection
                             .padding(.horizontal, 16)
 
                         // Photo selector
@@ -79,21 +59,12 @@ struct SeamlessCarouselView: View {
                 }
             }
 
+            // Toast
             if savedToPhotos {
                 VStack {
                     Spacer()
-                    HStack(spacing: 8) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.green)
-                        Text("Saved to Photos")
-                            .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
-                    }
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 12)
-                    .background(Capsule().fill(Color(hex: "#2A2A2A")))
-                    .padding(.bottom, 50)
+                    toastBanner
+                        .padding(.bottom, 50)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
@@ -101,48 +72,110 @@ struct SeamlessCarouselView: View {
         .onAppear { loadAllImages() }
     }
 
+    // MARK: - Header
+
+    private var headerBar: some View {
+        HStack {
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 34, height: 34)
+                    .background(Circle().fill(Color.white.opacity(0.08)))
+            }
+            Spacer()
+            VStack(spacing: 2) {
+                Text("CREATE POST")
+                    .font(.system(size: 11, weight: .heavy, design: .monospaced))
+                    .foregroundColor(.white)
+                    .kerning(2)
+                Text("Seamless Carousel")
+                    .font(.system(size: 9, weight: .medium))
+                    .foregroundColor(Color(hex: "#C86B28"))
+            }
+            Spacer()
+            Button { saveCarousel() } label: {
+                if isSaving {
+                    ProgressView().tint(.white).frame(width: 34, height: 34)
+                } else {
+                    Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "arrow.down.to.line")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(savedToPhotos ? .green : Color(hex: "#C86B28"))
+                        .frame(width: 34, height: 34)
+                        .background(Circle().fill(Color(hex: "#C86B28").opacity(0.15)))
+                }
+            }
+            .disabled(isSaving || orderedSelected.count < 2)
+        }
+    }
+
     // MARK: - Carousel Preview
 
     private var carouselPreview: some View {
-        VStack(spacing: 8) {
-            Text("PREVIEW")
-                .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                .foregroundColor(Color(hex: "#6A6A6A"))
-                .kerning(2)
-
+        VStack(spacing: 10) {
             if orderedSelected.count >= 2 {
-                let slideWidth: CGFloat = UIScreen.main.bounds.width - 32
+                let slideWidth: CGFloat = UIScreen.main.bounds.width - 64
                 let slideHeight = slideWidth * (5.0 / 4.0)
-                let totalWidth = slideWidth * CGFloat(slideCount)
 
-                GeometryReader { _ in
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 2) {
-                            ForEach(0..<slideCount, id: \.self) { index in
-                                slidePreview(index: index, totalSlides: slideCount, slideSize: CGSize(width: slideWidth, height: slideHeight))
-                                    .frame(width: slideWidth, height: slideHeight)
-                                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                                            .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
-                                    )
-                            }
-                        }
+                // Preview with page indicator
+                TabView(selection: $currentPreviewSlide) {
+                    ForEach(0..<slideCount, id: \.self) { index in
+                        slidePreview(index: index, totalSlides: slideCount, slideSize: CGSize(width: slideWidth, height: slideHeight))
+                            .frame(width: slideWidth, height: slideHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .shadow(color: Color(hex: "#C86B28").opacity(0.15), radius: 20, y: 8)
+                            .tag(index)
                     }
                 }
-                .frame(height: slideHeight)
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(height: slideHeight + 16)
+
+                // Custom page dots
+                HStack(spacing: 6) {
+                    ForEach(0..<slideCount, id: \.self) { index in
+                        Capsule()
+                            .fill(index == currentPreviewSlide ? Color(hex: "#C86B28") : Color.white.opacity(0.2))
+                            .frame(width: index == currentPreviewSlide ? 16 : 6, height: 6)
+                            .animation(.spring(response: 0.3), value: currentPreviewSlide)
+                    }
+                }
+
+                // Info label
+                Text("Swipe to preview slides • \(slideCount) slides from \(orderedSelected.count) photos")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(Color(hex: "#6A6A6A"))
             } else {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.white.opacity(0.05))
-                    .frame(height: 200)
+                // Empty state
+                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                    .fill(Color.white.opacity(0.03))
+                    .frame(height: 220)
                     .overlay(
-                        VStack(spacing: 8) {
-                            Image(systemName: "photo.on.rectangle.angled")
-                                .font(.system(size: 32, weight: .light))
-                                .foregroundColor(Color(hex: "#4A4A4A"))
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
+                            .strokeBorder(
+                                LinearGradient(
+                                    colors: [Color(hex: "#C86B28").opacity(0.3), Color.clear],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                ),
+                                lineWidth: 1
+                            )
+                    )
+                    .overlay(
+                        VStack(spacing: 12) {
+                            ZStack {
+                                Circle()
+                                    .fill(Color(hex: "#C86B28").opacity(0.1))
+                                    .frame(width: 56, height: 56)
+                                Image(systemName: "rectangle.split.3x1")
+                                    .font(.system(size: 22, weight: .light))
+                                    .foregroundColor(Color(hex: "#C86B28"))
+                            }
                             Text("Select at least 2 photos")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(Color(hex: "#6A6A6A"))
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color(hex: "#8A8A8A"))
+                            Text("Photos will be stitched into a seamless carousel")
+                                .font(.system(size: 10, weight: .regular))
+                                .foregroundColor(Color(hex: "#5A5A5A"))
                         }
                     )
             }
@@ -189,55 +222,81 @@ struct SeamlessCarouselView: View {
         }
     }
 
-    // MARK: - Slide Count
+    // MARK: - Controls
 
-    private var slideCountControl: some View {
-        VStack(spacing: 8) {
-            Text("SLIDES")
-                .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                .foregroundColor(Color(hex: "#6A6A6A"))
-                .kerning(2)
+    private var controlSection: some View {
+        VStack(spacing: 14) {
+            HStack {
+                Text("SLIDES")
+                    .font(.system(size: 9, weight: .heavy, design: .monospaced))
+                    .foregroundColor(Color(hex: "#6A6A6A"))
+                    .kerning(2)
+                Spacer()
+                Text("\(slideCount) slides")
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(Color(hex: "#C86B28"))
+            }
 
-            HStack(spacing: 12) {
+            // Slider-style control
+            HStack(spacing: 8) {
                 ForEach([2, 3, 4, 5, 6, 7, 8, 9, 10], id: \.self) { count in
                     Button {
-                        withAnimation(.spring(response: 0.3)) { slideCount = count }
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                            slideCount = count
+                            currentPreviewSlide = 0
+                        }
                     } label: {
                         Text("\(count)")
-                            .font(.system(size: 13, weight: slideCount == count ? .bold : .regular, design: .monospaced))
-                            .foregroundColor(slideCount == count ? .white : Color(hex: "#6A6A6A"))
-                            .frame(width: 28, height: 28)
+                            .font(.system(size: 12, weight: slideCount == count ? .bold : .medium, design: .rounded))
+                            .foregroundColor(slideCount == count ? .black : Color(hex: "#8A8A8A"))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 32)
                             .background(
-                                Circle().fill(slideCount == count ? Color(hex: "#C86B28") : Color.white.opacity(0.05))
+                                Capsule().fill(slideCount == count ? Color(hex: "#C86B28") : Color.white.opacity(0.05))
                             )
                     }
                 }
             }
         }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.03))
+        )
     }
 
     // MARK: - Photo Selector
 
     private var photoSelector: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             HStack {
-                Text("PHOTOS (\(orderedSelected.count))")
+                Text("PHOTOS")
                     .font(.system(size: 9, weight: .heavy, design: .monospaced))
                     .foregroundColor(Color(hex: "#6A6A6A"))
                     .kerning(2)
+
+                if !selectedPhotos.isEmpty {
+                    Text("\(orderedSelected.count)")
+                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                        .foregroundColor(.black)
+                        .frame(width: 20, height: 20)
+                        .background(Circle().fill(Color(hex: "#C86B28")))
+                }
+
                 Spacer()
+
                 if !selectedPhotos.isEmpty {
                     Button {
-                        withAnimation { selectedPhotos.removeAll() }
+                        withAnimation(.spring(response: 0.3)) { selectedPhotos.removeAll() }
                     } label: {
-                        Text("CLEAR")
-                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                        Text("Clear")
+                            .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(Color(hex: "#C86B28"))
                     }
                 }
             }
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 4), spacing: 2) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 4), spacing: 3) {
                 ForEach(photoFrames, id: \.id) { frame in
                     let isSelected = selectedPhotos.contains(frame.number)
                     let selectionIndex = orderedSelected.firstIndex(of: frame.number)
@@ -260,24 +319,24 @@ struct SeamlessCarouselView: View {
 
                         if isSelected, let idx = selectionIndex {
                             Text("\(idx + 1)")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 20, height: 20)
+                                .font(.system(size: 9, weight: .bold, design: .rounded))
+                                .foregroundColor(.black)
+                                .frame(width: 18, height: 18)
                                 .background(Circle().fill(Color(hex: "#C86B28")))
+                                .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
                                 .padding(4)
                         }
 
                         if isSelected {
-                            Color.white.opacity(0.1)
+                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                .strokeBorder(Color(hex: "#C86B28"), lineWidth: 2.5)
                         }
                     }
-                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .stroke(isSelected ? Color(hex: "#C86B28") : Color.clear, lineWidth: 2)
-                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .scaleEffect(isSelected ? 0.95 : 1.0)
+                    .animation(.spring(response: 0.2, dampingFraction: 0.7), value: isSelected)
                     .onTapGesture {
-                        withAnimation(.spring(response: 0.2)) {
+                        withAnimation(.spring(response: 0.25, dampingFraction: 0.7)) {
                             if isSelected {
                                 selectedPhotos.remove(frame.number)
                             } else {
@@ -288,6 +347,25 @@ struct SeamlessCarouselView: View {
                 }
             }
         }
+    }
+
+    // MARK: - Toast
+
+    private var toastBanner: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "checkmark.circle.fill")
+                .font(.system(size: 16))
+                .foregroundColor(.green)
+            Text("\(slideCount) slides saved to Photos")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 20)
+        .padding(.vertical, 12)
+        .background(
+            Capsule().fill(Color(hex: "#2A2A2A"))
+                .shadow(color: .black.opacity(0.3), radius: 10, y: 4)
+        )
     }
 
     // MARK: - Load
@@ -346,12 +424,11 @@ struct SeamlessCarouselView: View {
         let currentSlideCount = slideCount
         Task.detached(priority: .userInitiated) {
             let slideWidth: CGFloat = 1080
-            let slideHeight: CGFloat = 1350 // 4:5 Instagram
+            let slideHeight: CGFloat = 1350
             let totalWidth = slideWidth * CGFloat(currentSlideCount)
 
-            // Stitch all selected images into one wide canvas
             let stitchedRenderer = UIGraphicsImageRenderer(size: CGSize(width: totalWidth, height: slideHeight))
-            let stitched = stitchedRenderer.image { ctx in
+            let stitched = stitchedRenderer.image { _ in
                 let segmentWidth = totalWidth / CGFloat(images.count)
                 for (i, img) in images.enumerated() {
                     let scaledHeight = slideHeight
@@ -361,7 +438,6 @@ struct SeamlessCarouselView: View {
                 }
             }
 
-            // Slice into individual slides
             var slides: [UIImage] = []
             for i in 0..<currentSlideCount {
                 autoreleasepool {
@@ -377,7 +453,6 @@ struct SeamlessCarouselView: View {
                 }
             }
 
-            // Save each slide to Photos
             for slide in slides {
                 await withCheckedContinuation { continuation in
                     PHPhotoLibrary.shared().performChanges {
@@ -392,7 +467,6 @@ struct SeamlessCarouselView: View {
 
             await MainActor.run {
                 isSaving = false
-                UINotificationFeedbackGenerator().notificationOccurred(.success)
                 withAnimation(.spring(response: 0.4)) { savedToPhotos = true }
                 DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
                     withAnimation { savedToPhotos = false }

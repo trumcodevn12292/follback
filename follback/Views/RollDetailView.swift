@@ -79,11 +79,15 @@ struct RollDetailView: View {
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
-        .gesture(
-            DragGesture(minimumDistance: 50, coordinateSpace: .local)
+        .contentShape(Rectangle())
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 30, coordinateSpace: .global)
                 .onEnded { value in
-                    if value.translation.width > 100 && abs(value.translation.height) < 80 {
-                        dismiss()
+                    let startX = value.startLocation.x
+                    if startX < 40 && value.translation.width > 60 && abs(value.translation.height) < 100 {
+                        withAnimation(.easeOut(duration: 0.25)) {
+                            dismiss()
+                        }
                     }
                 }
         )
@@ -2167,13 +2171,27 @@ struct ContactSheetView: View {
               let coverUrlString = stock.fullCoverUrl,
               let url = URL(string: coverUrlString) else { return }
         Task {
+            await FilmerImageAuth.shared.ensureToken()
             var request = URLRequest(url: url)
-            if let token = UserDefaults.standard.string(forKey: "filmerAPIToken") {
+            if let token = FilmerImageAuth.shared.currentToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
             request.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
-            guard let (data, _) = try? await URLSession.shared.data(for: request),
-                  let img = UIImage(data: data) else { return }
+            guard let (data, response) = try? await URLSession.shared.data(for: request) else { return }
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 401 {
+                FilmerImageAuth.shared.clearToken()
+                await FilmerImageAuth.shared.ensureToken()
+                var retryRequest = URLRequest(url: url)
+                if let newToken = FilmerImageAuth.shared.currentToken {
+                    retryRequest.setValue("Bearer \(newToken)", forHTTPHeaderField: "Authorization")
+                }
+                retryRequest.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
+                guard let (retryData, _) = try? await URLSession.shared.data(for: retryRequest),
+                      let img = UIImage(data: retryData) else { return }
+                await MainActor.run { coverImage = img }
+                return
+            }
+            guard let img = UIImage(data: data) else { return }
             await MainActor.run { coverImage = img }
         }
     }
