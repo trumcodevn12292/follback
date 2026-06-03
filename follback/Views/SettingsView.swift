@@ -6,6 +6,8 @@ struct SettingsView: View {
     @Query(sort: \Camera.name) var cameras: [Camera]
     @State private var appeared = false
     @AppStorage("photoImportMode") private var photoImportModeRaw: String = PhotoImportMode.copy.rawValue
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
+    @State private var showResetOnboardingAlert = false
 
     private var photoImportMode: Binding<PhotoImportMode> {
         Binding(
@@ -35,6 +37,7 @@ struct SettingsView: View {
                 VStack(spacing: 24) {
                     headerSection
                     storageCard
+                    generalCard
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -54,6 +57,14 @@ struct SettingsView: View {
                 }
             } message: {
                 Text("This will clear temporary files and URL cache. Cover images will be kept.")
+            }
+            .alert("Reset Onboarding", isPresented: $showResetOnboardingAlert) {
+                Button("Cancel", role: .cancel) { }
+                Button("Reset", role: .destructive) {
+                    hasSeenOnboarding = false
+                }
+            } message: {
+                Text("The onboarding screen will show again next time you open the app.")
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
@@ -144,6 +155,44 @@ struct SettingsView: View {
         .offset(y: appeared ? 0 : 15)
         .scaleEffect(appeared ? 1 : 0.97)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
+    }
+
+    private var generalCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("GENERAL")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                Button {
+                    showResetOnboardingAlert = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 24)
+                        Text("Reset Onboarding")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(Color.filmTertiary.opacity(0.5))
+                    }
+                    .padding(16)
+                }
+                .buttonStyle(.plain)
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
     }
 
     private func calculateCacheSize() {

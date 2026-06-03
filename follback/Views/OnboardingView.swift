@@ -1,9 +1,12 @@
 import SwiftUI
+import Photos
+import CoreLocation
 
 struct OnboardingView: View {
     let onComplete: () -> Void
     @State private var currentPage = 0
     @State private var appeared = false
+    @StateObject private var locationManager = OnboardingLocationManager()
 
     private let pages: [(icon: String, title: String, subtitle: String)] = [
         ("camera.aperture", "FilmVault", "Your analog film journal"),
@@ -18,17 +21,14 @@ struct OnboardingView: View {
             VStack(spacing: 0) {
                 Spacer()
 
-                // Page content
                 VStack(spacing: 40) {
-                    // Icon
                     Image(systemName: pages[currentPage].icon)
                         .font(.system(size: 56, weight: .thin))
                         .foregroundColor(Color.filmAccent)
                         .frame(height: 64)
-                        .id(currentPage) // force re-render for transition
+                        .id(currentPage)
                         .transition(.opacity)
 
-                    // Text
                     VStack(spacing: 12) {
                         Text(pages[currentPage].title)
                             .font(.system(size: 32, weight: .bold))
@@ -50,9 +50,7 @@ struct OnboardingView: View {
                 Spacer()
                 Spacer()
 
-                // Bottom controls
                 VStack(spacing: 20) {
-                    // Page dots
                     HStack(spacing: 8) {
                         ForEach(0..<pages.count, id: \.self) { i in
                             Circle()
@@ -63,12 +61,17 @@ struct OnboardingView: View {
                         }
                     }
 
-                    // Continue / Get Started button
                     Button {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()
                         if currentPage < pages.count - 1 {
                             withAnimation(.easeInOut(duration: 0.3)) {
                                 currentPage += 1
+                            }
+                            // Request permissions on page transitions
+                            if currentPage == 1 {
+                                requestPhotoAccess()
+                            } else if currentPage == 2 {
+                                requestLocationAccess()
                             }
                         } else {
                             onComplete()
@@ -87,7 +90,6 @@ struct OnboardingView: View {
                     .buttonStyle(.plain)
                     .padding(.horizontal, 32)
 
-                    // Skip
                     if currentPage < pages.count - 1 {
                         Button {
                             onComplete()
@@ -118,5 +120,26 @@ struct OnboardingView: View {
                     }
                 }
         )
+    }
+
+    private func requestPhotoAccess() {
+        PHPhotoLibrary.requestAuthorization(for: .readWrite) { _ in }
+    }
+
+    private func requestLocationAccess() {
+        locationManager.requestPermission()
+    }
+}
+
+private class OnboardingLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+
+    override init() {
+        super.init()
+        manager.delegate = self
+    }
+
+    func requestPermission() {
+        manager.requestWhenInUseAuthorization()
     }
 }

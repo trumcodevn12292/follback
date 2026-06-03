@@ -38,6 +38,7 @@ struct AddRollView: View {
     @State private var newCustomType = "COLOR_NEGATIVE"
     @State private var newCustomCoverItem: PhotosPickerItem?
     @State private var newCustomCoverData: Data?
+    @State private var filmDetailStock: FilmStock?
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -70,6 +71,13 @@ struct AddRollView: View {
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.spring(response: 0.4, dampingFraction: 0.85), value: step)
+            }
+        }
+        .overlay {
+            if let stock = filmDetailStock {
+                FilmDetailPopup(stock: stock) {
+                    filmDetailStock = nil
+                }
             }
         }
         .navigationTitle("")
@@ -442,6 +450,17 @@ struct AddRollView: View {
                 }
 
                 Spacer()
+
+                // Info button to show film detail
+                Button {
+                    filmDetailStock = stock
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: "info.circle")
+                        .font(.system(size: 18))
+                        .foregroundColor(Color.filmTertiary)
+                }
+                .buttonStyle(.plain)
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
