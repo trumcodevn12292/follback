@@ -13,6 +13,7 @@ struct RollsView: View {
     @State private var showSearch = false
     @State private var searchText = ""
     @State private var editingRoll: Roll?
+    @State private var filmDetailStock: FilmStock?
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -94,6 +95,12 @@ struct RollsView: View {
             }
             .sheet(item: $editingRoll) { roll in
                 EditRollDetailsView(roll: roll)
+            }
+            .fullScreenCover(item: $filmDetailStock) { stock in
+                FilmDetailPopup(stock: stock) {
+                    filmDetailStock = nil
+                }
+                .background(ClearBackgroundView())
             }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
@@ -224,7 +231,8 @@ struct RollsView: View {
                         roll: roll,
                         onDelete: { deleteRoll(roll) },
                         onArchive: { archiveRoll(roll) },
-                        onEditDetails: { editingRoll = roll }
+                        onEditDetails: { editingRoll = roll },
+                        onCoverTap: { stock in filmDetailStock = stock }
                     )
                 }
                 .buttonStyle(.plain)
