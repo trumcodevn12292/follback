@@ -42,6 +42,10 @@ final class FilmerImageAuth: @unchecked Sendable {
         UserDefaults.standard.set(newToken, forKey: "filmerAPIToken")
     }
 
+    var currentToken: String? {
+        _token.withLock { $0 }
+    }
+
     var modifier: AnyModifier {
         return AnyModifier { [weak self] request in
             var r = request

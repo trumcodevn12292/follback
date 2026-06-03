@@ -1,5 +1,6 @@
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Shared Data Model
 
@@ -15,6 +16,21 @@ struct WidgetRollItem: Codable, Identifiable {
     let photoCount: Int
     let capacity: Int
     let status: String
+    let coverImageFile: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, filmName, photoCount, capacity, status, coverImageFile
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        filmName = try container.decode(String.self, forKey: .filmName)
+        photoCount = try container.decode(Int.self, forKey: .photoCount)
+        capacity = try container.decode(Int.self, forKey: .capacity)
+        status = try container.decode(String.self, forKey: .status)
+        coverImageFile = try container.decodeIfPresent(String.self, forKey: .coverImageFile)
+    }
 }
 
 // MARK: - Timeline Provider
@@ -52,6 +68,17 @@ struct FilmVaultTimelineProvider: TimelineProvider {
 struct FilmVaultEntry: TimelineEntry {
     let date: Date
     let data: FilmVaultWidgetData
+}
+
+extension WidgetRollItem {
+    init(id: String, filmName: String, photoCount: Int, capacity: Int, status: String, coverImageFile: String? = nil) {
+        self.id = id
+        self.filmName = filmName
+        self.photoCount = photoCount
+        self.capacity = capacity
+        self.status = status
+        self.coverImageFile = coverImageFile
+    }
 }
 
 extension FilmVaultWidgetData {
@@ -327,23 +354,43 @@ struct FilmVaultWidgetEntryView: View {
         }
     }
 
+    private func loadCoverImage(for roll: WidgetRollItem) -> UIImage? {
+        guard let fileName = roll.coverImageFile,
+              let containerURL = FileManager.default.containerURL(
+                forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
+              ) else { return nil }
+        let fileURL = containerURL.appendingPathComponent("WidgetCovers").appendingPathComponent(fileName)
+        guard let data = try? Data(contentsOf: fileURL) else { return nil }
+        return UIImage(data: data)
+    }
+
     private func rollRowLarge(_ roll: WidgetRollItem) -> some View {
         HStack(spacing: 10) {
-            // Film cover thumbnail (initial letter)
-            RoundedRectangle(cornerRadius: 6, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [statusColor(roll.status).opacity(0.3), statusColor(roll.status).opacity(0.1)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
+            // Film cover thumbnail
+            ZStack {
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [statusColor(roll.status).opacity(0.3), statusColor(roll.status).opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
                     )
-                )
-                .frame(width: 28, height: 28)
-                .overlay(
+                    .frame(width: 28, height: 28)
+
+                if let uiImage = loadCoverImage(for: roll) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 28, height: 28)
+                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                } else {
                     Text(String(roll.filmName.prefix(1)).uppercased())
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(statusColor(roll.status))
-                )
+                }
+            }
+            .frame(width: 28, height: 28)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(roll.filmName)
