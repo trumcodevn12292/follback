@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Shimmer
 import Combine
+import CoreMotion
 
 struct RollsView: View {
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
@@ -17,9 +18,12 @@ struct RollsView: View {
     @State private var filmDetailStock: FilmStock?
     @State private var rollsDropped = false
     @State private var shakeAnimating = false
+    @State private var tiltActive = false
     @State private var rollDropOffsets: [UUID: CGFloat] = [:]
     @State private var rollDropRotations: [UUID: Double] = [:]
     @State private var rollDropOpacities: [UUID: Double] = [:]
+    @State private var rollBaseFrames: [UUID: CGRect] = [:]
+    @StateObject private var tiltMotion = TiltMotionManager()
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -119,6 +123,9 @@ struct RollsView: View {
             .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in
                 triggerShakeAnimation()
             }
+            .onDisappear {
+                tiltMotion.stop()
+            }
         }
         .background(Color.filmBackground.ignoresSafeArea())
     }
@@ -128,33 +135,50 @@ struct RollsView: View {
         shakeAnimating = true
 
         if !rollsDropped {
-            // First shake: DROP — rolls fall off screen with gravity-like physics
+            // First shake: DROP — rolls fall and pile up at the bottom edge (with a floor)
             UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
             let screenHeight = UIScreen.main.bounds.height
+            let floorY = screenHeight - 120 // rest just above the tab bar
+            let pileStep: CGFloat = 16
+            let count = filteredRolls.count
+
             for (index, roll) in filteredRolls.enumerated() {
-                let stagger = Double(index) * 0.07
-                let randomRotation = Double.random(in: -18...18)
-                let dropDistance = screenHeight + CGFloat.random(in: 100...300)
+                let slot = count - 1 - index // bottom-most card settles lowest
+                let restingBottom = floorY - CGFloat(slot) * pileStep
+                let landingY: CGFloat
+                if let frame = rollBaseFrames[roll.id] {
+                    landingY = max(0, restingBottom - frame.height - frame.minY)
+                } else {
+                    // Fallback for rows not currently laid out (off-screen)
+                    landingY = max(0, restingBottom - 140 - (CGFloat(index) * 150 + 220))
+                }
+                let stagger = Double(index) * 0.05
+                let randomRotation = Double.random(in: -8...8)
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + stagger) {
-                    withAnimation(.timingCurve(0.4, 0, 0.9, 0.4, duration: 0.65)) {
-                        rollDropOffsets[roll.id] = dropDistance
+                    // Bouncy spring so cards visibly hit the floor and settle
+                    withAnimation(.interpolatingSpring(stiffness: 170, damping: 14)) {
+                        rollDropOffsets[roll.id] = landingY
                         rollDropRotations[roll.id] = randomRotation
-                        rollDropOpacities[roll.id] = 0.0
                     }
                 }
             }
 
-            let totalDuration = Double(filteredRolls.count) * 0.07 + 0.7
+            let totalDuration = Double(count) * 0.05 + 0.7
             DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
                 rollsDropped = true
                 shakeAnimating = false
+                tiltActive = true
+                tiltMotion.start() // enable tilt-to-slide once piled
                 UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
             }
         } else {
-            // Second shake: REVERSE — rolls float back up like rewinding a video
+            // Second shake: REVERSE — rolls float back up to their original spots
             UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+            tiltActive = false
+            tiltMotion.stop()
 
             // Start from the last dropped roll (reverse order for rewind effect)
             let rollsReversed = Array(filteredRolls.reversed())
@@ -162,11 +186,9 @@ struct RollsView: View {
                 let stagger = Double(index) * 0.06
 
                 DispatchQueue.main.asyncAfter(deadline: .now() + stagger) {
-                    // First move slightly above final position for overshoot
                     withAnimation(.spring(response: 0.8, dampingFraction: 0.65, blendDuration: 0.1)) {
                         rollDropOffsets[roll.id] = 0
                         rollDropRotations[roll.id] = 0
-                        rollDropOpacities[roll.id] = 1.0
                     }
                 }
             }
@@ -177,9 +199,45 @@ struct RollsView: View {
                 shakeAnimating = false
                 rollDropOffsets.removeAll()
                 rollDropRotations.removeAll()
-                rollDropOpacities.removeAll()
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
+        }
+    }
+
+    /// Live tilt-driven slide for a piled card, clamped to stay on screen and on the floor.
+    private func tiltOffset(for roll: Roll) -> CGSize {
+        guard tiltActive, let frame = rollBaseFrames[roll.id] else { return .zero }
+        let screenW = UIScreen.main.bounds.width
+        let gx = CGFloat(tiltMotion.gravityX)
+        let gy = CGFloat(tiltMotion.gravityY)
+
+        // Horizontal: slide toward the tilt direction, clamped within the screen.
+        var x = gx * 90
+        let minX = 12 - frame.minX
+        let maxX = screenW - 12 - frame.maxX
+        x = min(max(x, minX), maxX)
+
+        // Vertical: lift off the floor when the phone is tilted back from upright.
+        // gy == -1 upright -> 0 (on floor); gy -> 0 (flat) -> slide up.
+        var y = (gy + 1) * -50
+        let landing = rollDropOffsets[roll.id] ?? 0
+        y = min(max(y, -landing), 0) // never above original spot, never below floor
+        return CGSize(width: x, height: y)
+    }
+
+    private func rollFrameReader(for roll: Roll) -> some View {
+        GeometryReader { geo in
+            Color.clear
+                .onAppear {
+                    if !rollsDropped && !shakeAnimating {
+                        rollBaseFrames[roll.id] = geo.frame(in: .global)
+                    }
+                }
+                .onChange(of: geo.frame(in: .global)) { _, newValue in
+                    if !rollsDropped && !shakeAnimating {
+                        rollBaseFrames[roll.id] = newValue
+                    }
+                }
         }
     }
 
@@ -313,8 +371,12 @@ struct RollsView: View {
                     )
                 }
                 .buttonStyle(.plain)
+                .background(rollFrameReader(for: roll))
                 .opacity((appeared ? 1 : 0) * (rollDropOpacities[roll.id] ?? 1.0))
-                .offset(y: (appeared ? 0 : 18) + (rollDropOffsets[roll.id] ?? 0))
+                .offset(
+                    x: tiltOffset(for: roll).width,
+                    y: (appeared ? 0 : 18) + (rollDropOffsets[roll.id] ?? 0) + tiltOffset(for: roll).height
+                )
                 .rotationEffect(.degrees(rollDropRotations[roll.id] ?? 0))
                 .scaleEffect(appeared ? 1 : 0.97)
                 .animation(
@@ -379,5 +441,34 @@ struct RollsView: View {
             try? modelContext.save()
             NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         }
+    }
+}
+
+// MARK: - Tilt Motion
+
+/// Publishes the device gravity vector so piled rolls can slide as the phone is tilted.
+final class TiltMotionManager: ObservableObject {
+    private let manager = CMMotionManager()
+
+    /// Left/right tilt: -1 (left) ... +1 (right).
+    @Published var gravityX: Double = 0
+    /// Up/down tilt: -1 when upright, approaching 0 as the phone is laid flat.
+    @Published var gravityY: Double = -1
+
+    func start() {
+        guard manager.isDeviceMotionAvailable, !manager.isDeviceMotionActive else { return }
+        manager.deviceMotionUpdateInterval = 1.0 / 60.0
+        manager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
+            guard let self, let gravity = motion?.gravity else { return }
+            self.gravityX = gravity.x
+            self.gravityY = gravity.y
+        }
+    }
+
+    func stop() {
+        guard manager.isDeviceMotionActive else { return }
+        manager.stopDeviceMotionUpdates()
+        gravityX = 0
+        gravityY = -1
     }
 }
