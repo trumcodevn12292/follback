@@ -431,6 +431,7 @@ final class RollPhysicsEngine: ObservableObject {
         var vy: CGFloat = 0
         var angle: Double = 0       // degrees
         var angularVelocity: Double = 0
+        var restAngle: Double = 0   // small natural lean when settled
         var floor: CGFloat = 0      // max y (bottom wall, resting pile level)
         var ceil: CGFloat = 0       // min y (top wall, just below the notch)
         var minX: CGFloat = 0       // left bound for x
@@ -456,13 +457,15 @@ final class RollPhysicsEngine: ObservableObject {
     private var gravityY: CGFloat = -1 // upright default so it works without sensors
 
     // Tunables (points / seconds).
-    private let gravityScale: CGFloat = 2600
-    private let restitution: CGFloat = 0.45
-    private let floorFriction: CGFloat = 0.88
+    private let gravityScale: CGFloat = 3200
+    private let restitution: CGFloat = 0.4
+    private let floorFriction: CGFloat = 0.9
     private let returnStiffness: CGFloat = 200
     private let returnDamping: CGFloat = 26
-    private let notchSpinZone: CGFloat = 60   // distance from top wall that triggers spin
-    private let notchSpinSpeed: Double = 320   // deg/s twirl speed near the notch
+    private let leanPerSpeed: Double = 1.0 / 24.0 // degrees of lean per pt/s of slide
+    private let maxLean: Double = 16              // cap the slide lean
+    private let notchSpinZone: CGFloat = 70       // distance from top wall that triggers spin
+    private let notchSpinSpeed: Double = 360      // deg/s twirl speed near the notch
 
     // MARK: Public control
 
@@ -475,8 +478,8 @@ final class RollPhysicsEngine: ObservableObject {
             body.ceil = spec.ceil
             body.minX = spec.minX
             body.maxX = spec.maxX
-            body.vx = CGFloat.random(in: -40...40)
-            body.angularVelocity = Double.random(in: -60...60)
+            body.vx = CGFloat.random(in: -25...25)
+            body.restAngle = Double.random(in: -6...6) // messy, natural pile
             newBodies[spec.id] = body
         }
         bodies = newBodies
@@ -550,63 +553,57 @@ final class RollPhysicsEngine: ObservableObject {
         // Screen-space gravity: x follows tilt, y is positive downward.
         let ax = gravityX * gravityScale
         let ay = -gravityY * gravityScale
+        let flipped = gravityY > 0.4 // phone clearly upside down
 
         var updated = bodies
         for id in order {
             guard var b = updated[id] else { continue }
 
+            // Integrate translation.
             b.vx += ax * dt
             b.vy += ay * dt
             b.x += b.vx * dt
             b.y += b.vy * dt
 
-            // Side walls.
+            // Side walls — slide and bounce, no spin.
             if b.x < b.minX {
                 b.x = b.minX
                 b.vx = -b.vx * restitution
-                b.angularVelocity += Double(b.vy) * 0.03
             } else if b.x > b.maxX {
                 b.x = b.maxX
                 b.vx = -b.vx * restitution
-                b.angularVelocity -= Double(b.vy) * 0.03
             }
 
-            // Top wall (just below the notch): bounce off it, never overlap the notch.
+            // Top wall (just below the notch): bounce, never overlap the notch.
             if b.y <= b.ceil {
                 b.y = b.ceil
-                if b.vy < -40 {
-                    b.vy = -b.vy * restitution
-                    b.angularVelocity += Double(b.vx) * 0.04
-                } else {
-                    b.vy = 0
-                }
+                b.vy = b.vy < -40 ? -b.vy * restitution : 0
                 b.vx *= floorFriction
             }
 
-            // Floor (pile level): bounce when hitting fast, otherwise rest + friction.
+            // Bottom wall (pile level): bounce when fast, otherwise rest + friction.
             if b.y >= b.floor {
                 b.y = b.floor
-                if b.vy > 40 {
-                    b.vy = -b.vy * restitution
-                    b.angularVelocity += Double(b.vx) * 0.04
-                } else {
-                    b.vy = 0
-                }
+                b.vy = b.vy > 40 ? -b.vy * restitution : 0
                 b.vx *= floorFriction
-                b.angularVelocity *= floorFriction
                 if abs(b.vx) < 1 { b.vx = 0 }
-                if abs(b.angularVelocity) < 1 { b.angularVelocity = 0 }
             }
 
-            // Spin near the notch: when the phone is flipped (gravity pulling up) and a
-            // card hovers close to the top wall, make it twirl instead of pressing in.
+            // Rotation. Calm by default: cards lean into the direction they slide and
+            // ease back to a natural resting angle. Only near the notch (and only when
+            // the phone is flipped) do they break into a continuous twirl.
             let nearNotch = (b.y - b.ceil) < notchSpinZone
-            if nearNotch && ay < 0 {
-                let target = notchSpinSpeed * (b.vx >= 0 ? 1 : -1)
-                b.angularVelocity += (target - b.angularVelocity) * 0.1
+            if flipped && nearNotch {
+                let dir: Double = b.angularVelocity >= 0 ? 1 : -1
+                b.angularVelocity += (notchSpinSpeed * dir - b.angularVelocity) * 0.08
+                b.angle += b.angularVelocity * dt
+            } else {
+                let lean = max(-maxLean, min(maxLean, Double(b.vx) * leanPerSpeed))
+                let target = b.restAngle + lean
+                b.angle += (target - b.angle) * min(1, 9 * Double(dt))
+                b.angularVelocity = 0
             }
 
-            b.angle += b.angularVelocity * dt
             updated[id] = b
         }
         bodies = updated
@@ -633,7 +630,8 @@ final class RollPhysicsEngine: ObservableObject {
                 abs(b.vx) < 6 && abs(b.vy) < 6 && abs(b.angle) < 0.5
             if settled {
                 b = Body(x: 0, y: 0, vx: 0, vy: 0, angle: 0, angularVelocity: 0,
-                         floor: b.floor, ceil: b.ceil, minX: b.minX, maxX: b.maxX)
+                         restAngle: b.restAngle, floor: b.floor, ceil: b.ceil,
+                         minX: b.minX, maxX: b.maxX)
             } else {
                 allHome = false
             }
