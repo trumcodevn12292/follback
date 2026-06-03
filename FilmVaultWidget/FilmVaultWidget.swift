@@ -49,7 +49,7 @@ struct FilmVaultTimelineProvider: TimelineProvider {
     func getTimeline(in context: Context, completion: @escaping (Timeline<FilmVaultEntry>) -> Void) {
         let data = loadWidgetData()
         let entry = FilmVaultEntry(date: Date(), data: data)
-        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 30, to: Date())!
+        let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
     }

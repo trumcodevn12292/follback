@@ -124,6 +124,7 @@ struct RollDetailView: View {
             Button("Delete", role: .destructive) {
                 modelContext.delete(roll)
                 try? modelContext.save()
+                NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
                 dismiss()
             }
         } message: {
@@ -737,6 +738,7 @@ struct RollDetailView: View {
         if count > 0 {
             roll.checkAutoComplete()
             try? modelContext.save()
+            NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
             await MainActor.run {
                 isImporting = false
                 selectedPhotos = []
@@ -908,16 +910,19 @@ struct RollDetailView: View {
     private func markDeveloped() {
         roll.updateStatus(.developed)
         try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
     }
 
     private func markInProgress() {
         roll.updateStatus(.inProgress)
         try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
     }
 
     private func archiveRoll() {
         roll.updateStatus(.archived)
         try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         dismiss()
     }
 
@@ -949,6 +954,7 @@ struct RollDetailView: View {
             await MainActor.run {
                 roll.driveFolderLink = driveLink
                 try? modelContext.save()
+                NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
             }
         }
 
@@ -1919,6 +1925,7 @@ struct EditRollDetailsView: View {
         roll.labName = (labName ?? "").isEmpty ? nil : labName
         roll.updatedAt = Date()
         try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
     }

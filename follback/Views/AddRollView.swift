@@ -982,6 +982,7 @@ struct AddRollView: View {
         )
         modelContext.insert(roll)
         try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
     }

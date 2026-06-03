@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 import Combine
 import UIKit
+import WidgetKit
 
 struct ContentView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
@@ -9,6 +10,7 @@ struct ContentView: View {
     @State private var tabAppeared = false
     @State private var showNewRoll = false
     @Environment(\.modelContext) private var modelContext
+    @Query private var allRolls: [Roll]
 
     var body: some View {
         if !hasSeenOnboarding {
@@ -70,6 +72,15 @@ struct ContentView: View {
             .onChange(of: selectedTab) { _, _ in
                 updateWidgetData()
             }
+            .onChange(of: allRolls.count) { _, _ in
+                updateWidgetData()
+            }
+            .onChange(of: allRolls.map { "\($0.status)_\(($0.frames ?? []).filter { $0.photoAssetID != nil }.count)" }) { _, _ in
+                updateWidgetData()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .widgetDataDidChange)) { _ in
+                updateWidgetData()
+            }
         }
     }
 
@@ -114,4 +125,5 @@ extension Notification.Name {
     static let quickActionNewRoll = Notification.Name("quickActionNewRoll")
     static let quickActionSettings = Notification.Name("quickActionSettings")
     static let quickActionRecentRoll = Notification.Name("quickActionRecentRoll")
+    static let widgetDataDidChange = Notification.Name("widgetDataDidChange")
 }
