@@ -721,35 +721,43 @@ struct AddRollView: View {
                                     .foregroundColor(Color.filmAccent)
                             }
                         } else {
-                            Menu {
-                                ForEach(cameras) { camera in
-                                    Button {
-                                        selectedCamera = camera
-                                        selectedCameraModelName = camera.name
-                                    } label: {
-                                        if let lens = camera.lens, !lens.isEmpty {
-                                            Text("\(camera.name) + \(lens)")
-                                        } else {
-                                            Text(camera.name)
+                            HStack(spacing: 10) {
+                                Menu {
+                                    ForEach(cameras) { camera in
+                                        Button {
+                                            selectedCamera = camera
+                                            selectedCameraModelName = camera.name
+                                        } label: {
+                                            if let lens = camera.lens, !lens.isEmpty {
+                                                Text("\(camera.name) + \(lens)")
+                                            } else {
+                                                Text(camera.name)
+                                            }
                                         }
                                     }
+                                } label: {
+                                    HStack(spacing: 6) {
+                                        Text(selectedCamera?.displayNameWithLens ?? "Select Camera")
+                                            .font(.system(size: 15))
+                                            .foregroundColor(selectedCamera != nil ? Color.filmSecondary : Color.filmTertiary)
+                                            .lineLimit(1)
+                                        Image(systemName: "chevron.up.chevron.down")
+                                            .font(.system(size: 10))
+                                            .foregroundColor(Color.filmTertiary)
+                                    }
                                 }
-                                Divider()
+
+                                // Present the create-camera sheet from a plain button.
+                                // Triggering a sheet from inside a Menu is unreliable and
+                                // could surface the wrong screen.
                                 Button {
                                     showCameraPicker = true
                                 } label: {
-                                    Label("Add New Camera", systemImage: "plus")
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 18))
+                                        .foregroundColor(Color.filmAccent)
                                 }
-                            } label: {
-                                HStack(spacing: 6) {
-                                    Text(selectedCamera?.displayNameWithLens ?? "Select Camera")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(selectedCamera != nil ? Color.filmSecondary : Color.filmTertiary)
-                                        .lineLimit(1)
-                                    Image(systemName: "chevron.up.chevron.down")
-                                        .font(.system(size: 10))
-                                        .foregroundColor(Color.filmTertiary)
-                                }
+                                .buttonStyle(.plain)
                             }
                         }
                     }
