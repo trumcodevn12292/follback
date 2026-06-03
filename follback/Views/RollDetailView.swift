@@ -1040,7 +1040,9 @@ struct EditRollDetailsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 if let name = labName, !name.isEmpty {
-                                    labInitialCircle(name)
+                                    if let lab = FilmLab.allLabs.first(where: { $0.name == name }) {
+                                        labAvatar(lab)
+                                    }
                                     Text(name)
                                         .font(.system(size: 16, weight: .medium))
                                         .foregroundColor(Color.filmText)
@@ -1134,7 +1136,7 @@ struct EditRollDetailsView: View {
                     longitude: $locationLongitude
                 )
             }
-            .sheet(isPresented: $showLabPicker) {
+            .fullScreenCover(isPresented: $showLabPicker) {
                 labPickerSheet
             }
         }
@@ -1239,7 +1241,7 @@ struct EditRollDetailsView: View {
                                     showLabPicker = false
                                 } label: {
                                     HStack(spacing: 12) {
-                                        labInitialCircle(lab.name)
+                                        labAvatar(lab)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(lab.name)
                                                 .font(.system(size: 15, weight: .medium))
@@ -1286,17 +1288,24 @@ struct EditRollDetailsView: View {
         }
     }
 
-    private func labInitialCircle(_ name: String) -> some View {
-        let initial = String(name.prefix(1))
-        let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
-        let hash = abs(name.hashValue) % colors.count
-        return Text(initial)
-            .font(.system(size: 14, weight: .bold))
-            .foregroundColor(.white)
-            .frame(width: 32, height: 32)
-            .background(
-                Circle().fill(colors[hash])
-            )
+    @ViewBuilder
+    private func labAvatar(_ lab: FilmLab) -> some View {
+        if let logoUrlString = lab.logoUrl, let url = URL(string: logoUrlString) {
+            KFImage(url)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 36, height: 36)
+                .clipShape(Circle())
+        } else {
+            let initial = String(lab.name.prefix(1))
+            let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+            let hash = abs(lab.name.hashValue) % colors.count
+            Text(initial)
+                .font(.system(size: 14, weight: .bold))
+                .foregroundColor(.white)
+                .frame(width: 36, height: 36)
+                .background(Circle().fill(colors[hash]))
+        }
     }
 
     private func saveChanges() {
