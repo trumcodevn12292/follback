@@ -1,6 +1,7 @@
 import SwiftUI
 import Photos
 import CoreLocation
+import Combine
 
 struct OnboardingView: View {
     let onComplete: () -> Void
