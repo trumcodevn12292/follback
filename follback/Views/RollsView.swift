@@ -14,8 +14,6 @@ struct RollsView: View {
     @State private var searchText = ""
     @State private var editingRoll: Roll?
     @State private var filmDetailStock: FilmStock?
-    @State private var uploadingRollID: UUID?
-    @StateObject private var driveService = GoogleDriveService.shared
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -234,9 +232,7 @@ struct RollsView: View {
                         onDelete: { deleteRoll(roll) },
                         onArchive: { archiveRoll(roll) },
                         onEditDetails: { editingRoll = roll },
-                        onCoverTap: { stock in filmDetailStock = stock },
-                        onUploadToDrive: { uploadRollToDrive(roll) },
-                        onCopyDriveLink: { copyDriveLink(roll) }
+                        onCoverTap: { stock in filmDetailStock = stock }
                     )
                 }
                 .buttonStyle(.plain)
@@ -303,36 +299,5 @@ struct RollsView: View {
             roll.updateStatus(.archived)
             try? modelContext.save()
         }
-    }
-
-    private func uploadRollToDrive(_ roll: Roll) {
-        guard driveService.isSignedIn else { return }
-        let frames = (roll.frames ?? []).filter { $0.photoAssetID != nil }.sorted { $0.number < $1.number }
-        guard !frames.isEmpty else { return }
-        uploadingRollID = roll.id
-        Task {
-            let folderId = await driveService.createFolder(name: roll.filmName)
-            for frame in frames {
-                guard let assetID = frame.photoAssetID else { continue }
-                let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                let fileURL = docsDir.appendingPathComponent(assetID)
-                guard let data = try? Data(contentsOf: fileURL) else { continue }
-                let filename = "frame_\(frame.number).jpg"
-                _ = await driveService.uploadPhoto(data: data, filename: filename, folderId: folderId)
-            }
-            if let folderId = folderId {
-                let driveLink = "https://drive.google.com/drive/folders/\(folderId)"
-                await MainActor.run {
-                    roll.driveFolderLink = driveLink
-                    try? modelContext.save()
-                }
-            }
-            await MainActor.run { uploadingRollID = nil }
-        }
-    }
-
-    private func copyDriveLink(_ roll: Roll) {
-        guard let link = roll.driveFolderLink, !link.isEmpty else { return }
-        UIPasteboard.general.string = link
     }
 }

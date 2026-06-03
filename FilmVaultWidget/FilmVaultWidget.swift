@@ -273,6 +273,7 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 16, weight: .bold, design: .rounded))
             }
         }
+        .containerBackground(for: .widget) { AccessoryWidgetBackground() }
     }
 
     private var lockScreenRectangular: some View {
@@ -297,6 +298,7 @@ struct FilmVaultWidgetEntryView: View {
                     .foregroundColor(.secondary)
             }
         }
+        .containerBackground(for: .widget) { Color.clear }
     }
 
     private var lockScreenInline: some View {
@@ -304,6 +306,7 @@ struct FilmVaultWidgetEntryView: View {
             Image(systemName: "film")
             Text("\(entry.data.totalRolls) rolls • \(entry.data.totalPhotos) photos")
         }
+        .containerBackground(for: .widget) { Color.clear }
     }
 
     // MARK: - Components
@@ -326,13 +329,19 @@ struct FilmVaultWidgetEntryView: View {
 
     private func rollRowLarge(_ roll: WidgetRollItem) -> some View {
         HStack(spacing: 10) {
-            // Film icon
-            RoundedRectangle(cornerRadius: 4, style: .continuous)
-                .fill(statusColor(roll.status).opacity(0.15))
+            // Film cover thumbnail (initial letter)
+            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [statusColor(roll.status).opacity(0.3), statusColor(roll.status).opacity(0.1)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
                 .frame(width: 28, height: 28)
                 .overlay(
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 11, weight: .medium))
+                    Text(String(roll.filmName.prefix(1)).uppercased())
+                        .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundColor(statusColor(roll.status))
                 )
 

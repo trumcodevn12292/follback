@@ -7,7 +7,6 @@ import WidgetKit
 struct FilmVaultApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @Environment(\.scenePhase) private var scenePhase
-    @State private var showLoading = true
 
     init() {
         let cache = ImageCache.default
@@ -25,26 +24,11 @@ struct FilmVaultApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ZStack {
-                ContentView()
-                    .withTheme()
-                    .task {
-                        await FilmerImageAuth.shared.ensureToken()
-                    }
-
-                if showLoading {
-                    LoadingScreen()
-                        .transition(.opacity.combined(with: .scale(scale: 1.02)))
-                        .zIndex(1)
+            ContentView()
+                .withTheme()
+                .task {
+                    await FilmerImageAuth.shared.ensureToken()
                 }
-            }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) {
-                    withAnimation(.easeOut(duration: 0.4)) {
-                        showLoading = false
-                    }
-                }
-            }
         }
         .modelContainer(for: [Roll.self, Frame.self, Camera.self])
         .onChange(of: scenePhase) { _, newPhase in
@@ -83,6 +67,8 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
             NotificationCenter.default.post(name: .quickActionNewRoll, object: nil)
         case "com.williamcachamwri.FilmVault.settings":
             NotificationCenter.default.post(name: .quickActionSettings, object: nil)
+        case "com.williamcachamwri.FilmVault.recentRoll":
+            NotificationCenter.default.post(name: .quickActionRecentRoll, object: nil)
         default:
             break
         }

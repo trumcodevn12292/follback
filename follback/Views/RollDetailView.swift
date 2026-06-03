@@ -79,6 +79,14 @@ struct RollDetailView: View {
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
+        .gesture(
+            DragGesture(minimumDistance: 50, coordinateSpace: .local)
+                .onEnded { value in
+                    if value.translation.width > 100 && abs(value.translation.height) < 80 {
+                        dismiss()
+                    }
+                }
+        )
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
