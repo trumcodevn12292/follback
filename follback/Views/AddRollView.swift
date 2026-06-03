@@ -30,6 +30,8 @@ struct AddRollView: View {
     @State private var showCustomInput = false
     @State private var showCameraPicker = false
     @State private var showLocationPicker = false
+    @State private var selectedLabName: String?
+    @State private var showLabPicker = false
 
     // Custom film creation states
     @State private var showCustomFilmForm = false
@@ -93,6 +95,9 @@ struct AddRollView: View {
         }
         .fullScreenCover(isPresented: $showCustomFilmForm) {
             customFilmFormSheet
+        }
+        .sheet(isPresented: $showLabPicker) {
+            addRollLabPickerSheet
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -852,6 +857,30 @@ struct AddRollView: View {
                         .padding(.vertical, 14)
                     }
                     .buttonStyle(.plain)
+
+                    settingsDivider
+
+                    // Developing Lab
+                    Button {
+                        showLabPicker = true
+                    } label: {
+                        HStack {
+                            Text("Developing Lab")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Text(selectedLabName ?? "Select Lab")
+                                .font(.system(size: 14))
+                                .foregroundColor(selectedLabName != nil ? Color.filmSecondary : Color.filmTertiary)
+                                .lineLimit(1)
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+                    .buttonStyle(.plain)
                 }
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -947,11 +976,84 @@ struct AddRollView: View {
             notes: notes,
             locationName: locationName,
             latitude: locationLatitude,
-            longitude: locationLongitude
+            longitude: locationLongitude,
+            labName: selectedLabName
         )
         modelContext.insert(roll)
         try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
+    }
+
+    private var addRollLabPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    ForEach(FilmLab.groupedByCity, id: \.city) { group in
+                        Section {
+                            ForEach(group.labs) { lab in
+                                Button {
+                                    selectedLabName = lab.name
+                                    showLabPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        labInitial(lab.name)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            Text(lab.description)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color.filmTertiary)
+                                                .lineLimit(2)
+                                        }
+                                        Spacer()
+                                        if selectedLabName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text(group.city)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Developing Lab")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { showLabPicker = false }
+                        .foregroundColor(Color.filmAccent)
+                }
+            }
+        }
+    }
+
+    private func labInitial(_ name: String) -> some View {
+        let initial = String(name.prefix(1))
+        let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+        let hash = abs(name.hashValue) % colors.count
+        return Text(initial)
+            .font(.system(size: 14, weight: .bold))
+            .foregroundColor(.white)
+            .frame(width: 32, height: 32)
+            .background(
+                Circle().fill(colors[hash])
+            )
     }
 }
