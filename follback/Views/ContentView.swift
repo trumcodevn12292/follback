@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Combine
+import UIKit
 
 struct ContentView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
@@ -42,8 +43,9 @@ struct ContentView: View {
             }
             .tint(Color.filmAccent)
             .opacity(tabAppeared ? 1 : 0)
+            .scaleEffect(tabAppeared ? 1 : 0.96)
             .onAppear {
-                withAnimation(.easeOut(duration: 0.35)) {
+                withAnimation(.spring(response: 0.6, dampingFraction: 0.8)) {
                     tabAppeared = true
                 }
                 updateWidgetData()
@@ -54,6 +56,9 @@ struct ContentView: View {
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionSettings)) { _ in
                 selectedTab = 2
+            }
+            .onReceive(NotificationCenter.default.publisher(for: .quickActionRecentRoll)) { _ in
+                selectedTab = 0
             }
             .sheet(isPresented: $showNewRoll) {
                 NavigationStack {
@@ -72,10 +77,41 @@ struct ContentView: View {
         let descriptor = FetchDescriptor<Roll>()
         guard let rolls = try? modelContext.fetch(descriptor) else { return }
         WidgetDataService.updateWidget(rolls: rolls)
+        updateQuickActions(rolls: rolls)
+    }
+
+    private func updateQuickActions(rolls: [Roll]) {
+        var shortcuts: [UIApplicationShortcutItem] = [
+            UIApplicationShortcutItem(
+                type: "com.williamcachamwri.FilmVault.newRoll",
+                localizedTitle: "New Roll",
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "plus.circle.fill")
+            ),
+            UIApplicationShortcutItem(
+                type: "com.williamcachamwri.FilmVault.settings",
+                localizedTitle: "Settings",
+                localizedSubtitle: nil,
+                icon: UIApplicationShortcutIcon(systemImageName: "gearshape.fill")
+            )
+        ]
+
+        if let recentRoll = rolls.sorted(by: { $0.startDate > $1.startDate }).first {
+            let recentItem = UIApplicationShortcutItem(
+                type: "com.williamcachamwri.FilmVault.recentRoll",
+                localizedTitle: recentRoll.filmName,
+                localizedSubtitle: "Recent roll",
+                icon: UIApplicationShortcutIcon(systemImageName: "film")
+            )
+            shortcuts.insert(recentItem, at: 0)
+        }
+
+        UIApplication.shared.shortcutItems = shortcuts
     }
 }
 
 extension Notification.Name {
     static let quickActionNewRoll = Notification.Name("quickActionNewRoll")
     static let quickActionSettings = Notification.Name("quickActionSettings")
+    static let quickActionRecentRoll = Notification.Name("quickActionRecentRoll")
 }
