@@ -75,6 +75,9 @@ struct ContentView: View {
             .onChange(of: allRolls.count) { _, _ in
                 updateWidgetData()
             }
+            .onOpenURL { url in
+                handleDeepLink(url)
+            }
             .onChange(of: allRolls.map { "\($0.status)_\(($0.frames ?? []).filter { $0.photoAssetID != nil }.count)" }) { _, _ in
                 updateWidgetData()
             }
@@ -82,6 +85,14 @@ struct ContentView: View {
                 updateWidgetData()
             }
         }
+    }
+
+    private func handleDeepLink(_ url: URL) {
+        guard url.scheme == "filmvault", url.host == "roll" else { return }
+        let idString = url.lastPathComponent
+        guard !idString.isEmpty, UUID(uuidString: idString) != nil else { return }
+        selectedTab = 0
+        WidgetDeepLink.shared.pendingRollID = idString
     }
 
     private func updateWidgetData() {
@@ -120,6 +131,13 @@ struct ContentView: View {
 
         UIApplication.shared.shortcutItems = shortcuts
     }
+}
+
+@MainActor
+final class WidgetDeepLink: ObservableObject {
+    static let shared = WidgetDeepLink()
+    /// Roll UUID string requested from a widget tap; consumed by RollsView.
+    @Published var pendingRollID: String?
 }
 
 extension Notification.Name {

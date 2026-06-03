@@ -18,6 +18,8 @@ struct RollsView: View {
     @State private var filmDetailStock: FilmStock?
     @State private var rollBaseFrames: [UUID: CGRect] = [:]
     @StateObject private var physics = RollPhysicsEngine()
+    @State private var navPath = NavigationPath()
+    @ObservedObject private var deepLink = WidgetDeepLink.shared
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -37,7 +39,7 @@ struct RollsView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $navPath) {
             ZStack(alignment: .bottom) {
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
@@ -114,7 +116,11 @@ struct RollsView: View {
                         isLoading = false
                         appeared = true
                     }
+                    openPendingRollIfNeeded()
                 }
+            }
+            .onChange(of: deepLink.pendingRollID) { _, _ in
+                openPendingRollIfNeeded()
             }
             .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in
                 triggerShakeAnimation()
@@ -129,6 +135,14 @@ struct RollsView: View {
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
+    }
+
+    private func openPendingRollIfNeeded() {
+        guard let id = deepLink.pendingRollID,
+              let target = rolls.first(where: { $0.id.uuidString == id }) else { return }
+        deepLink.pendingRollID = nil
+        navPath = NavigationPath()
+        navPath.append(target)
     }
 
     private func triggerShakeAnimation() {
