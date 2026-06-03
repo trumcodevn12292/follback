@@ -21,6 +21,7 @@ struct RollDetailView: View {
     @Bindable var roll: Roll
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Query(sort: \Camera.name) private var allCameras: [Camera]
 
     @State private var viewerFrame: Frame?
     @State private var frameSheetTarget: FrameSheetTarget?
@@ -49,6 +50,7 @@ struct RollDetailView: View {
     @State private var showLabPicker = false
     @State private var showFilmPicker = false
     @State private var showDatePicker = false
+    @State private var showCameraPicker = false
     @State private var editingDate: Date = Date()
     @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
@@ -235,6 +237,9 @@ struct RollDetailView: View {
         .sheet(isPresented: $showDatePicker) {
             datePickerSheet
         }
+        .sheet(isPresented: $showCameraPicker) {
+            cameraPickerSheet
+        }
     }
 
     private var formattedShootingDate: String {
@@ -382,12 +387,15 @@ struct RollDetailView: View {
 
                     infoChipView(label: "Photos", value: "\(roll.filledFrames)/\(roll.capacity)")
 
-                    if let camera = roll.camera {
-                        Divider()
-                            .frame(height: 40)
-                            .background(Color.filmBorder)
-                        infoChipView(label: "Camera", value: camera.name)
+                    Divider()
+                        .frame(height: 40)
+                        .background(Color.filmBorder)
+                    Button {
+                        showCameraPicker = true
+                    } label: {
+                        infoChipView(label: "Camera", value: roll.camera?.name ?? "Add")
                     }
+                    .buttonStyle(.plain)
 
                     if roll.pushPull != 0 {
                         Divider()
@@ -1096,6 +1104,84 @@ struct RollDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { showFilmPicker = false }
+                }
+            }
+        }
+    }
+
+    // MARK: - Camera Picker Sheet
+    private var cameraPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    Button {
+                        roll.camera = nil
+                        roll.updatedAt = Date()
+                        try? modelContext.save()
+                        showCameraPicker = false
+                    } label: {
+                        HStack {
+                            Text("No Camera")
+                                .font(.system(size: 15, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            if roll.camera == nil {
+                                Image(systemName: "checkmark")
+                                    .foregroundColor(Color.filmAccent)
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+                    Divider().background(Color.filmBorder.opacity(0.2))
+                        .padding(.horizontal, 16)
+
+                    if allCameras.isEmpty {
+                        Text("No cameras yet. Add cameras from the Cameras tab.")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.filmTertiary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 20)
+                    } else {
+                        ForEach(allCameras) { camera in
+                            Button {
+                                roll.camera = camera
+                                roll.updatedAt = Date()
+                                try? modelContext.save()
+                                showCameraPicker = false
+                            } label: {
+                                HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(camera.displayNameWithLens)
+                                            .font(.system(size: 15, weight: .medium))
+                                            .foregroundColor(Color.filmText)
+                                        Text(camera.brand)
+                                            .font(.system(size: 12))
+                                            .foregroundColor(Color.filmTertiary)
+                                    }
+                                    Spacer()
+                                    if roll.camera?.id == camera.id {
+                                        Image(systemName: "checkmark")
+                                            .foregroundColor(Color.filmAccent)
+                                    }
+                                }
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 12)
+                            }
+                            .buttonStyle(.plain)
+                            Divider().background(Color.filmBorder.opacity(0.2))
+                                .padding(.horizontal, 16)
+                        }
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Change Camera")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showCameraPicker = false }
                 }
             }
         }
