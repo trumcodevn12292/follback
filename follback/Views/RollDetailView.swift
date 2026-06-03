@@ -34,6 +34,7 @@ struct RollDetailView: View {
     @State private var isImporting = false
     @State private var showEditDetails = false
     @State private var showContactSheet = false
+    @State private var showCarouselCreator = false
     @State private var filmDetailStock: FilmStock?
     @State private var showImportOptions = false
     @State private var showFileImporter = false
@@ -115,6 +116,9 @@ struct RollDetailView: View {
         }
         .fullScreenCover(isPresented: $showContactSheet) {
             ContactSheetView(roll: roll)
+        }
+        .fullScreenCover(isPresented: $showCarouselCreator) {
+            SeamlessCarouselView(roll: roll)
         }
         .fullScreenCover(item: $filmDetailStock) { stock in
             FilmDetailPopup(stock: stock) {
@@ -210,6 +214,7 @@ struct RollDetailView: View {
                 Button { showEditDetails = true } label: { Label("Edit Details", systemImage: "pencil") }
                 if hasPhotos {
                     Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
+                    Button { showCarouselCreator = true } label: { Label("Create Post", systemImage: "square.grid.3x1.below.line.grid.1x2") }
                 }
                 if roll.rollStatus == .inProgress || roll.rollStatus == .completed {
                     Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
@@ -1538,6 +1543,7 @@ struct ContactSheetView: View {
     @State private var isLoading = true
     @State private var savedToPhotos = false
     @State private var isSaving = false
+    @State private var coverImage: UIImage?
 
     private let columns = 4
     private let filmBase = Color(hex: "#1C1408")
@@ -1551,12 +1557,23 @@ struct ContactSheetView: View {
             .sorted { $0.number < $1.number }
     }
 
+    private var matchingFilmStock: FilmStock? {
+        FilmStock.allStocks.first { stock in
+            stock.displayName.lowercased() == roll.filmName.lowercased() ||
+            "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+        }
+    }
+
+    private var matchingLab: FilmLab? {
+        guard let labName = roll.labName else { return nil }
+        return FilmLab.allLabs.first { $0.name == labName }
+    }
+
     var body: some View {
         ZStack {
             Color(hex: "#0A0908").ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Header
                 HStack {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
@@ -1590,7 +1607,6 @@ struct ContactSheetView: View {
                 .padding(.top, 10)
                 .padding(.bottom, 12)
 
-                // Preview
                 ScrollView(showsIndicators: false) {
                     contactSheetContent(fontSize: 1.0)
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -1600,7 +1616,6 @@ struct ContactSheetView: View {
                 }
             }
 
-            // Toast
             if savedToPhotos {
                 VStack {
                     Spacer()
@@ -1620,7 +1635,10 @@ struct ContactSheetView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onAppear { loadAllImages() }
+        .onAppear {
+            loadAllImages()
+            loadCoverImage()
+        }
     }
 
     // MARK: - Shared Content
@@ -1630,44 +1648,74 @@ struct ContactSheetView: View {
         }
 
         return VStack(spacing: 0) {
-            // Title area
-            VStack(spacing: 5 * fontSize) {
-                Text(roll.filmName.uppercased())
-                    .font(.system(size: 16 * fontSize, weight: .black, design: .monospaced))
-                    .foregroundColor(inkColor)
-                    .kerning(2 * fontSize)
+            // Header with film cover + info
+            HStack(spacing: 10 * fontSize) {
+                // Film cover
+                if let cover = coverImage {
+                    Image(uiImage: cover)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 44 * fontSize, height: 44 * fontSize)
+                        .clipShape(RoundedRectangle(cornerRadius: 6 * fontSize, style: .continuous))
+                } else {
+                    RoundedRectangle(cornerRadius: 6 * fontSize, style: .continuous)
+                        .fill(Color(hex: "#DDD5C8"))
+                        .frame(width: 44 * fontSize, height: 44 * fontSize)
+                        .overlay(
+                            Image(systemName: "film")
+                                .font(.system(size: 16 * fontSize, weight: .light))
+                                .foregroundColor(Color(hex: "#9A8E7E"))
+                        )
+                }
 
-                HStack(spacing: 10 * fontSize) {
-                    if let camera = roll.camera {
-                        Text(camera.name.uppercased())
-                            .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
+                VStack(alignment: .leading, spacing: 3 * fontSize) {
+                    Text(roll.filmName.uppercased())
+                        .font(.system(size: 12 * fontSize, weight: .black, design: .monospaced))
+                        .foregroundColor(inkColor)
+                        .kerning(1 * fontSize)
+                        .lineLimit(1)
+
+                    HStack(spacing: 6 * fontSize) {
+                        if let camera = roll.camera {
+                            Text(camera.name.uppercased())
+                                .font(.system(size: 6 * fontSize, weight: .semibold, design: .monospaced))
+                                .foregroundColor(Color(hex: "#6A5E4E"))
+                                .lineLimit(1)
+                        }
+                        Text("ISO \(roll.iso)")
+                            .font(.system(size: 6 * fontSize, weight: .semibold, design: .monospaced))
+                            .foregroundColor(Color(hex: "#6A5E4E"))
+                        Text(roll.format.uppercased())
+                            .font(.system(size: 6 * fontSize, weight: .semibold, design: .monospaced))
                             .foregroundColor(Color(hex: "#6A5E4E"))
                     }
-                    Text("ISO \(roll.iso)")
-                        .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color(hex: "#6A5E4E"))
-                    Text(roll.format.uppercased())
-                        .font(.system(size: 7 * fontSize, weight: .semibold, design: .monospaced))
-                        .foregroundColor(Color(hex: "#6A5E4E"))
-                }
 
-                Text(roll.startDate.formatted(.dateTime.month(.wide).day().year()).uppercased())
-                    .font(.system(size: 8 * fontSize, weight: .medium, design: .monospaced))
-                    .foregroundColor(Color(hex: "#9A8E7E"))
-                    .kerning(1 * fontSize)
+                    Text(roll.startDate.formatted(.dateTime.month(.wide).day().year()).uppercased())
+                        .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
+                        .foregroundColor(Color(hex: "#9A8E7E"))
 
-                if let loc = roll.locationName, !loc.isEmpty {
-                    HStack(spacing: 3 * fontSize) {
-                        Image(systemName: "mappin")
-                            .font(.system(size: 6 * fontSize))
-                        Text(loc.uppercased())
-                            .font(.system(size: 7 * fontSize, weight: .medium, design: .monospaced))
+                    if let loc = roll.locationName, !loc.isEmpty {
+                        HStack(spacing: 2 * fontSize) {
+                            Image(systemName: "mappin")
+                                .font(.system(size: 5 * fontSize))
+                            Text(loc.uppercased())
+                                .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
+                                .lineLimit(1)
+                        }
+                        .foregroundColor(Color(hex: "#9A8E7E"))
                     }
-                    .foregroundColor(Color(hex: "#9A8E7E"))
                 }
+                Spacer()
             }
-            .padding(.top, 16 * fontSize)
+            .padding(.horizontal, 12 * fontSize)
+            .padding(.top, 14 * fontSize)
             .padding(.bottom, 10 * fontSize)
+
+            // Divider
+            Rectangle()
+                .fill(Color(hex: "#D5CCBE"))
+                .frame(height: 0.5 * fontSize)
+                .padding(.horizontal, 12 * fontSize)
 
             // Film strips
             ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
@@ -1675,13 +1723,36 @@ struct ContactSheetView: View {
                     .padding(.vertical, 2 * fontSize)
             }
 
-            // Footer
+            // Footer with lab info
             HStack(spacing: 0) {
-                Text("FILMVAULT")
-                    .font(.system(size: 6 * fontSize, weight: .black, design: .monospaced))
-                    .foregroundColor(Color(hex: "#C8BAA8"))
-                    .kerning(3 * fontSize)
+                // Lab info (left)
+                if let lab = matchingLab {
+                    HStack(spacing: 4 * fontSize) {
+                        if let logoUrl = lab.logoUrl, let url = URL(string: logoUrl) {
+                            AsyncImage(url: url) { image in
+                                image.resizable().scaledToFill()
+                            } placeholder: {
+                                labInitialCircle(lab: lab, fontSize: fontSize)
+                            }
+                            .frame(width: 14 * fontSize, height: 14 * fontSize)
+                            .clipShape(Circle())
+                        } else {
+                            labInitialCircle(lab: lab, fontSize: fontSize)
+                        }
+                        Text(lab.name.uppercased())
+                            .font(.system(size: 5 * fontSize, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(hex: "#9A8E7E"))
+                            .lineLimit(1)
+                    }
+                } else {
+                    Text("FILMVAULT")
+                        .font(.system(size: 6 * fontSize, weight: .black, design: .monospaced))
+                        .foregroundColor(Color(hex: "#C8BAA8"))
+                        .kerning(3 * fontSize)
+                }
+
                 Spacer()
+
                 Text("\(photoFrames.count) EXPOSURES")
                     .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#C8BAA8"))
@@ -1691,6 +1762,32 @@ struct ContactSheetView: View {
         }
         .padding(.horizontal, 6 * fontSize)
         .background(paperBg)
+    }
+
+    private func labInitialCircle(lab: FilmLab, fontSize: CGFloat) -> some View {
+        let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+        let hash = abs(lab.name.hashValue) % colors.count
+        return Text(String(lab.name.prefix(1)))
+            .font(.system(size: 7 * fontSize, weight: .bold))
+            .foregroundColor(.white)
+            .frame(width: 14 * fontSize, height: 14 * fontSize)
+            .background(Circle().fill(colors[hash]))
+    }
+
+    private func loadCoverImage() {
+        guard let stock = matchingFilmStock,
+              let coverUrlString = stock.fullCoverUrl,
+              let url = URL(string: coverUrlString) else { return }
+        Task {
+            var request = URLRequest(url: url)
+            if let token = UserDefaults.standard.string(forKey: "filmerAPIToken") {
+                request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            request.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
+            guard let (data, _) = try? await URLSession.shared.data(for: request),
+                  let img = UIImage(data: data) else { return }
+            await MainActor.run { coverImage = img }
+        }
     }
 
     // MARK: - Film Strip Row
