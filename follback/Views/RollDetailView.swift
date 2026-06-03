@@ -56,6 +56,7 @@ struct RollDetailView: View {
     @ObservedObject private var driveService = GoogleDriveService.shared
     @State private var tabBarHidden = false
     @State private var showLightMeter = false
+    @State private var showDevRecipe = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -156,6 +157,9 @@ struct RollDetailView: View {
         }
         .sheet(isPresented: $showEditDetails) {
             EditRollDetailsView(roll: roll)
+        }
+        .sheet(isPresented: $showDevRecipe) {
+            DevRecipeEditorView(roll: roll)
         }
         .fullScreenCover(isPresented: $showContactSheet) {
             ContactSheetView(roll: roll)
@@ -475,10 +479,92 @@ struct RollDetailView: View {
                     .lineSpacing(4)
                     .padding(.horizontal, 16)
             }
+
+            developmentCard
+                .padding(.horizontal, 16)
         }
         .padding(.bottom, 16)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
+    }
+
+    private var developmentCard: some View {
+        Button {
+            showDevRecipe = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "drop.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmAccent)
+                    Text("DEVELOPMENT")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(Color.filmTertiary)
+                        .kerning(0.8)
+                    Spacer()
+                    Image(systemName: roll.hasDevRecipe ? "pencil" : "plus")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.filmTertiary)
+                }
+
+                if roll.hasDevRecipe {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let dev = roll.devDeveloper, !dev.isEmpty {
+                            devLine(icon: "flask.fill",
+                                    text: [dev, roll.devDilution].compactMap { $0 }.filter { !$0.isEmpty }.joined(separator: "  ·  "))
+                        }
+                        if !devTempTimeText.isEmpty {
+                            devLine(icon: "thermometer.medium", text: devTempTimeText)
+                        }
+                        if roll.pushPull != 0 {
+                            devLine(icon: "arrow.up.arrow.down",
+                                    text: "\(roll.pushPull > 0 ? "Push" : "Pull") \(String(format: "%+d", Int(roll.pushPull))) stop\(abs(roll.pushPull) == 1 ? "" : "s")")
+                        }
+                        if let agit = roll.devAgitation, !agit.isEmpty {
+                            devLine(icon: "hand.draw", text: agit)
+                        }
+                        if let date = roll.developedDate {
+                            devLine(icon: "calendar", text: "Developed \(date.formatted(date: .abbreviated, time: .omitted))")
+                        }
+                        if let notes = roll.devNotes, !notes.isEmpty {
+                            devLine(icon: "text.alignleft", text: notes)
+                        }
+                    }
+                } else {
+                    Text("Log your developer, dilution, temperature, time and push/pull.")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private var devTempTimeText: String {
+        var parts: [String] = []
+        if let t = roll.devTempC { parts.append(String(format: "%.1f °C", t)) }
+        if let s = roll.devTimeSeconds { parts.append(DevRecipePresets.timeLabel(s)) }
+        return parts.joined(separator: "  ·  ")
+    }
+
+    private func devLine(icon: String, text: String) -> some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: icon)
+                .font(.system(size: 12))
+                .foregroundColor(Color.filmAccent)
+                .frame(width: 16)
+            Text(text)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
     }
 
     private var filmCoverImage: some View {

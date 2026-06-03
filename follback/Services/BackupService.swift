@@ -54,6 +54,14 @@ struct RollBackup: Codable {
     var updatedAt: Date
     var cameraID: UUID?
     var frames: [FrameBackup]
+    // Development recipe (optional for backward compatibility)
+    var devDeveloper: String?
+    var devDilution: String?
+    var devTempC: Double?
+    var devTimeSeconds: Int?
+    var devAgitation: String?
+    var devNotes: String?
+    var developedDate: Date?
 }
 
 struct FilmVaultBackup: Codable {
@@ -124,7 +132,14 @@ enum BackupService {
                 createdAt: roll.createdAt,
                 updatedAt: roll.updatedAt,
                 cameraID: roll.camera?.id,
-                frames: frames
+                frames: frames,
+                devDeveloper: roll.devDeveloper,
+                devDilution: roll.devDilution,
+                devTempC: roll.devTempC,
+                devTimeSeconds: roll.devTimeSeconds,
+                devAgitation: roll.devAgitation,
+                devNotes: roll.devNotes,
+                developedDate: roll.developedDate
             )
         }
 
@@ -218,6 +233,13 @@ enum BackupService {
             roll.createdAt = rb.createdAt
             roll.updatedAt = rb.updatedAt
             roll.camera = rb.cameraID.flatMap { camerasByID[$0] }
+            roll.devDeveloper = rb.devDeveloper
+            roll.devDilution = rb.devDilution
+            roll.devTempC = rb.devTempC
+            roll.devTimeSeconds = rb.devTimeSeconds
+            roll.devAgitation = rb.devAgitation
+            roll.devNotes = rb.devNotes
+            roll.developedDate = rb.developedDate
 
             var frames: [Frame] = []
             for fb in rb.frames {
