@@ -16,8 +16,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "1F82E6E52FCEFA1300058D29"
-               BuildableName = "follback.app"
-               BlueprintName = "follback"
+               BuildableName = "FilmVault.app"
+               BlueprintName = "FilmVault"
                ReferencedContainer = "container:follback.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,8 +45,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1F82E6E52FCEFA1300058D29"
-            BuildableName = "follback.app"
-            BlueprintName = "follback"
+            BuildableName = "FilmVault.app"
+            BlueprintName = "FilmVault"
             ReferencedContainer = "container:follback.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -62,8 +62,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "1F82E6E52FCEFA1300058D29"
-            BuildableName = "follback.app"
-            BlueprintName = "follback"
+            BuildableName = "FilmVault.app"
+            BlueprintName = "FilmVault"
             ReferencedContainer = "container:follback.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
