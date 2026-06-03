@@ -17,6 +17,7 @@ class Roll {
     var latitude: Double?
     var longitude: Double?
     var labName: String?
+    var driveFolderLink: String?
     var createdAt: Date
     var updatedAt: Date
 
