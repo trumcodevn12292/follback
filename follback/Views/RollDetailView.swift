@@ -40,6 +40,11 @@ struct RollDetailView: View {
     @State private var showFileImporter = false
     @State private var showDriveLinkAlert = false
     @State private var driveLinkText = ""
+    @State private var isSelectMode = false
+    @State private var selectedFrames: Set<UUID> = []
+    @State private var isUploadingToDrive = false
+    @State private var draggedFrame: Frame?
+    @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
 
     private var matchingFilmStock: FilmStock? {
@@ -127,8 +132,12 @@ struct RollDetailView: View {
             .background(ClearBackgroundView())
         }
         .confirmationDialog("Import Photos", isPresented: $showImportOptions, titleVisibility: .visible) {
-            Button("From Files / Folder") { showFileImporter = true }
+            Button("From Files / Folder") {
+                lastImportSource = "files"
+                showFileImporter = true
+            }
             Button("From Google Drive Link") {
+                lastImportSource = "drive"
                 if driveService.isSignedIn {
                     driveLinkText = ""
                     showDriveLinkAlert = true
@@ -136,10 +145,13 @@ struct RollDetailView: View {
                     Task { await driveService.signIn() }
                 }
             }
-            Button("From Photo Library") { showPhotoPicker = true }
+            Button("From Photo Library") {
+                lastImportSource = "library"
+                showPhotoPicker = true
+            }
             Button("Cancel", role: .cancel) { }
         } message: {
-            Text("Choose where to import photos from. \(emptySlotCount) slot\(emptySlotCount == 1 ? "" : "s") available.")
+            Text("Choose where to import photos from. \(emptySlotCount) slot\(emptySlotCount == 1 ? "" : "s") available. Mode: \(UserDefaults.standard.string(forKey: "photoImportMode") ?? "Copy")")
         }
         .fileImporter(
             isPresented: $showFileImporter,
@@ -215,6 +227,15 @@ struct RollDetailView: View {
                 if hasPhotos {
                     Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
                     Button { showCarouselCreator = true } label: { Label("Create Post", systemImage: "square.grid.3x1.below.line.grid.1x2") }
+                    Button {
+                        withAnimation(.spring(response: 0.3)) { isSelectMode = true }
+                    } label: { Label("Select Photos", systemImage: "checkmark.circle") }
+                }
+                if let driveLink = roll.driveFolderLink, !driveLink.isEmpty {
+                    Button {
+                        UIPasteboard.general.string = driveLink
+                        Task { await showToast("Drive link copied") }
+                    } label: { Label("Copy Drive Link", systemImage: "doc.on.doc") }
                 }
                 if roll.rollStatus == .inProgress || roll.rollStatus == .completed {
                     Button { markDeveloped() } label: { Label("Mark Developed", systemImage: "checkmark.seal") }
@@ -268,7 +289,7 @@ struct RollDetailView: View {
                         .frame(height: 40)
                         .background(Color.filmBorder)
 
-                    infoChipView(label: "Exposures", value: "\(roll.filledFrames)/\(roll.capacity)")
+                    infoChipView(label: "Photos", value: "\(roll.filledFrames)/\(roll.capacity)")
 
                     if let camera = roll.camera {
                         Divider()
@@ -722,44 +743,145 @@ struct RollDetailView: View {
             GridItem(.flexible(), spacing: 2)
         ]
 
-        return LazyVGrid(columns: columns, spacing: 2) {
-            ForEach(frames, id: \.id) { frame in
-                GeometryReader { geo in
-                    photoCell(frame: frame, size: geo.size.width)
+        return VStack(spacing: 0) {
+            if isSelectMode {
+                selectModeBar(frames: frames)
+            }
+
+            LazyVGrid(columns: columns, spacing: 2) {
+                ForEach(frames, id: \.id) { frame in
+                    GeometryReader { geo in
+                        photoCell(frame: frame, size: geo.size.width)
+                    }
+                    .aspectRatio(1, contentMode: .fit)
+                    .onDrag {
+                        draggedFrame = frame
+                        return NSItemProvider(object: frame.id.uuidString as NSString)
+                    }
+                    .onDrop(of: [UTType.text], delegate: PhotoDropDelegate(
+                        frame: frame,
+                        roll: roll,
+                        draggedFrame: $draggedFrame,
+                        modelContext: modelContext
+                    ))
                 }
-                .aspectRatio(1, contentMode: .fit)
+            }
+            .padding(.horizontal, 0)
+        }
+    }
+
+    private func selectModeBar(frames: [Frame]) -> some View {
+        HStack(spacing: 12) {
+            Button("Select All") {
+                selectedFrames = Set(frames.map { $0.id })
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            }
+            .font(.system(size: 14, weight: .medium))
+            .foregroundColor(Color.filmAccent)
+
+            Spacer()
+
+            Text("\(selectedFrames.count) selected")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
+
+            Spacer()
+
+            if driveService.isSignedIn && !selectedFrames.isEmpty {
+                Button {
+                    Task { await uploadSelectedToDrive(frames: frames) }
+                } label: {
+                    HStack(spacing: 4) {
+                        if isUploadingToDrive {
+                            ProgressView()
+                                .scaleEffect(0.7)
+                        }
+                        Text("Upload to Drive")
+                            .font(.system(size: 14, weight: .semibold))
+                    }
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Capsule().fill(Color.filmAccent))
+                }
+                .disabled(isUploadingToDrive)
+            }
+
+            Button {
+                withAnimation(.spring(response: 0.3)) {
+                    isSelectMode = false
+                    selectedFrames.removeAll()
+                }
+            } label: {
+                Text("Done")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(Color.filmAccent)
             }
         }
-        .padding(.horizontal, 0)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color.filmSurface)
     }
 
     private func photoCell(frame: Frame, size: CGFloat) -> some View {
-        Group {
-            if let assetID = frame.photoAssetID {
-                PhotoThumbnail(assetID: assetID)
-                    .frame(width: size, height: size)
-                    .clipped()
-            } else {
-                Rectangle()
-                    .fill(Color.filmSurface)
-                    .frame(width: size, height: size)
+        ZStack(alignment: .topTrailing) {
+            Group {
+                if let assetID = frame.photoAssetID {
+                    PhotoThumbnail(assetID: assetID)
+                        .frame(width: size, height: size)
+                        .clipped()
+                } else {
+                    Rectangle()
+                        .fill(Color.filmSurface)
+                        .frame(width: size, height: size)
+                }
+            }
+
+            if isSelectMode {
+                ZStack {
+                    Circle()
+                        .fill(selectedFrames.contains(frame.id) ? Color.filmAccent : Color.black.opacity(0.4))
+                        .frame(width: 24, height: 24)
+                    if selectedFrames.contains(frame.id) {
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white)
+                    } else {
+                        Circle()
+                            .stroke(Color.white, lineWidth: 1.5)
+                            .frame(width: 22, height: 22)
+                    }
+                }
+                .padding(6)
             }
         }
         .contentShape(Rectangle())
         .onTapGesture {
-            fullScreenFrame = frame
-            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            if isSelectMode {
+                if selectedFrames.contains(frame.id) {
+                    selectedFrames.remove(frame.id)
+                } else {
+                    selectedFrames.insert(frame.id)
+                }
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } else {
+                fullScreenFrame = frame
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            }
         }
         .contextMenu {
-            Button {
-                frameSheetTarget = .edit(frame)
-            } label: {
-                Label("Edit Details", systemImage: "pencil")
-            }
             Button {
                 fullScreenFrame = frame
             } label: {
                 Label("View Full Screen", systemImage: "arrow.up.left.and.arrow.down.right")
+            }
+            Button {
+                withAnimation(.spring(response: 0.3)) {
+                    isSelectMode = true
+                    selectedFrames.insert(frame.id)
+                }
+            } label: {
+                Label("Select", systemImage: "checkmark.circle")
             }
         }
     }
@@ -778,6 +900,70 @@ struct RollDetailView: View {
         roll.updateStatus(.archived)
         try? modelContext.save()
         dismiss()
+    }
+
+    // MARK: - Upload to Google Drive
+
+    private func uploadSelectedToDrive(frames: [Frame]) async {
+        guard driveService.isSignedIn, !selectedFrames.isEmpty else { return }
+        await MainActor.run { isUploadingToDrive = true }
+
+        let folderName = roll.filmName
+        let folderId = await driveService.createFolder(name: folderName)
+
+        let framesToUpload = frames.filter { selectedFrames.contains($0.id) }
+        var uploadedCount = 0
+
+        for frame in framesToUpload {
+            guard let assetID = frame.photoAssetID else { continue }
+            let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let fileURL = docsDir.appendingPathComponent(assetID)
+            guard let data = try? Data(contentsOf: fileURL) else { continue }
+
+            let filename = "frame_\(frame.number).jpg"
+            _ = await driveService.uploadPhoto(data: data, filename: filename, folderId: folderId)
+            uploadedCount += 1
+        }
+
+        if let folderId = folderId {
+            let driveLink = "https://drive.google.com/drive/folders/\(folderId)"
+            await MainActor.run {
+                roll.driveFolderLink = driveLink
+                try? modelContext.save()
+            }
+        }
+
+        await MainActor.run {
+            isUploadingToDrive = false
+            isSelectMode = false
+            selectedFrames.removeAll()
+        }
+        await showToast("Uploaded \(uploadedCount) photo\(uploadedCount == 1 ? "" : "s") to Drive")
+    }
+}
+
+// MARK: - Photo Drop Delegate
+
+struct PhotoDropDelegate: DropDelegate {
+    let frame: Frame
+    let roll: Roll
+    @Binding var draggedFrame: Frame?
+    let modelContext: ModelContext
+
+    func performDrop(info: DropInfo) -> Bool {
+        defer { draggedFrame = nil }
+        guard let dragged = draggedFrame, dragged.id != frame.id else { return false }
+        withAnimation(.spring(response: 0.3)) {
+            let tempNumber = dragged.number
+            dragged.number = frame.number
+            frame.number = tempNumber
+        }
+        try? modelContext.save()
+        return true
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        DropProposal(operation: .move)
     }
 }
 
