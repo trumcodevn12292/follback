@@ -12,6 +12,16 @@
 				<string>com.googleusercontent.apps.1055225448670-mq2hlq85lp6gvn0rh8nsh1qj4e5s4dmc</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.williamcachamwri.FilmVault.deeplink</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>filmvault</string>
+			</array>
+		</dict>
 	</array>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>FilmVault uses your location to tag where you shot your film rolls.</string>

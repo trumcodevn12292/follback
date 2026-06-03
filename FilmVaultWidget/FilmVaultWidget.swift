@@ -278,7 +278,13 @@ struct FilmVaultWidgetEntryView: View {
             // Roll list
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(entry.data.recentRolls.prefix(6).enumerated()), id: \.element.id) { index, roll in
-                    rollRowLarge(roll)
+                    if let url = URL(string: "filmvault://roll/\(roll.id)") {
+                        Link(destination: url) {
+                            rollRowLarge(roll)
+                        }
+                    } else {
+                        rollRowLarge(roll)
+                    }
                     if index < min(entry.data.recentRolls.count - 1, 5) {
                         Divider()
                             .background(Color.white.opacity(0.04))
