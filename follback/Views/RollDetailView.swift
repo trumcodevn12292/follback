@@ -55,6 +55,7 @@ struct RollDetailView: View {
     @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
     @State private var tabBarHidden = false
+    @State private var showLightMeter = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -138,6 +139,9 @@ struct RollDetailView: View {
         }
         .fullScreenCover(item: $fullScreenFrame) { frame in
             FullScreenPhotoView(frame: frame, roll: roll)
+        }
+        .fullScreenCover(isPresented: $showLightMeter) {
+            LightMeterView(filmISO: roll.iso)
         }
         .alert("Delete Roll?", isPresented: $showDeleteAlert) {
             Button("Cancel", role: .cancel) {}
@@ -312,6 +316,7 @@ struct RollDetailView: View {
 
             Menu {
                 Button { showEditDetails = true } label: { Label("Edit Details", systemImage: "pencil") }
+                Button { showLightMeter = true } label: { Label("Light Meter", systemImage: "camera.metering.spot") }
                 if hasPhotos {
                     Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
                     Button { showCarouselCreator = true } label: { Label("Create Post", systemImage: "square.grid.3x1.below.line.grid.1x2") }
