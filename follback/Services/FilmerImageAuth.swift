@@ -1,22 +1,21 @@
 import Foundation
 import UIKit
 import Kingfisher
+import os
 
 final class FilmerImageAuth: @unchecked Sendable {
     static let shared = FilmerImageAuth()
 
-    private var token: String?
-    private let lock = NSLock()
+    private let _token = OSAllocatedUnfairLock<String?>(initialState: nil)
     private let bootstrapURL = URL(string: "https://api.getfilmer.com/api/device/bootstrap")!
 
     private init() {
-        token = UserDefaults.standard.string(forKey: "filmerAPIToken")
+        let saved = UserDefaults.standard.string(forKey: "filmerAPIToken")
+        _token.withLock { $0 = saved }
     }
 
     func ensureToken() async {
-        lock.lock()
-        let existing = token
-        lock.unlock()
+        let existing = _token.withLock { $0 }
         if existing != nil { return }
         await fetchToken()
     }
@@ -39,21 +38,14 @@ final class FilmerImageAuth: @unchecked Sendable {
             return
         }
 
-        lock.lock()
-        token = newToken
-        lock.unlock()
+        _token.withLock { $0 = newToken }
         UserDefaults.standard.set(newToken, forKey: "filmerAPIToken")
     }
 
     var modifier: AnyModifier {
-        let currentToken = { [weak self] () -> String? in
-            self?.lock.lock()
-            defer { self?.lock.unlock() }
-            return self?.token
-        }
-        return AnyModifier { request in
+        return AnyModifier { [weak self] request in
             var r = request
-            if let t = currentToken() {
+            if let t = self?._token.withLock({ $0 }) {
                 r.setValue("Bearer \(t)", forHTTPHeaderField: "Authorization")
             }
             r.setValue("Filmer/1.0.22", forHTTPHeaderField: "User-Agent")
@@ -62,9 +54,7 @@ final class FilmerImageAuth: @unchecked Sendable {
     }
 
     func clearToken() {
-        lock.lock()
-        token = nil
-        lock.unlock()
+        _token.withLock { $0 = nil }
         UserDefaults.standard.removeObject(forKey: "filmerAPIToken")
     }
 }

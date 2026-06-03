@@ -101,7 +101,7 @@ struct LocationPickerView: View {
                                                     .font(.system(size: 15, weight: .medium))
                                                     .foregroundColor(Color.filmText)
                                                     .lineLimit(1)
-                                                if let subtitle = item.placemark.formattedAddress {
+                                                if let subtitle = formattedAddress(for: item) {
                                                     Text(subtitle)
                                                         .font(.system(size: 12))
                                                         .foregroundColor(Color.filmTertiary)
@@ -207,7 +207,7 @@ struct LocationPickerView: View {
 
     private func selectMapItem(_ item: MKMapItem) {
         hasUserSelection = true
-        let coord = item.placemark.coordinate
+        guard let coord = item.location?.coordinate else { return }
         withAnimation {
             selectedPin = coord
             cameraPosition = .region(MKCoordinateRegion(
@@ -215,20 +215,30 @@ struct LocationPickerView: View {
                 span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
             ))
         }
-        resolvedAddress = item.placemark.formattedAddress ?? item.name ?? "Selected location"
+        resolvedAddress = formattedAddress(for: item) ?? item.name ?? "Selected location"
         searchResults = []
         searchText = ""
     }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {
-        CLGeocoder().reverseGeocodeLocation(
-            CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-        ) { placemarks, _ in
-            if let pm = placemarks?.first {
-                let parts = [pm.name, pm.thoroughfare, pm.subLocality, pm.locality, pm.administrativeArea].compactMap { $0 }
-                resolvedAddress = parts.joined(separator: ", ")
+        Task {
+            let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+            guard let request = MKReverseGeocodingRequest(location: location) else { return }
+            if let items = try? await request.mapItems, let mapItem = items.first {
+                await MainActor.run {
+                    resolvedAddress = formattedAddress(for: mapItem) ?? mapItem.name ?? "Selected location"
+                }
             }
         }
+    }
+
+    private func formattedAddress(for item: MKMapItem) -> String? {
+        let addr = item.address
+        if let short = addr.shortAddress, !short.isEmpty {
+            return short
+        }
+        let full = addr.fullAddress
+        return full.isEmpty ? nil : full
     }
 }
 
@@ -262,18 +272,4 @@ class LocationPickerManager: NSObject, ObservableObject, CLLocationManagerDelega
     }
 }
 
-// MARK: - MKPlacemark Extension
 
-extension MKPlacemark {
-    var formattedAddress: String? {
-        let parts = [
-            subThoroughfare,
-            thoroughfare,
-            subLocality,
-            locality,
-            administrativeArea,
-            country
-        ].compactMap { $0 }
-        return parts.isEmpty ? nil : parts.joined(separator: ", ")
-    }
-}
