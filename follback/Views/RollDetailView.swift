@@ -40,6 +40,7 @@ struct RollDetailView: View {
     @State private var showFileImporter = false
     @State private var showDriveLinkAlert = false
     @State private var driveLinkText = ""
+    @State private var showCamera = false
     @State private var isSelectMode = false
     @State private var selectedFrames: Set<UUID> = []
     @State private var isUploadingToDrive = false
@@ -131,27 +132,44 @@ struct RollDetailView: View {
             }
             .background(ClearBackgroundView())
         }
-        .confirmationDialog("Import Photos", isPresented: $showImportOptions, titleVisibility: .visible) {
-            Button("From Files / Folder") {
-                lastImportSource = "files"
-                showFileImporter = true
+        .sheet(isPresented: $showImportOptions) {
+            ImportSourceSheet(
+                onPhotos: {
+                    lastImportSource = "library"
+                    showImportOptions = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { showPhotoPicker = true }
+                },
+                onCamera: {
+                    lastImportSource = "camera"
+                    showImportOptions = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { showCamera = true }
+                },
+                onFiles: {
+                    lastImportSource = "files"
+                    showImportOptions = false
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { showFileImporter = true }
+                },
+                onDriveLink: {
+                    lastImportSource = "drive"
+                    showImportOptions = false
+                    if driveService.isSignedIn {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+                            driveLinkText = ""
+                            showDriveLinkAlert = true
+                        }
+                    } else {
+                        Task { await driveService.signIn() }
+                    }
+                },
+                slotsAvailable: emptySlotCount
+            )
+            .presentationDetents([.height(280)])
+            .presentationDragIndicator(.visible)
+        }
+        .fullScreenCover(isPresented: $showCamera) {
+            CameraPickerWrapper { image in
+                Task { await importCameraPhoto(image) }
             }
-            Button("From Google Drive Link") {
-                lastImportSource = "drive"
-                if driveService.isSignedIn {
-                    driveLinkText = ""
-                    showDriveLinkAlert = true
-                } else {
-                    Task { await driveService.signIn() }
-                }
-            }
-            Button("From Photo Library") {
-                lastImportSource = "library"
-                showPhotoPicker = true
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Choose where to import photos from. \(emptySlotCount) slot\(emptySlotCount == 1 ? "" : "s") available. Mode: \(UserDefaults.standard.string(forKey: "photoImportMode") ?? "Copy")")
         }
         .fileImporter(
             isPresented: $showFileImporter,
@@ -791,18 +809,25 @@ struct RollDetailView: View {
                 Button {
                     Task { await uploadSelectedToDrive(frames: frames) }
                 } label: {
-                    HStack(spacing: 4) {
+                    HStack(spacing: 6) {
                         if isUploadingToDrive {
                             ProgressView()
+                                .tint(.white)
                                 .scaleEffect(0.7)
+                        } else {
+                            Image(systemName: "icloud.and.arrow.up")
+                                .font(.system(size: 13, weight: .semibold))
                         }
-                        Text("Upload to Drive")
-                            .font(.system(size: 14, weight: .semibold))
+                        Text(isUploadingToDrive ? "Uploading..." : "Drive")
+                            .font(.system(size: 13, weight: .semibold))
                     }
                     .foregroundColor(.white)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(Capsule().fill(Color.filmAccent))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 8)
+                    .background(
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.filmAccent)
+                    )
                 }
                 .disabled(isUploadingToDrive)
             }
@@ -939,6 +964,180 @@ struct RollDetailView: View {
             selectedFrames.removeAll()
         }
         await showToast("Uploaded \(uploadedCount) photo\(uploadedCount == 1 ? "" : "s") to Drive")
+    }
+
+    // MARK: - Camera Import
+
+    private func importCameraPhoto(_ image: UIImage) async {
+        await MainActor.run { isImporting = true }
+        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let emptySlots = (1...roll.capacity).filter { num in
+            !frames.contains { $0.number == num && $0.photoAssetID != nil }
+        }
+        guard let slotNumber = emptySlots.first else {
+            await showToast("No empty slots available")
+            return
+        }
+
+        guard let jpegData = image.jpegData(compressionQuality: 0.9) else { return }
+        let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+        let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent(filename)
+        try? jpegData.write(to: url)
+
+        let importMode = UserDefaults.standard.string(forKey: "photoImportMode") ?? "Copy"
+        if importMode == "Reference" {
+            saveToPhotoAlbum(data: jpegData)
+        }
+
+        if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+            existingFrame.photoAssetID = filename
+        } else {
+            let newFrame = Frame(number: slotNumber, photoAssetID: filename)
+            newFrame.roll = roll
+            modelContext.insert(newFrame)
+        }
+
+        await finishImport(count: 1)
+    }
+}
+
+// MARK: - Import Source Sheet
+
+struct ImportSourceSheet: View {
+    let onPhotos: () -> Void
+    let onCamera: () -> Void
+    let onFiles: () -> Void
+    let onDriveLink: () -> Void
+    let slotsAvailable: Int
+
+    var body: some View {
+        VStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 2.5)
+                .fill(Color.gray.opacity(0.4))
+                .frame(width: 36, height: 5)
+                .padding(.top, 8)
+
+            Text("Import Photos")
+                .font(.system(size: 17, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .padding(.top, 16)
+
+            Text("\(slotsAvailable) slot\(slotsAvailable == 1 ? "" : "s") available")
+                .font(.system(size: 13))
+                .foregroundColor(Color.filmTertiary)
+                .padding(.top, 4)
+
+            HStack(spacing: 24) {
+                importSourceButton(icon: "photo.on.rectangle", title: "Ảnh", color: .green) {
+                    onPhotos()
+                }
+                importSourceButton(icon: "camera.fill", title: "Camera", color: .orange) {
+                    onCamera()
+                }
+            }
+            .padding(.top, 20)
+
+            HStack(spacing: 12) {
+                importActionButton(icon: "folder.fill", title: "Files") {
+                    onFiles()
+                }
+                importActionButton(icon: "link", title: "Google Drive Link") {
+                    onDriveLink()
+                }
+            }
+            .padding(.top, 16)
+            .padding(.horizontal, 20)
+
+            Spacer()
+        }
+        .background(Color.filmBackground)
+    }
+
+    private func importSourceButton(icon: String, title: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 8) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(color.opacity(0.15))
+                        .frame(width: 64, height: 64)
+                    Image(systemName: icon)
+                        .font(.system(size: 26, weight: .medium))
+                        .foregroundColor(color)
+                }
+                Text(title)
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(Color.filmText)
+            }
+        }
+    }
+
+    private func importActionButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color.filmAccent)
+                Text(title)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(Color.filmText)
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                    )
+            )
+        }
+    }
+}
+
+// MARK: - Camera Picker Wrapper
+
+struct CameraPickerWrapper: UIViewControllerRepresentable {
+    let onCapture: (UIImage) -> Void
+    @Environment(\.dismiss) private var dismiss
+
+    func makeUIViewController(context: Context) -> UIImagePickerController {
+        let picker = UIImagePickerController()
+        picker.sourceType = .camera
+        picker.delegate = context.coordinator
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onCapture: onCapture, dismiss: dismiss)
+    }
+
+    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let onCapture: (UIImage) -> Void
+        let dismiss: DismissAction
+
+        init(onCapture: @escaping (UIImage) -> Void, dismiss: DismissAction) {
+            self.onCapture = onCapture
+            self.dismiss = dismiss
+        }
+
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
+            if let image = info[.originalImage] as? UIImage {
+                onCapture(image)
+            }
+            dismiss()
+        }
+
+        func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
+            dismiss()
+        }
     }
 }
 
