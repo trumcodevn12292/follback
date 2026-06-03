@@ -12,10 +12,36 @@
 		79A9049C954C4F116D80085C /* DGCharts in Frameworks */ = {isa = PBXBuildFile; productRef = E72F8CA4961124654C9D1E79 /* DGCharts */; };
 		A2A999BF1C4CA48B50055800 /* Shimmer in Frameworks */ = {isa = PBXBuildFile; productRef = A2CB817671A83800B95F9D35 /* Shimmer */; };
 		E33F93D2CF408545E83F1EC2 /* Lottie in Frameworks */ = {isa = PBXBuildFile; productRef = 0128834624A37D8502B64B87 /* Lottie */; };
+		WIDG00040000000000000001 /* FilmVaultWidgetExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = WIDG00050000000000000001 /* FilmVaultWidgetExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		WIDG00010000000000000001 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 1F82E6DE2FCEFA1300058D29 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = WIDG00020000000000000001;
+			remoteInfo = FilmVaultWidgetExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		WIDG00030000000000000001 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				WIDG00040000000000000001 /* FilmVaultWidgetExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		1F82E6E62FCEFA1300058D29 /* FilmVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		WIDG00050000000000000001 /* FilmVaultWidgetExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = FilmVaultWidgetExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -24,6 +50,13 @@
 			exceptions = (
 			);
 			path = follback;
+			sourceTree = "<group>";
+		};
+		WIDG00060000000000000001 /* FilmVaultWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = FilmVaultWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -41,6 +74,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		WIDG00070000000000000001 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -48,6 +88,7 @@
 			isa = PBXGroup;
 			children = (
 				1F82E6E82FCEFA1300058D29 /* follback */,
+				WIDG00060000000000000001 /* FilmVaultWidget */,
 				1F82E6E72FCEFA1300058D29 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -56,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				1F82E6E62FCEFA1300058D29 /* FilmVault.app */,
+				WIDG00050000000000000001 /* FilmVaultWidgetExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -70,10 +112,12 @@
 				1F82E6E22FCEFA1300058D29 /* Sources */,
 				1F82E6E32FCEFA1300058D29 /* Frameworks */,
 				1F82E6E42FCEFA1300058D29 /* Resources */,
+				WIDG00030000000000000001 /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				WIDG00080000000000000001 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				1F82E6E82FCEFA1300058D29 /* follback */,
@@ -90,6 +134,26 @@
 			productReference = 1F82E6E62FCEFA1300058D29 /* FilmVault.app */;
 			productType = "com.apple.product-type.application";
 		};
+		WIDG00020000000000000001 /* FilmVaultWidgetExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = WIDG00090000000000000001 /* Build configuration list for PBXNativeTarget "FilmVaultWidgetExtension" */;
+			buildPhases = (
+				WIDG000A0000000000000001 /* Sources */,
+				WIDG00070000000000000001 /* Frameworks */,
+				WIDG000B0000000000000001 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				WIDG00060000000000000001 /* FilmVaultWidget */,
+			);
+			name = FilmVaultWidgetExtension;
+			productName = FilmVaultWidgetExtension;
+			productReference = WIDG00050000000000000001 /* FilmVaultWidgetExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -101,6 +165,9 @@
 				LastUpgradeCheck = 2650;
 				TargetAttributes = {
 					1F82E6E52FCEFA1300058D29 = {
+						CreatedOnToolsVersion = 26.5;
+					};
+					WIDG00020000000000000001 = {
 						CreatedOnToolsVersion = 26.5;
 					};
 				};
@@ -127,12 +194,20 @@
 			projectRoot = "";
 			targets = (
 				1F82E6E52FCEFA1300058D29 /* FilmVault */,
+				WIDG00020000000000000001 /* FilmVaultWidgetExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		1F82E6E42FCEFA1300058D29 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		WIDG000B0000000000000001 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -149,7 +224,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		WIDG000A0000000000000001 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		WIDG00080000000000000001 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = WIDG00020000000000000001 /* FilmVaultWidgetExtension */;
+			targetProxy = WIDG00010000000000000001 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1F82E6F12FCEFA1500058D29 /* Debug */ = {
@@ -343,6 +433,62 @@
 			};
 			name = Release;
 		};
+		WIDG000C0000000000000001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RV2GXBQQP2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		WIDG000D0000000000000001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = RV2GXBQQP2;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault.widget;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -360,6 +506,15 @@
 			buildConfigurations = (
 				1F82E6F42FCEFA1500058D29 /* Debug */,
 				1F82E6F52FCEFA1500058D29 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		WIDG00090000000000000001 /* Build configuration list for PBXNativeTarget "FilmVaultWidgetExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				WIDG000C0000000000000001 /* Debug */,
+				WIDG000D0000000000000001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

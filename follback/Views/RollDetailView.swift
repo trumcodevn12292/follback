@@ -474,17 +474,25 @@ struct RollDetailView: View {
     // MARK: - Import Button (bottom floating)
     private var importButton: some View {
         Button {
-            if !isImporting {
+            if isSelectMode && driveService.isSignedIn && !selectedFrames.isEmpty {
+                let frames = (roll.frames ?? []).filter { $0.photoAssetID != nil }.sorted { $0.number < $1.number }
+                Task { await uploadSelectedToDrive(frames: frames) }
+            } else if !isImporting && !isSelectMode {
                 showImportOptions = true
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
         } label: {
             HStack(spacing: 8) {
-                if isImporting {
+                if isImporting || isUploadingToDrive {
                     ProgressView()
                         .progressViewStyle(CircularProgressViewStyle(tint: Color.filmBackground))
                         .scaleEffect(0.8)
-                    Text("Importing...")
+                    Text(isUploadingToDrive ? "Uploading..." : "Importing...")
+                        .font(.system(size: 16, weight: .semibold))
+                } else if isSelectMode && driveService.isSignedIn && !selectedFrames.isEmpty {
+                    Image(systemName: "icloud.and.arrow.up")
+                        .font(.system(size: 16, weight: .bold))
+                    Text("Upload to Drive")
                         .font(.system(size: 16, weight: .semibold))
                 } else {
                     Image(systemName: "plus")
@@ -498,11 +506,13 @@ struct RollDetailView: View {
             .padding(.vertical, 14)
             .background(
                 Capsule()
-                    .fill(Color.filmAccent)
+                    .fill(isSelectMode && !selectedFrames.isEmpty ? Color.blue : Color.filmAccent)
             )
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelectMode)
+            .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFrames.count)
         }
-        .disabled(isImporting || emptySlotCount == 0)
-        .opacity(emptySlotCount == 0 && !isImporting ? 0.5 : 1)
+        .disabled(isImporting || isUploadingToDrive || (emptySlotCount == 0 && !isSelectMode))
+        .opacity((emptySlotCount == 0 && !isImporting && !isSelectMode) ? 0.5 : 1)
         .padding(.bottom, 30)
     }
 
@@ -804,33 +814,6 @@ struct RollDetailView: View {
                 .foregroundColor(Color.filmTertiary)
 
             Spacer()
-
-            if driveService.isSignedIn && !selectedFrames.isEmpty {
-                Button {
-                    Task { await uploadSelectedToDrive(frames: frames) }
-                } label: {
-                    HStack(spacing: 6) {
-                        if isUploadingToDrive {
-                            ProgressView()
-                                .tint(.white)
-                                .scaleEffect(0.7)
-                        } else {
-                            Image(systemName: "icloud.and.arrow.up")
-                                .font(.system(size: 13, weight: .semibold))
-                        }
-                        Text(isUploadingToDrive ? "Uploading..." : "Drive")
-                            .font(.system(size: 13, weight: .semibold))
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 8)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.filmAccent)
-                    )
-                }
-                .disabled(isUploadingToDrive)
-            }
 
             Button {
                 withAnimation(.spring(response: 0.3)) {
@@ -1150,15 +1133,27 @@ struct PhotoDropDelegate: DropDelegate {
     let modelContext: ModelContext
 
     func performDrop(info: DropInfo) -> Bool {
-        defer { draggedFrame = nil }
-        guard let dragged = draggedFrame, dragged.id != frame.id else { return false }
-        withAnimation(.spring(response: 0.3)) {
-            let tempNumber = dragged.number
-            dragged.number = frame.number
-            frame.number = tempNumber
-        }
-        try? modelContext.save()
+        draggedFrame = nil
         return true
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let dragged = draggedFrame, dragged.id != frame.id else { return }
+        let frames = (roll.frames ?? [])
+            .filter { $0.photoAssetID != nil }
+            .sorted { $0.number < $1.number }
+        guard let fromIndex = frames.firstIndex(where: { $0.id == dragged.id }),
+              let toIndex = frames.firstIndex(where: { $0.id == frame.id }) else { return }
+
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+            let numbers = frames.map { $0.number }
+            var reordered = frames
+            let moving = reordered.remove(at: fromIndex)
+            reordered.insert(moving, at: toIndex)
+            for (i, f) in reordered.enumerated() {
+                f.number = numbers[i]
+            }
+        }
     }
 
     func dropUpdated(info: DropInfo) -> DropProposal? {
