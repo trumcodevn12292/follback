@@ -506,7 +506,7 @@ struct RollDetailView: View {
             .padding(.vertical, 14)
             .background(
                 Capsule()
-                    .fill(isSelectMode && !selectedFrames.isEmpty ? Color.blue : Color.filmAccent)
+                    .fill(Color.filmAccent)
             )
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: isSelectMode)
             .animation(.spring(response: 0.4, dampingFraction: 0.8), value: selectedFrames.count)
