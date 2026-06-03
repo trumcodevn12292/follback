@@ -15,7 +15,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		1F82E6E62FCEFA1300058D29 /* follback.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = follback.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		1F82E6E62FCEFA1300058D29 /* FilmVault.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FilmVault.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -55,7 +55,7 @@
 		1F82E6E72FCEFA1300058D29 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				1F82E6E62FCEFA1300058D29 /* follback.app */,
+				1F82E6E62FCEFA1300058D29 /* FilmVault.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -63,9 +63,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		1F82E6E52FCEFA1300058D29 /* follback */ = {
+		1F82E6E52FCEFA1300058D29 /* FilmVault */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 1F82E6F32FCEFA1500058D29 /* Build configuration list for PBXNativeTarget "follback" */;
+			buildConfigurationList = 1F82E6F32FCEFA1500058D29 /* Build configuration list for PBXNativeTarget "FilmVault" */;
 			buildPhases = (
 				1F82E6E22FCEFA1300058D29 /* Sources */,
 				1F82E6E32FCEFA1300058D29 /* Frameworks */,
@@ -78,7 +78,7 @@
 			fileSystemSynchronizedGroups = (
 				1F82E6E82FCEFA1300058D29 /* follback */,
 			);
-			name = follback;
+			name = FilmVault;
 			packageProductDependencies = (
 				0128834624A37D8502B64B87 /* Lottie */,
 				8051F2C36C777140B1A3B74C /* Kingfisher */,
@@ -86,8 +86,8 @@
 				38CFB0EED44EBD8EFE98641D /* Parchment */,
 				A2CB817671A83800B95F9D35 /* Shimmer */,
 			);
-			productName = follback;
-			productReference = 1F82E6E62FCEFA1300058D29 /* follback.app */;
+			productName = FilmVault;
+			productReference = 1F82E6E62FCEFA1300058D29 /* FilmVault.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -105,7 +105,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "follback" */;
+			buildConfigurationList = 1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "FilmVault" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -126,7 +126,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				1F82E6E52FCEFA1300058D29 /* follback */,
+				1F82E6E52FCEFA1300058D29 /* FilmVault */,
 			);
 		};
 /* End PBXProject section */
@@ -297,7 +297,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.follback;
+				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.FilmVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -333,7 +333,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.follback;
+				PRODUCT_BUNDLE_IDENTIFIER = williamcachamwri.FilmVault;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -348,7 +348,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "follback" */ = {
+		1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "FilmVault" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1F82E6F12FCEFA1500058D29 /* Debug */,
@@ -357,7 +357,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		1F82E6F32FCEFA1500058D29 /* Build configuration list for PBXNativeTarget "follback" */ = {
+		1F82E6F32FCEFA1500058D29 /* Build configuration list for PBXNativeTarget "FilmVault" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1F82E6F42FCEFA1500058D29 /* Debug */,
