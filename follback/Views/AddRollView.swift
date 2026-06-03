@@ -432,6 +432,10 @@ struct AddRollView: View {
                         }
                     }
                 }
+                .onTapGesture {
+                    filmDetailStock = stock
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                }
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text(stock.name)
@@ -450,17 +454,6 @@ struct AddRollView: View {
                 }
 
                 Spacer()
-
-                // Info button to show film detail
-                Button {
-                    filmDetailStock = stock
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                } label: {
-                    Image(systemName: "info.circle")
-                        .font(.system(size: 18))
-                        .foregroundColor(Color.filmTertiary)
-                }
-                .buttonStyle(.plain)
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")

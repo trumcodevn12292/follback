@@ -9,15 +9,29 @@ struct FilmDetailPopup: View {
 
     var body: some View {
         ZStack {
-            // Dimmed background — tap to dismiss
-            Color.black.opacity(appeared ? 0.7 : 0)
-                .ignoresSafeArea()
-                .onTapGesture { dismiss() }
+            // Backdrop: blurred cover image fills entire background
+            if let coverUrlString = stock.fullCoverUrl,
+               let coverURL = URL(string: coverUrlString) {
+                KFImage(coverURL)
+                    .requestModifier(FilmerImageAuth.shared.modifier)
+                    .resizable()
+                    .scaledToFill()
+                    .ignoresSafeArea()
+                    .blur(radius: 40)
+                    .overlay(Color.black.opacity(0.3).ignoresSafeArea())
+            } else {
+                stock.color.opacity(0.4)
+                    .ignoresSafeArea()
+                    .blur(radius: 40)
+                    .overlay(Color.black.opacity(0.3).ignoresSafeArea())
+            }
 
-            // Card
-            VStack(spacing: 0) {
-                // Cover image
-                ZStack(alignment: .topTrailing) {
+            // Content
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    Spacer().frame(height: 60)
+
+                    // Cover image — large, rounded
                     if let coverUrlString = stock.fullCoverUrl,
                        let coverURL = URL(string: coverUrlString) {
                         KFImage(coverURL)
@@ -25,13 +39,14 @@ struct FilmDetailPopup: View {
                             .resizable()
                             .scaledToFit()
                             .frame(maxWidth: .infinity)
-                            .frame(height: 280)
-                            .clipped()
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                            .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
+                            .padding(.horizontal, 32)
                     } else {
-                        Rectangle()
+                        RoundedRectangle(cornerRadius: 16, style: .continuous)
                             .fill(
                                 LinearGradient(
-                                    colors: [stock.color.opacity(0.3), stock.accentColor.opacity(0.15)],
+                                    colors: [stock.color.opacity(0.4), stock.accentColor.opacity(0.2)],
                                     startPoint: .topLeading,
                                     endPoint: .bottomTrailing
                                 )
@@ -39,122 +54,47 @@ struct FilmDetailPopup: View {
                             .frame(height: 280)
                             .overlay(
                                 Image(systemName: "film")
-                                    .font(.system(size: 48, weight: .thin))
-                                    .foregroundColor(stock.color.opacity(0.5))
+                                    .font(.system(size: 56, weight: .thin))
+                                    .foregroundColor(.white.opacity(0.5))
                             )
-                    }
-
-                    // Close button
-                    Button { dismiss() } label: {
-                        Image(systemName: "xmark")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white)
-                            .frame(width: 28, height: 28)
-                            .background(Circle().fill(Color.black.opacity(0.5)))
-                    }
-                    .padding(12)
-                }
-
-                // Info section
-                VStack(alignment: .leading, spacing: 16) {
-                    // Title + brand
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(stock.brand)
-                            .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color.filmTertiary)
-                            .textCase(.uppercase)
-                            .kerning(0.5)
-
-                        Text(stock.name)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(Color.filmText)
-                    }
-
-                    // Specs row
-                    HStack(spacing: 16) {
-                        specChip(label: "ISO", value: "\(stock.isoValue)")
-                        specChip(label: "Type", value: stock.type.rawValue)
-                        if let process = stock.process {
-                            specChip(label: "Process", value: process)
-                        }
-                        specChip(label: "Frames", value: "\(stock.frameCount)")
+                            .padding(.horizontal, 32)
                     }
 
                     // Description
                     if let description = stock.filmDescription, !description.isEmpty {
                         Text(description)
-                            .font(.system(size: 14))
-                            .foregroundColor(Color.filmSecondary)
-                            .lineSpacing(4)
-                            .fixedSize(horizontal: false, vertical: true)
+                            .font(.system(size: 17))
+                            .foregroundColor(.white)
+                            .lineSpacing(6)
+                            .multilineTextAlignment(.leading)
+                            .padding(.horizontal, 24)
                     }
 
-                    // Format tags
-                    if !stock.frameFormats.isEmpty {
-                        HStack(spacing: 8) {
-                            ForEach(stock.frameFormats, id: \.self) { format in
-                                Text(format)
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(Color.filmTertiary)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 4)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color.filmBorder.opacity(0.2))
-                                    )
-                            }
-
-                            if stock.inProduction {
-                                Text("In Production")
-                                    .font(.system(size: 12, weight: .medium))
-                                    .foregroundColor(Color.green.opacity(0.8))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 4)
-                                    .background(
-                                        Capsule()
-                                            .fill(Color.green.opacity(0.1))
-                                    )
-                            }
-                        }
-                    }
+                    Spacer().frame(height: 40)
                 }
-                .padding(20)
             }
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(Color.filmSurface)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .padding(.horizontal, 24)
-            .scaleEffect(appeared ? 1 : 0.9)
-            .opacity(appeared ? 1 : 0)
+
+            // Tap anywhere to dismiss (behind scroll content)
+            Color.clear
+                .contentShape(Rectangle())
+                .onTapGesture { dismiss() }
+                .allowsHitTesting(true)
+                .ignoresSafeArea()
+                .zIndex(-1)
         }
+        .opacity(appeared ? 1 : 0)
         .onAppear {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            withAnimation(.easeOut(duration: 0.3)) {
                 appeared = true
             }
         }
     }
 
-    private func specChip(label: String, value: String) -> some View {
-        VStack(spacing: 2) {
-            Text(label)
-                .font(.system(size: 10, weight: .medium))
-                .foregroundColor(Color.filmTertiary)
-                .textCase(.uppercase)
-            Text(value)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(Color.filmText)
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-    }
-
     private func dismiss() {
-        withAnimation(.spring(response: 0.25, dampingFraction: 0.9)) {
+        withAnimation(.easeIn(duration: 0.2)) {
             appeared = false
         }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
             onDismiss()
         }
     }
