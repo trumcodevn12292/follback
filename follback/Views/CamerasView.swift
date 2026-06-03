@@ -180,11 +180,17 @@ struct AddCameraSheet: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
 
+    var onSave: ((Camera) -> Void)?
+
     @State private var name = ""
     @State private var brand = ""
     @State private var lens = ""
     @State private var type: CameraType = .slr
     @State private var format: FilmFormat = .mm35
+
+    init(onSave: ((Camera) -> Void)? = nil) {
+        self.onSave = onSave
+    }
 
     var body: some View {
         NavigationStack {
@@ -282,6 +288,7 @@ struct AddCameraSheet: View {
         )
         modelContext.insert(camera)
         try? modelContext.save()
+        onSave?(camera)
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
     }

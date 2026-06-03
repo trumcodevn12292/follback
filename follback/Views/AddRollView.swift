@@ -67,11 +67,21 @@ struct AddRollView: View {
                 headerBar
                 progressIndicator
 
-                TabView(selection: $step) {
-                    filmSelectionStep.tag(0)
-                    settingsStep.tag(1)
+                Group {
+                    if step == 0 {
+                        filmSelectionStep
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .leading),
+                                removal: .move(edge: .leading)
+                            ))
+                    } else {
+                        settingsStep
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing),
+                                removal: .move(edge: .trailing)
+                            ))
+                    }
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.spring(response: 0.4, dampingFraction: 0.85), value: step)
             }
         }
@@ -84,7 +94,10 @@ struct AddRollView: View {
             .background(ClearBackgroundView())
         }
         .sheet(isPresented: $showCameraPicker) {
-            AddCameraSheet()
+            AddCameraSheet { newCamera in
+                selectedCamera = newCamera
+                selectedCameraModelName = newCamera.name
+            }
         }
         .fullScreenCover(isPresented: $showLocationPicker) {
             LocationPickerView(
