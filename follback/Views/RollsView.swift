@@ -589,18 +589,22 @@ final class RollPhysicsEngine: ObservableObject {
                 if abs(b.vx) < 1 { b.vx = 0 }
             }
 
-            // Rotation. Calm by default: cards lean into the direction they slide and
-            // ease back to a natural resting angle. Only near the notch (and only when
-            // the phone is flipped) do they break into a continuous twirl.
+            // Rotation. Calm by default: a card leans "downhill" in the direction the
+            // phone is tilted (so left/right tilts read as a gentle, settled slope) plus
+            // a touch of lean from how fast it is sliding, easing smoothly to that angle.
+            // Only near the notch, and only when the phone is clearly flipped, do cards
+            // break into a continuous twirl.
             let nearNotch = (b.y - b.ceil) < notchSpinZone
             if flipped && nearNotch {
                 let dir: Double = b.angularVelocity >= 0 ? 1 : -1
                 b.angularVelocity += (notchSpinSpeed * dir - b.angularVelocity) * 0.08
                 b.angle += b.angularVelocity * dt
             } else {
-                let lean = max(-maxLean, min(maxLean, Double(b.vx) * leanPerSpeed))
+                let downhill = Double(gravityX) * 18                 // tilt-driven slope
+                let slideLean = Double(b.vx) * leanPerSpeed * 0.5     // a little extra while moving
+                let lean = max(-maxLean, min(maxLean, downhill + slideLean))
                 let target = b.restAngle + lean
-                b.angle += (target - b.angle) * min(1, 9 * Double(dt))
+                b.angle += (target - b.angle) * min(1, 8 * Double(dt))
                 b.angularVelocity = 0
             }
 
