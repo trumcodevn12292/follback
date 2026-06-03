@@ -28,21 +28,38 @@ struct AddRollView: View {
     @State private var locationLongitude: Double?
     @State private var appeared = false
     @State private var showCustomInput = false
-    @State private var showCameraPicker = false
-    @State private var showLocationPicker = false
+    @State private var activeCover: ActiveCover?
     @State private var selectedLabName: String?
-    @State private var showLabPicker = false
 
     // Custom film creation states
-    @State private var showCustomFilmForm = false
     @State private var newCustomName = ""
     @State private var newCustomISO = 400
     @State private var newCustomType = "COLOR_NEGATIVE"
     @State private var newCustomCoverItem: PhotosPickerItem?
     @State private var newCustomCoverData: Data?
-    @State private var filmDetailStock: FilmStock?
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
+
+    // A single, enum-driven presentation. Stacking several
+    // .fullScreenCover/.sheet modifiers on one view makes SwiftUI rebuild the
+    // presenter when a modal opens, which used to wipe the wizard's state
+    // (e.g. jumping back to "Choose Film" when creating a camera).
+    private enum ActiveCover: Identifiable {
+        case camera
+        case location
+        case customFilm
+        case lab
+        case filmDetail(FilmStock)
+        var id: String {
+            switch self {
+            case .camera: return "camera"
+            case .location: return "location"
+            case .customFilm: return "customFilm"
+            case .lab: return "lab"
+            case .filmDetail(let stock): return "filmDetail-\(stock.id)"
+            }
+        }
+    }
 
     private var filteredStocks: [(brand: String, stocks: [FilmStock])] {
         if searchText.isEmpty {
@@ -87,30 +104,29 @@ struct AddRollView: View {
         }
         .navigationTitle("")
         .navigationBarHidden(true)
-        .fullScreenCover(item: $filmDetailStock) { stock in
-            FilmDetailPopup(stock: stock) {
-                filmDetailStock = nil
+        .fullScreenCover(item: $activeCover) { cover in
+            switch cover {
+            case .camera:
+                AddCameraSheet { newCamera in
+                    selectedCamera = newCamera
+                    selectedCameraModelName = newCamera.name
+                }
+            case .location:
+                LocationPickerView(
+                    locationName: $locationName,
+                    latitude: $locationLatitude,
+                    longitude: $locationLongitude
+                )
+            case .customFilm:
+                customFilmFormSheet
+            case .lab:
+                addRollLabPickerSheet
+            case .filmDetail(let stock):
+                FilmDetailPopup(stock: stock) {
+                    activeCover = nil
+                }
+                .background(ClearBackgroundView())
             }
-            .background(ClearBackgroundView())
-        }
-        .sheet(isPresented: $showCameraPicker) {
-            AddCameraSheet { newCamera in
-                selectedCamera = newCamera
-                selectedCameraModelName = newCamera.name
-            }
-        }
-        .fullScreenCover(isPresented: $showLocationPicker) {
-            LocationPickerView(
-                locationName: $locationName,
-                latitude: $locationLatitude,
-                longitude: $locationLongitude
-            )
-        }
-        .fullScreenCover(isPresented: $showCustomFilmForm) {
-            customFilmFormSheet
-        }
-        .fullScreenCover(isPresented: $showLabPicker) {
-            addRollLabPickerSheet
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -229,7 +245,7 @@ struct AddRollView: View {
 
                 // Custom film button → opens form sheet
                 Button {
-                    showCustomFilmForm = true
+                    activeCover = .customFilm
                 } label: {
                     HStack(spacing: 12) {
                         ZStack {
@@ -451,7 +467,7 @@ struct AddRollView: View {
                     }
                 }
                 .onTapGesture {
-                    filmDetailStock = stock
+                    activeCover = .filmDetail(stock)
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 }
 
@@ -645,7 +661,7 @@ struct AddRollView: View {
                             selectedCustomFilm = film
                             selectedFilmStock = nil
                             iso = film.iso
-                            showCustomFilmForm = false
+                            activeCover = nil
                             resetCustomForm()
                             UINotificationFeedbackGenerator().notificationOccurred(.success)
                         } label: {
@@ -672,7 +688,7 @@ struct AddRollView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
-                        showCustomFilmForm = false
+                        activeCover = nil
                         resetCustomForm()
                     }
                     .foregroundColor(Color.filmAccent)
@@ -714,7 +730,7 @@ struct AddRollView: View {
                         Spacer()
                         if cameras.isEmpty {
                             Button {
-                                showCameraPicker = true
+                                activeCover = .camera
                             } label: {
                                 Text("+ Add Camera")
                                     .font(.system(size: 14, weight: .semibold))
@@ -751,7 +767,7 @@ struct AddRollView: View {
                                 // Triggering a sheet from inside a Menu is unreliable and
                                 // could surface the wrong screen.
                                 Button {
-                                    showCameraPicker = true
+                                    activeCover = .camera
                                 } label: {
                                     Image(systemName: "plus.circle.fill")
                                         .font(.system(size: 18))
@@ -889,7 +905,7 @@ struct AddRollView: View {
 
                     // Location
                     Button {
-                        showLocationPicker = true
+                        activeCover = .location
                     } label: {
                         HStack {
                             Text("Location")
@@ -913,7 +929,7 @@ struct AddRollView: View {
 
                     // Developing Lab
                     Button {
-                        showLabPicker = true
+                        activeCover = .lab
                     } label: {
                         HStack {
                             Text("Developing Lab")
@@ -1046,7 +1062,7 @@ struct AddRollView: View {
                             ForEach(group.labs) { lab in
                                 Button {
                                     selectedLabName = lab.name
-                                    showLabPicker = false
+                                    activeCover = nil
                                 } label: {
                                     HStack(spacing: 12) {
                                         labAvatarView(lab)
@@ -1089,7 +1105,7 @@ struct AddRollView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") { showLabPicker = false }
+                    Button("Cancel") { activeCover = nil }
                         .foregroundColor(Color.filmAccent)
                 }
             }
