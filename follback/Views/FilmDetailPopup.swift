@@ -6,89 +6,142 @@ struct FilmDetailPopup: View {
     let onDismiss: () -> Void
 
     @State private var appeared = false
+    @State private var dragOffset: CGFloat = 0
 
     var body: some View {
-        ZStack {
-            // Backdrop: blurred cover image fills entire background
-            if let coverUrlString = stock.fullCoverUrl,
-               let coverURL = URL(string: coverUrlString) {
-                KFImage(coverURL)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
-                    .resizable()
-                    .scaledToFill()
-                    .ignoresSafeArea()
-                    .blur(radius: 40)
-                    .overlay(Color.black.opacity(0.3).ignoresSafeArea())
-            } else {
-                stock.color.opacity(0.4)
-                    .ignoresSafeArea()
-                    .blur(radius: 40)
-                    .overlay(Color.black.opacity(0.3).ignoresSafeArea())
-            }
+        ZStack(alignment: .top) {
+            // Backdrop: blurred cover image fills entire screen
+            backdropView
+                .ignoresSafeArea()
 
-            // Content
+            // Scrollable content
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 24) {
-                    Spacer().frame(height: 60)
+                VStack(spacing: 0) {
+                    Spacer().frame(height: 80)
 
-                    // Cover image — large, rounded
-                    if let coverUrlString = stock.fullCoverUrl,
-                       let coverURL = URL(string: coverUrlString) {
-                        KFImage(coverURL)
-                            .requestModifier(FilmerImageAuth.shared.modifier)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(maxWidth: .infinity)
-                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                            .shadow(color: .black.opacity(0.4), radius: 20, y: 10)
-                            .padding(.horizontal, 32)
-                    } else {
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .fill(
-                                LinearGradient(
-                                    colors: [stock.color.opacity(0.4), stock.accentColor.opacity(0.2)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .frame(height: 280)
-                            .overlay(
-                                Image(systemName: "film")
-                                    .font(.system(size: 56, weight: .thin))
-                                    .foregroundColor(.white.opacity(0.5))
-                            )
-                            .padding(.horizontal, 32)
-                    }
+                    // Cover image
+                    coverImageView
+                        .padding(.horizontal, 28)
 
-                    // Description
+                    Spacer().frame(height: 24)
+
+                    // Description text
                     if let description = stock.filmDescription, !description.isEmpty {
                         Text(description)
-                            .font(.system(size: 17))
+                            .font(.system(size: 22, weight: .regular))
                             .foregroundColor(.white)
-                            .lineSpacing(6)
+                            .lineSpacing(8)
                             .multilineTextAlignment(.leading)
-                            .padding(.horizontal, 24)
+                            .padding(.horizontal, 20)
                     }
 
-                    Spacer().frame(height: 40)
+                    Spacer().frame(height: 80)
                 }
             }
 
-            // Tap anywhere to dismiss (behind scroll content)
-            Color.clear
-                .contentShape(Rectangle())
-                .onTapGesture { dismiss() }
-                .allowsHitTesting(true)
-                .ignoresSafeArea()
-                .zIndex(-1)
+            // Close button "+" at top center (matching Filmer)
+            Button { dismiss() } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white.opacity(0.8))
+                    .frame(width: 32, height: 32)
+                    .background(
+                        Circle()
+                            .fill(.ultraThinMaterial)
+                            .environment(\.colorScheme, .dark)
+                    )
+            }
+            .padding(.top, 12)
         }
+        .background(Color.black.ignoresSafeArea())
         .opacity(appeared ? 1 : 0)
+        .offset(y: dragOffset)
+        .gesture(
+            DragGesture()
+                .onChanged { value in
+                    if value.translation.height > 0 {
+                        dragOffset = value.translation.height
+                    }
+                }
+                .onEnded { value in
+                    if value.translation.height > 120 {
+                        dismiss()
+                    } else {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                            dragOffset = 0
+                        }
+                    }
+                }
+        )
         .onAppear {
             withAnimation(.easeOut(duration: 0.3)) {
                 appeared = true
             }
         }
     }
+
+    // MARK: - Backdrop
+
+    @ViewBuilder
+    private var backdropView: some View {
+        if let coverUrlString = stock.fullCoverUrl,
+           let coverURL = URL(string: coverUrlString) {
+            ZStack {
+                KFImage(coverURL)
+                    .requestModifier(FilmerImageAuth.shared.modifier)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
+                    .clipped()
+                    .blur(radius: 50)
+                    .scaleEffect(1.2)
+
+                Color.black.opacity(0.25)
+            }
+        } else {
+            LinearGradient(
+                colors: [stock.color.opacity(0.5), Color.black],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+        }
+    }
+
+    // MARK: - Cover Image
+
+    @ViewBuilder
+    private var coverImageView: some View {
+        if let coverUrlString = stock.fullCoverUrl,
+           let coverURL = URL(string: coverUrlString) {
+            KFImage(coverURL)
+                .requestModifier(FilmerImageAuth.shared.modifier)
+                .resizable()
+                .scaledToFit()
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .shadow(color: .black.opacity(0.5), radius: 24, y: 12)
+        } else {
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [stock.color.opacity(0.4), stock.accentColor.opacity(0.2)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .aspectRatio(1, contentMode: .fit)
+                .overlay(
+                    VStack(spacing: 8) {
+                        Image(systemName: "film")
+                            .font(.system(size: 48, weight: .thin))
+                        Text(stock.displayName)
+                            .font(.system(size: 16, weight: .medium))
+                    }
+                    .foregroundColor(.white.opacity(0.5))
+                )
+        }
+    }
+
+    // MARK: - Dismiss
 
     private func dismiss() {
         withAnimation(.easeIn(duration: 0.2)) {
@@ -98,4 +151,16 @@ struct FilmDetailPopup: View {
             onDismiss()
         }
     }
+}
+
+// UIKit helper to make fullScreenCover background transparent
+struct ClearBackgroundView: UIViewRepresentable {
+    func makeUIView(context: Context) -> UIView {
+        let view = UIView()
+        DispatchQueue.main.async {
+            view.superview?.superview?.backgroundColor = .clear
+        }
+        return view
+    }
+    func updateUIView(_ uiView: UIView, context: Context) {}
 }

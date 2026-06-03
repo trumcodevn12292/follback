@@ -73,15 +73,14 @@ struct AddRollView: View {
                 .animation(.spring(response: 0.4, dampingFraction: 0.85), value: step)
             }
         }
-        .overlay {
-            if let stock = filmDetailStock {
-                FilmDetailPopup(stock: stock) {
-                    filmDetailStock = nil
-                }
-            }
-        }
         .navigationTitle("")
         .navigationBarHidden(true)
+        .fullScreenCover(item: $filmDetailStock) { stock in
+            FilmDetailPopup(stock: stock) {
+                filmDetailStock = nil
+            }
+            .background(ClearBackgroundView())
+        }
         .fullScreenCover(isPresented: $showCameraPicker) {
             CameraPickerView(selectedCameraName: $selectedCameraModelName)
         }
