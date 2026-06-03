@@ -54,11 +54,18 @@ struct RollDetailView: View {
     @State private var editingDate: Date = Date()
     @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
+    @State private var tabBarHidden = false
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
             stock.displayName.lowercased() == roll.filmName.lowercased() ||
             "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+        }
+    }
+
+    private var matchingCustomFilm: CustomFilm? {
+        CustomFilmStore.shared.films.first {
+            $0.name.lowercased() == roll.filmName.lowercased()
         }
     }
 
@@ -100,7 +107,13 @@ struct RollDetailView: View {
         )
         .navigationBarBackButtonHidden(true)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .toolbar(.hidden, for: .tabBar)
+        .toolbar(tabBarHidden ? .hidden : .visible, for: .tabBar)
+        .onAppear {
+            withAnimation(.easeInOut(duration: 0.3)) { tabBarHidden = true }
+        }
+        .onDisappear {
+            withAnimation(.easeInOut(duration: 0.3)) { tabBarHidden = false }
+        }
         .photosPicker(isPresented: $showPhotoPicker,
                       selection: $selectedPhotos,
                       maxSelectionCount: emptySlotCount,
@@ -263,7 +276,10 @@ struct RollDetailView: View {
     private var headerBar: some View {
         HStack(spacing: 12) {
             Button {
-                dismiss()
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                withAnimation(.easeOut(duration: 0.25)) {
+                    dismiss()
+                }
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 16, weight: .bold))
@@ -466,7 +482,15 @@ struct RollDetailView: View {
                 .fill(Color.filmSurface)
                 .frame(width: 72, height: 72)
 
-            if let stock = matchingFilmStock,
+            if let custom = matchingCustomFilm,
+               let data = custom.coverImageData,
+               let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 72, height: 72)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else if let stock = matchingFilmStock,
                let coverUrlString = stock.githubCoverUrl,
                let coverURL = URL(string: coverUrlString) {
                 KFImage(coverURL)

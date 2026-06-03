@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import Kingfisher
+import UIKit
 
 struct RollCard: View {
     let roll: Roll
@@ -122,13 +123,27 @@ struct RollCard: View {
         }
     }
 
+    private var matchingCustomFilm: CustomFilm? {
+        CustomFilmStore.shared.films.first {
+            $0.name.lowercased() == roll.filmName.lowercased()
+        }
+    }
+
     private var filmCoverThumbnail: some View {
         ZStack {
             RoundedRectangle(cornerRadius: 12, style: .continuous)
                 .fill(Color.filmSurfaceSecondary)
                 .frame(width: 80, height: 80)
 
-            if let stock = matchingFilmStock,
+            if let custom = matchingCustomFilm,
+               let data = custom.coverImageData,
+               let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 80, height: 80)
+                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            } else if let stock = matchingFilmStock,
                let coverUrlString = stock.githubCoverUrl,
                let coverURL = URL(string: coverUrlString) {
                 KFImage(coverURL)
