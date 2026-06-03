@@ -137,27 +137,39 @@ struct RollsView: View {
 
             let screenW = UIScreen.main.bounds.width
             let screenH = UIScreen.main.bounds.height
-            let floorY = screenH - 120 // pile rests just above the tab bar
+            let insets = safeAreaInsets()
+            // Real screen-box walls (global coords). Top stays clear of the notch.
+            let topWall = insets.top + 22            // a comfortable gap below the notch
+            let bottomWall = screenH - max(insets.bottom + 56, 96) // above the tab bar
             let pileStep: CGFloat = 16
             let count = filteredRolls.count
 
             var bodies: [RollPhysicsEngine.Spec] = []
             for (index, roll) in filteredRolls.enumerated() {
                 let slot = count - 1 - index // bottom-most card settles lowest
-                let restingBottom = floorY - CGFloat(slot) * pileStep
                 let floor: CGFloat
+                let ceil: CGFloat
                 let minX: CGFloat
                 let maxX: CGFloat
                 if let frame = rollBaseFrames[roll.id] {
-                    floor = max(0, restingBottom - frame.height - frame.minY)
+                    // Offsets that put the card's edges exactly on each wall (with pile stagger).
+                    floor = (bottomWall - CGFloat(slot) * pileStep) - frame.maxY
+                    ceil = (topWall + CGFloat(slot) * pileStep) - frame.minY
                     minX = 12 - frame.minX
                     maxX = screenW - 12 - frame.maxX
                 } else {
-                    floor = max(0, restingBottom - 140 - (CGFloat(index) * 150 + 220))
+                    floor = max(0, (bottomWall - CGFloat(slot) * pileStep) - 140 - (CGFloat(index) * 150 + 220))
+                    ceil = topWall - screenH
                     minX = -screenW
                     maxX = screenW
                 }
-                bodies.append(.init(id: roll.id, floor: floor, minX: min(minX, 0), maxX: max(maxX, 0)))
+                bodies.append(.init(
+                    id: roll.id,
+                    floor: max(floor, 0),
+                    ceil: min(ceil, 0),
+                    minX: min(minX, 0),
+                    maxX: max(maxX, 0)
+                ))
             }
             physics.drop(bodies)
 
@@ -169,6 +181,15 @@ struct RollsView: View {
         case .returning:
             break // ignore shakes mid-rewind
         }
+    }
+
+    private func safeAreaInsets() -> UIEdgeInsets {
+        let scene = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .first { $0.activationState == .foregroundActive } ??
+            UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first
+        let window = scene?.windows.first { $0.isKeyWindow } ?? scene?.windows.first
+        return window?.safeAreaInsets ?? UIEdgeInsets(top: 59, left: 0, bottom: 34, right: 0)
     }
 
     private func rollFrameReader(for roll: Roll) -> some View {
@@ -410,7 +431,8 @@ final class RollPhysicsEngine: ObservableObject {
         var vy: CGFloat = 0
         var angle: Double = 0       // degrees
         var angularVelocity: Double = 0
-        var floor: CGFloat = 0      // max y (resting pile level)
+        var floor: CGFloat = 0      // max y (bottom wall, resting pile level)
+        var ceil: CGFloat = 0       // min y (top wall, just below the notch)
         var minX: CGFloat = 0       // left bound for x
         var maxX: CGFloat = 0       // right bound for x
     }
@@ -418,6 +440,7 @@ final class RollPhysicsEngine: ObservableObject {
     struct Spec {
         let id: UUID
         let floor: CGFloat
+        let ceil: CGFloat
         let minX: CGFloat
         let maxX: CGFloat
     }
@@ -438,6 +461,8 @@ final class RollPhysicsEngine: ObservableObject {
     private let floorFriction: CGFloat = 0.88
     private let returnStiffness: CGFloat = 200
     private let returnDamping: CGFloat = 26
+    private let notchSpinZone: CGFloat = 60   // distance from top wall that triggers spin
+    private let notchSpinSpeed: Double = 320   // deg/s twirl speed near the notch
 
     // MARK: Public control
 
@@ -447,6 +472,7 @@ final class RollPhysicsEngine: ObservableObject {
         for spec in specs {
             var body = Body()
             body.floor = spec.floor
+            body.ceil = spec.ceil
             body.minX = spec.minX
             body.maxX = spec.maxX
             body.vx = CGFloat.random(in: -40...40)
@@ -545,10 +571,16 @@ final class RollPhysicsEngine: ObservableObject {
                 b.angularVelocity -= Double(b.vy) * 0.03
             }
 
-            // Ceiling (original position) — only reachable when tilted hard.
-            if b.y < 0 {
-                b.y = 0
-                b.vy = -b.vy * restitution
+            // Top wall (just below the notch): bounce off it, never overlap the notch.
+            if b.y <= b.ceil {
+                b.y = b.ceil
+                if b.vy < -40 {
+                    b.vy = -b.vy * restitution
+                    b.angularVelocity += Double(b.vx) * 0.04
+                } else {
+                    b.vy = 0
+                }
+                b.vx *= floorFriction
             }
 
             // Floor (pile level): bounce when hitting fast, otherwise rest + friction.
@@ -564,6 +596,14 @@ final class RollPhysicsEngine: ObservableObject {
                 b.angularVelocity *= floorFriction
                 if abs(b.vx) < 1 { b.vx = 0 }
                 if abs(b.angularVelocity) < 1 { b.angularVelocity = 0 }
+            }
+
+            // Spin near the notch: when the phone is flipped (gravity pulling up) and a
+            // card hovers close to the top wall, make it twirl instead of pressing in.
+            let nearNotch = (b.y - b.ceil) < notchSpinZone
+            if nearNotch && ay < 0 {
+                let target = notchSpinSpeed * (b.vx >= 0 ? 1 : -1)
+                b.angularVelocity += (target - b.angularVelocity) * 0.1
             }
 
             b.angle += b.angularVelocity * dt
@@ -593,7 +633,7 @@ final class RollPhysicsEngine: ObservableObject {
                 abs(b.vx) < 6 && abs(b.vy) < 6 && abs(b.angle) < 0.5
             if settled {
                 b = Body(x: 0, y: 0, vx: 0, vy: 0, angle: 0, angularVelocity: 0,
-                         floor: b.floor, minX: b.minX, maxX: b.maxX)
+                         floor: b.floor, ceil: b.ceil, minX: b.minX, maxX: b.maxX)
             } else {
                 allHome = false
             }
