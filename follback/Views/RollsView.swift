@@ -291,6 +291,7 @@ struct RollsView: View {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
             modelContext.delete(roll)
             try? modelContext.save()
+            NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         }
     }
 
@@ -298,6 +299,7 @@ struct RollsView: View {
         withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
             roll.updateStatus(.archived)
             try? modelContext.save()
+            NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         }
     }
 }

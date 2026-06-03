@@ -32,7 +32,7 @@ struct FilmVaultApp: App {
         }
         .modelContainer(for: [Roll.self, Frame.self, Camera.self])
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .background {
+            if newPhase == .background || newPhase == .active {
                 WidgetCenter.shared.reloadAllTimelines()
             }
         }
