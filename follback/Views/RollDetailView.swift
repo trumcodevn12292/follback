@@ -250,6 +250,18 @@ struct RollDetailView: View {
                 .padding(.horizontal, 16)
             }
 
+            if let lab = roll.labName {
+                HStack(spacing: 6) {
+                    Image(systemName: "flask.fill")
+                        .font(.system(size: 12))
+                    Text(lab)
+                        .font(.system(size: 14, weight: .medium))
+                        .lineLimit(1)
+                }
+                .foregroundColor(Color.filmTertiary)
+                .padding(.horizontal, 16)
+            }
+
             if !roll.notes.isEmpty {
                 Text(roll.notes)
                     .font(.system(size: 14, weight: .regular))
@@ -831,8 +843,10 @@ struct EditRollDetailsView: View {
     @State private var locationName: String?
     @State private var locationLatitude: Double?
     @State private var locationLongitude: Double?
+    @State private var labName: String?
     @State private var showFilmPicker = false
     @State private var showLocationPicker = false
+    @State private var showLabPicker = false
     @State private var searchText = ""
 
     private var filteredGroups: [(brand: String, stocks: [FilmStock])]? {
@@ -1002,6 +1016,55 @@ struct EditRollDetailsView: View {
                         .buttonStyle(.plain)
                     }
 
+                    // Lab
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("DEVELOPING LAB")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        Button {
+                            showLabPicker = true
+                        } label: {
+                            HStack(spacing: 10) {
+                                if let name = labName, !name.isEmpty {
+                                    labInitialCircle(name)
+                                    Text(name)
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color.filmText)
+                                        .lineLimit(1)
+                                } else {
+                                    Image(systemName: "flask.fill")
+                                        .font(.system(size: 14))
+                                        .foregroundColor(Color.filmAccent)
+                                    Text("Select Lab")
+                                        .font(.system(size: 16, weight: .medium))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                                Spacer()
+                                if !(labName ?? "").isEmpty {
+                                    Button {
+                                        labName = nil
+                                    } label: {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .font(.system(size: 16))
+                                            .foregroundColor(Color.filmTertiary)
+                                    }
+                                } else {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .medium))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                            }
+                            .padding(16)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
+
                     // Notes
                     VStack(alignment: .leading, spacing: 8) {
                         Text("NOTES")
@@ -1059,6 +1122,9 @@ struct EditRollDetailsView: View {
                     longitude: $locationLongitude
                 )
             }
+            .sheet(isPresented: $showLabPicker) {
+                labPickerSheet
+            }
         }
         .onAppear {
             filmName = roll.filmName
@@ -1071,6 +1137,7 @@ struct EditRollDetailsView: View {
             locationName = roll.locationName
             locationLatitude = roll.latitude
             locationLongitude = roll.longitude
+            labName = roll.labName
         }
     }
 
@@ -1148,6 +1215,78 @@ struct EditRollDetailsView: View {
         }
     }
 
+    private var labPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    ForEach(FilmLab.groupedByCity, id: \.city) { group in
+                        Section {
+                            ForEach(group.labs) { lab in
+                                Button {
+                                    labName = lab.name
+                                    showLabPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        labInitialCircle(lab.name)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            Text(lab.description)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color.filmTertiary)
+                                                .lineLimit(2)
+                                        }
+                                        Spacer()
+                                        if labName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text(group.city)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Developing Lab")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button("Cancel") { showLabPicker = false }
+                        .foregroundColor(Color.filmAccent)
+                }
+            }
+        }
+    }
+
+    private func labInitialCircle(_ name: String) -> some View {
+        let initial = String(name.prefix(1))
+        let colors: [Color] = [.red, .orange, .yellow, .green, .blue, .purple, .pink]
+        let hash = abs(name.hashValue) % colors.count
+        return Text(initial)
+            .font(.system(size: 14, weight: .bold))
+            .foregroundColor(.white)
+            .frame(width: 32, height: 32)
+            .background(
+                Circle().fill(colors[hash])
+            )
+    }
+
     private func saveChanges() {
         roll.filmName = filmName
         roll.iso = iso
@@ -1159,6 +1298,7 @@ struct EditRollDetailsView: View {
         roll.locationName = (locationName ?? "").isEmpty ? nil : locationName
         roll.latitude = locationLatitude
         roll.longitude = locationLongitude
+        roll.labName = (labName ?? "").isEmpty ? nil : labName
         roll.updatedAt = Date()
         try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)

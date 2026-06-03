@@ -16,6 +16,7 @@ class Roll {
     var locationName: String?
     var latitude: Double?
     var longitude: Double?
+    var labName: String?
     var createdAt: Date
     var updatedAt: Date
 
@@ -39,7 +40,8 @@ class Roll {
         notes: String = "",
         locationName: String? = nil,
         latitude: Double? = nil,
-        longitude: Double? = nil
+        longitude: Double? = nil,
+        labName: String? = nil
     ) {
         self.id = id
         self.filmName = filmName
@@ -54,6 +56,7 @@ class Roll {
         self.locationName = locationName
         self.latitude = latitude
         self.longitude = longitude
+        self.labName = labName
         self.createdAt = Date()
         self.updatedAt = Date()
         self.camera = camera
