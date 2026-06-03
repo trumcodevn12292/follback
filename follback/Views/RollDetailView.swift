@@ -33,6 +33,7 @@ struct RollDetailView: View {
     @State private var isImporting = false
     @State private var showEditDetails = false
     @State private var showContactSheet = false
+    @State private var filmDetailStock: FilmStock?
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -108,6 +109,12 @@ struct RollDetailView: View {
         }
         .fullScreenCover(isPresented: $showContactSheet) {
             ContactSheetView(roll: roll)
+        }
+        .fullScreenCover(item: $filmDetailStock) { stock in
+            FilmDetailPopup(stock: stock) {
+                filmDetailStock = nil
+            }
+            .background(ClearBackgroundView())
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -294,6 +301,11 @@ struct RollDetailView: View {
                 Image(systemName: "film")
                     .font(.system(size: 24, weight: .light))
                     .foregroundColor(Color.filmTertiary)
+            }
+        }
+        .onTapGesture {
+            if let stock = matchingFilmStock {
+                filmDetailStock = stock
             }
         }
     }

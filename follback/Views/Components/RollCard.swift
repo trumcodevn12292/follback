@@ -7,6 +7,7 @@ struct RollCard: View {
     let onDelete: () -> Void
     let onArchive: () -> Void
     let onEditDetails: () -> Void
+    var onCoverTap: ((FilmStock) -> Void)? = nil
     @Environment(\.modelContext) private var modelContext
 
     private var photoFrames: [Frame] {
@@ -140,6 +141,11 @@ struct RollCard: View {
                 Image(systemName: "film")
                     .font(.system(size: 24, weight: .light))
                     .foregroundColor(Color.filmTertiary)
+            }
+        }
+        .onTapGesture {
+            if let stock = matchingFilmStock {
+                onCoverTap?(stock)
             }
         }
     }
