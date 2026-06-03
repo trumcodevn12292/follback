@@ -83,8 +83,8 @@ struct AddRollView: View {
             }
             .background(ClearBackgroundView())
         }
-        .fullScreenCover(isPresented: $showCameraPicker) {
-            CameraPickerView(selectedCameraName: $selectedCameraModelName)
+        .sheet(isPresented: $showCameraPicker) {
+            AddCameraSheet()
         }
         .fullScreenCover(isPresented: $showLocationPicker) {
             LocationPickerView(
@@ -693,26 +693,55 @@ struct AddRollView: View {
                     .padding(.horizontal, 4)
 
                 VStack(spacing: 0) {
-                    // Camera Model
-                    Button {
-                        showCameraPicker = true
-                    } label: {
-                        HStack {
-                            Text("Camera Model")
-                                .font(.system(size: 16, weight: .medium))
-                                .foregroundColor(Color.filmText)
-                            Spacer()
-                            Text(selectedCameraModelName ?? "None")
-                                .font(.system(size: 16))
-                                .foregroundColor(Color.filmSecondary)
-                            Image(systemName: "chevron.right")
-                                .font(.system(size: 12, weight: .medium))
-                                .foregroundColor(Color.filmTertiary)
+                    // Camera selection (from your cameras)
+                    HStack {
+                        Text("Camera")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        if cameras.isEmpty {
+                            Button {
+                                showCameraPicker = true
+                            } label: {
+                                Text("+ Add Camera")
+                                    .font(.system(size: 14, weight: .semibold))
+                                    .foregroundColor(Color.filmAccent)
+                            }
+                        } else {
+                            Menu {
+                                ForEach(cameras) { camera in
+                                    Button {
+                                        selectedCamera = camera
+                                        selectedCameraModelName = camera.name
+                                    } label: {
+                                        if let lens = camera.lens, !lens.isEmpty {
+                                            Text("\(camera.name) + \(lens)")
+                                        } else {
+                                            Text(camera.name)
+                                        }
+                                    }
+                                }
+                                Divider()
+                                Button {
+                                    showCameraPicker = true
+                                } label: {
+                                    Label("Add New Camera", systemImage: "plus")
+                                }
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Text(selectedCamera?.displayNameWithLens ?? "Select Camera")
+                                        .font(.system(size: 15))
+                                        .foregroundColor(selectedCamera != nil ? Color.filmSecondary : Color.filmTertiary)
+                                        .lineLimit(1)
+                                    Image(systemName: "chevron.up.chevron.down")
+                                        .font(.system(size: 10))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                            }
                         }
-                        .padding(.horizontal, 18)
-                        .padding(.vertical, 14)
                     }
-                    .buttonStyle(.plain)
+                    .padding(.horizontal, 18)
+                    .padding(.vertical, 14)
                     settingsDivider
 
                     // Film

@@ -128,14 +128,11 @@ struct FilmVaultWidgetEntryView: View {
         VStack(alignment: .leading, spacing: 0) {
             // Header
             HStack(spacing: 6) {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(Color.orange)
+                Image("WidgetAppIcon")
+                    .resizable()
+                    .scaledToFit()
                     .frame(width: 14, height: 14)
-                    .overlay(
-                        Image(systemName: "film")
-                            .font(.system(size: 8, weight: .bold))
-                            .foregroundColor(.black)
-                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
                 Text("FilmVault")
                     .font(.system(size: 12, weight: .heavy, design: .rounded))
                     .foregroundColor(.white.opacity(0.9))
@@ -188,14 +185,11 @@ struct FilmVaultWidgetEntryView: View {
             // Left: Stats
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 6) {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(Color.orange)
+                    Image("WidgetAppIcon")
+                        .resizable()
+                        .scaledToFit()
                         .frame(width: 14, height: 14)
-                        .overlay(
-                            Image(systemName: "film")
-                                .font(.system(size: 8, weight: .bold))
-                                .foregroundColor(.black)
-                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
                     Text("FilmVault")
                         .font(.system(size: 12, weight: .heavy, design: .rounded))
                         .foregroundColor(.white.opacity(0.9))
@@ -253,14 +247,11 @@ struct FilmVaultWidgetEntryView: View {
             // Header
             HStack {
                 HStack(spacing: 8) {
-                    RoundedRectangle(cornerRadius: 4, style: .continuous)
-                        .fill(Color.orange)
+                    Image("WidgetAppIcon")
+                        .resizable()
+                        .scaledToFit()
                         .frame(width: 18, height: 18)
-                        .overlay(
-                            Image(systemName: "film")
-                                .font(.system(size: 10, weight: .bold))
-                                .foregroundColor(.black)
-                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
                     Text("FilmVault")
                         .font(.system(size: 14, weight: .heavy, design: .rounded))
                         .foregroundColor(.white)
@@ -314,7 +305,7 @@ struct FilmVaultWidgetEntryView: View {
         ZStack {
             AccessoryWidgetBackground()
             VStack(spacing: 1) {
-                Image(systemName: "film")
+                Image(systemName: "camera.fill")
                     .font(.system(size: 12, weight: .bold))
                 Text("\(entry.data.totalRolls)")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -326,7 +317,7 @@ struct FilmVaultWidgetEntryView: View {
     private var lockScreenRectangular: some View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
-                Image(systemName: "film")
+                Image(systemName: "camera.fill")
                     .font(.system(size: 11, weight: .bold))
                 Text("FilmVault")
                     .font(.system(size: 12, weight: .bold))
@@ -350,7 +341,7 @@ struct FilmVaultWidgetEntryView: View {
 
     private var lockScreenInline: some View {
         HStack(spacing: 4) {
-            Image(systemName: "film")
+            Image(systemName: "camera.fill")
             Text("\(entry.data.totalRolls) rolls • \(entry.data.totalPhotos) photos")
         }
         .containerBackground(for: .widget) { Color.clear }

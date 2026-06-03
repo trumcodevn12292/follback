@@ -14,8 +14,15 @@ enum RollStatus: String, Codable, CaseIterable {
     case completed = "Completed"
     case developed = "Developed"
     case archived = "Archived"
-    
-    var displayName: String { rawValue }
+
+    var displayName: String {
+        switch self {
+        case .inProgress: return "Shooting"
+        case .completed: return "Shot"
+        case .developed: return "Developed"
+        case .archived: return "Archived"
+        }
+    }
 }
 
 enum CameraType: String, Codable, CaseIterable {

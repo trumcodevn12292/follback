@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Kingfisher
 
 struct CamerasView: View {
     @Query(sort: \Camera.name) var cameras: [Camera]
@@ -8,32 +7,41 @@ struct CamerasView: View {
     @Environment(\.modelContext) private var modelContext
 
     @State private var appeared = false
-    @State private var searchText = ""
-
-    private var filteredGroups: [(brand: String, models: [CameraModel])] {
-        let groups = CameraModel.groupedByBrandPopularFirst
-        if searchText.isEmpty { return groups }
-        let query = searchText.lowercased()
-        return groups.compactMap { group in
-            let filtered = group.models.filter {
-                $0.name.lowercased().contains(query) ||
-                $0.brand.lowercased().contains(query) ||
-                $0.displayName.lowercased().contains(query)
-            }
-            return filtered.isEmpty ? nil : (brand: group.brand, models: filtered)
-        }
-    }
+    @State private var showAddCamera = false
+    @State private var cameraToEdit: Camera?
 
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
                 // Header
                 HStack {
-                    Text("CAMERAS")
-                        .font(.system(size: 28, weight: .black))
-                        .foregroundColor(Color.filmText)
-                        .kerning(1.5)
+                    HStack(spacing: 8) {
+                        Image("AppIconSmall")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 28, height: 28)
+                            .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+
+                        Text("CAMERAS")
+                            .font(.system(size: 22, weight: .black))
+                            .foregroundColor(Color.filmText)
+                            .kerning(1.5)
+                    }
                     Spacer()
+                    Button {
+                        showAddCamera = true
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    } label: {
+                        Image(systemName: "plus")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(Color.filmText)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                Circle()
+                                    .fill(Color.filmSurface)
+                                    .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                            )
+                    }
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -42,69 +50,10 @@ struct CamerasView: View {
                 .offset(y: appeared ? 0 : -10)
                 .animation(.spring(response: 0.45, dampingFraction: 0.82), value: appeared)
 
-                // My cameras section
-                if !cameras.isEmpty {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("MY CAMERAS")
-                            .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(Color.filmTertiary)
-                            .kerning(0.8)
-                            .padding(.horizontal, 20)
-
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 12) {
-                                ForEach(cameras) { camera in
-                                    myCameraCard(camera)
-                                }
-                            }
-                            .padding(.horizontal, 20)
-                        }
-                    }
-                    .padding(.bottom, 16)
-                }
-
-                // Search bar
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 15))
-                        .foregroundColor(Color.filmTertiary)
-                    TextField("Search cameras...", text: $searchText)
-                        .font(.system(size: 15))
-                        .foregroundColor(Color.filmText)
-                }
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.filmSurface)
-                )
-                .padding(.horizontal, 16)
-                .padding(.bottom, 12)
-
-                // Camera database grid
-                ScrollView(showsIndicators: false) {
-                    LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
-                        ForEach(filteredGroups, id: \.brand) { group in
-                            Section {
-                                let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
-                                LazyVGrid(columns: columns, spacing: 12) {
-                                    ForEach(group.models, id: \.id) { model in
-                                        Button {
-                                            addCameraFromModel(model)
-                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                        } label: {
-                                            cameraGridCard(model)
-                                        }
-                                        .buttonStyle(.plain)
-                                    }
-                                }
-                                .padding(.horizontal, 16)
-                                .padding(.bottom, 16)
-                            } header: {
-                                brandHeader(group.brand, models: group.models)
-                            }
-                        }
-                    }
-                    .padding(.bottom, 20)
+                if cameras.isEmpty {
+                    emptyCamerasState
+                } else {
+                    cameraList
                 }
             }
             .navigationTitle("")
@@ -114,157 +63,344 @@ struct CamerasView: View {
                     appeared = true
                 }
             }
+            .sheet(isPresented: $showAddCamera) {
+                AddCameraSheet()
+            }
+            .sheet(item: $cameraToEdit) { camera in
+                EditCameraSheet(camera: camera)
+            }
         }
         .background(Color.filmBackground.ignoresSafeArea())
     }
 
-    private func myCameraCard(_ camera: Camera) -> some View {
-        let model = CameraModel.allModels.first { m in
-            m.name.lowercased() == camera.name.lowercased() &&
-            m.brand.lowercased() == camera.brand.lowercased()
-        } ?? CameraModel.allModels.first { m in
-            camera.name.lowercased().contains(m.name.lowercased())
-        }
-        let rollCount = allRolls.filter { $0.camera?.id == camera.id }.count
-
-        return VStack(spacing: 8) {
-            ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.filmSurfaceSecondary)
-                    .frame(width: 72, height: 72)
-
-                if let coverUrl = model?.fullCoverUrl, let url = URL(string: coverUrl) {
-                    KFImage(url)
-                        .requestModifier(FilmerImageAuth.shared.modifier)
-                        .downsampling(size: CGSize(width: 144, height: 144))
-                        .cacheOriginalImage()
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 72, height: 72)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                } else {
-                    Image(systemName: "camera")
-                        .font(.system(size: 22, weight: .light))
-                        .foregroundColor(Color.filmTertiary)
-                }
-            }
-
-            Text(camera.name)
-                .font(.system(size: 12, weight: .semibold))
-                .foregroundColor(Color.filmText)
-                .lineLimit(1)
-            Text("\(rollCount) rolls")
-                .font(.system(size: 10))
+    private var emptyCamerasState: some View {
+        VStack(spacing: 20) {
+            Spacer()
+            Image(systemName: "camera")
+                .font(.system(size: 48, weight: .ultraLight))
+                .foregroundColor(Color.filmTertiary.opacity(0.5))
+            Text("No cameras yet")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(Color.filmSecondary)
+            Text("Add your cameras and lenses to track which gear you use with each roll")
+                .font(.system(size: 14))
                 .foregroundColor(Color.filmTertiary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 40)
+            Button {
+                showAddCamera = true
+            } label: {
+                Text("Add Camera")
+                    .font(.system(size: 16, weight: .bold))
+                    .foregroundColor(Color.filmBackground)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 12)
+                    .background(Capsule().fill(Color.filmAccent))
+            }
+            Spacer()
         }
-        .frame(width: 90)
-        .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.filmSurface)
-        )
+        .opacity(appeared ? 1 : 0)
     }
 
-    private func brandHeader(_ brand: String, models: [CameraModel]) -> some View {
-        HStack(spacing: 10) {
-            if let logoUrl = models.first?.fullBrandLogoUrl,
-               let url = URL(string: logoUrl) {
-                KFImage(url)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
-                    .downsampling(size: CGSize(width: 80, height: 40))
-                    .resizable()
-                    .scaledToFit()
-                    .frame(height: 20)
+    private var cameraList: some View {
+        ScrollView(showsIndicators: false) {
+            LazyVStack(spacing: 12) {
+                ForEach(cameras) { camera in
+                    cameraCard(camera)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
+            .padding(.bottom, 20)
+        }
+    }
+
+    private func cameraCard(_ camera: Camera) -> some View {
+        let rollCount = allRolls.filter { $0.camera?.id == camera.id }.count
+
+        return HStack(spacing: 14) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.filmSurface)
+                    .frame(width: 60, height: 60)
+                Image(systemName: "camera")
+                    .font(.system(size: 22, weight: .light))
+                    .foregroundColor(Color.filmTertiary)
             }
 
-            Text(brand)
-                .font(.system(size: 16, weight: .bold))
-                .foregroundColor(Color.filmText)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(camera.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+                HStack(spacing: 8) {
+                    Text(camera.brand)
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                    if let lens = camera.lens, !lens.isEmpty {
+                        Text("•")
+                            .foregroundColor(Color.filmTertiary)
+                        Text(lens)
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.filmSecondary)
+                    }
+                }
+                Text("\(rollCount) roll\(rollCount == 1 ? "" : "s")")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.filmAccent)
+            }
 
             Spacer()
 
-            Text("\(models.count)")
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
-                .foregroundColor(Color.filmTertiary)
+            Image(systemName: "chevron.right")
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(Color.filmTertiary.opacity(0.5))
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(Color.filmBackground)
-    }
-
-    private func cameraGridCard(_ model: CameraModel) -> some View {
-        let isAdded = cameras.contains { c in
-            c.name.lowercased() == model.name.lowercased() &&
-            c.brand.lowercased() == model.brand.lowercased()
-        }
-
-        return VStack(spacing: 0) {
-            ZStack(alignment: .topTrailing) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color.filmSurfaceSecondary)
-                        .frame(height: 120)
-
-                    if let coverUrl = model.fullCoverUrl, let url = URL(string: coverUrl) {
-                        KFImage(url)
-                            .requestModifier(FilmerImageAuth.shared.modifier)
-                            .downsampling(size: CGSize(width: 240, height: 240))
-                            .cacheOriginalImage()
-                            .resizable()
-                            .scaledToFill()
-                            .frame(height: 120)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    } else {
-                        Image(systemName: "camera")
-                            .font(.system(size: 32, weight: .light))
-                            .foregroundColor(Color.filmTertiary)
-                    }
-                }
-
-                if isAdded {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(Color.filmAccent)
-                        .background(Circle().fill(Color.filmBackground).frame(width: 16, height: 16))
-                        .padding(6)
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(model.name)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(Color.filmText)
-                    .lineLimit(1)
-
-                if let type = model.cameraType {
-                    Text(type)
-                        .font(.system(size: 11))
-                        .foregroundColor(Color.filmTertiary)
-                        .lineLimit(1)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 8)
-            .padding(.vertical, 8)
-        }
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(Color.filmSurface)
         )
+        .onTapGesture {
+            cameraToEdit = camera
+        }
+        .contextMenu {
+            Button(role: .destructive) {
+                modelContext.delete(camera)
+                try? modelContext.save()
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+    }
+}
+
+// MARK: - Add Camera Sheet
+
+struct AddCameraSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var name = ""
+    @State private var brand = ""
+    @State private var lens = ""
+    @State private var type: CameraType = .slr
+    @State private var format: FilmFormat = .mm35
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    VStack(spacing: 0) {
+                        textFieldRow(label: "Camera Name", text: $name, placeholder: "e.g. AE-1 Program")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                        textFieldRow(label: "Brand", text: $brand, placeholder: "e.g. Canon")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                        textFieldRow(label: "Lens", text: $lens, placeholder: "e.g. 50mm f/1.4 (optional)")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        HStack {
+                            Text("Type")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Picker("", selection: $type) {
+                                ForEach(CameraType.allCases, id: \.self) { t in
+                                    Text(t.displayName).tag(t)
+                                }
+                            }
+                            .tint(Color.filmAccent)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        HStack {
+                            Text("Format")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Picker("", selection: $format) {
+                                ForEach(FilmFormat.allCases, id: \.self) { f in
+                                    Text(f.displayName).tag(f)
+                                }
+                            }
+                            .tint(Color.filmAccent)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.filmSurface)
+                    )
+                }
+                .padding(16)
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Add Camera")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveCamera()
+                    }
+                    .disabled(name.isEmpty || brand.isEmpty)
+                    .fontWeight(.bold)
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 
-    private func addCameraFromModel(_ model: CameraModel) {
-        let alreadyExists = cameras.contains { c in
-            c.name.lowercased() == model.name.lowercased() &&
-            c.brand.lowercased() == model.brand.lowercased()
+    private func textFieldRow(label: String, text: Binding<String>, placeholder: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            TextField(placeholder, text: text)
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmSecondary)
+                .multilineTextAlignment(.trailing)
         }
-        guard !alreadyExists else { return }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
 
+    private func saveCamera() {
         let camera = Camera(
-            name: model.name,
-            brand: model.brand
+            name: name,
+            brand: brand,
+            format: format,
+            type: type,
+            lens: lens.isEmpty ? nil : lens
         )
         modelContext.insert(camera)
         try? modelContext.save()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
+    }
+}
+
+// MARK: - Edit Camera Sheet
+
+struct EditCameraSheet: View {
+    @Bindable var camera: Camera
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
+
+    @State private var name: String = ""
+    @State private var brand: String = ""
+    @State private var lens: String = ""
+    @State private var type: CameraType = .slr
+    @State private var format: FilmFormat = .mm35
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    VStack(spacing: 0) {
+                        textFieldRow(label: "Camera Name", text: $name, placeholder: "Camera name")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                        textFieldRow(label: "Brand", text: $brand, placeholder: "Brand")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                        textFieldRow(label: "Lens", text: $lens, placeholder: "Lens (optional)")
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        HStack {
+                            Text("Type")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Picker("", selection: $type) {
+                                ForEach(CameraType.allCases, id: \.self) { t in
+                                    Text(t.displayName).tag(t)
+                                }
+                            }
+                            .tint(Color.filmAccent)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        HStack {
+                            Text("Format")
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Picker("", selection: $format) {
+                                ForEach(FilmFormat.allCases, id: \.self) { f in
+                                    Text(f.displayName).tag(f)
+                                }
+                            }
+                            .tint(Color.filmAccent)
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 14)
+                    }
+                    .background(
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.filmSurface)
+                    )
+                }
+                .padding(16)
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Edit Camera")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") {
+                        saveChanges()
+                    }
+                    .disabled(name.isEmpty || brand.isEmpty)
+                    .fontWeight(.bold)
+                }
+            }
+            .onAppear {
+                name = camera.name
+                brand = camera.brand
+                lens = camera.lens ?? ""
+                type = camera.cameraType
+                format = camera.filmFormat
+            }
+        }
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
+    }
+
+    private func textFieldRow(label: String, text: Binding<String>, placeholder: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            TextField(placeholder, text: text)
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmSecondary)
+                .multilineTextAlignment(.trailing)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private func saveChanges() {
+        camera.name = name
+        camera.brand = brand
+        camera.lens = lens.isEmpty ? nil : lens
+        camera.type = type.rawValue
+        camera.format = format.rawValue
+        try? modelContext.save()
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+        dismiss()
     }
 }

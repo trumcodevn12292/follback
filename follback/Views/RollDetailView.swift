@@ -45,6 +45,11 @@ struct RollDetailView: View {
     @State private var selectedFrames: Set<UUID> = []
     @State private var isUploadingToDrive = false
     @State private var draggedFrame: Frame?
+    @State private var showLocationEditor = false
+    @State private var showLabPicker = false
+    @State private var showFilmPicker = false
+    @State private var showDatePicker = false
+    @State private var editingDate: Date = Date()
     @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
 
@@ -205,6 +210,37 @@ struct RollDetailView: View {
                 appeared = true
             }
         }
+        .fullScreenCover(isPresented: $showLocationEditor) {
+            LocationPickerView(
+                locationName: Binding(
+                    get: { roll.locationName },
+                    set: { roll.locationName = $0 }
+                ),
+                latitude: Binding(
+                    get: { roll.latitude },
+                    set: { roll.latitude = $0 }
+                ),
+                longitude: Binding(
+                    get: { roll.longitude },
+                    set: { roll.longitude = $0 }
+                )
+            )
+        }
+        .fullScreenCover(isPresented: $showLabPicker) {
+            labPickerSheet
+        }
+        .fullScreenCover(isPresented: $showFilmPicker) {
+            filmPickerSheet
+        }
+        .sheet(isPresented: $showDatePicker) {
+            datePickerSheet
+        }
+    }
+
+    private var formattedShootingDate: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM/yy"
+        return formatter.string(from: roll.startDate)
     }
 
     private var hasPhotos: Bool {
@@ -275,7 +311,11 @@ struct RollDetailView: View {
                     Button { markInProgress() } label: { Label("Mark Active", systemImage: "play") }
                 }
                 Button { archiveRoll() } label: { Label("Archive", systemImage: "archivebox") }
-                Button(role: .destructive) { showDeleteAlert = true } label: { Label("Delete", systemImage: "trash") }
+                if isSelectMode && !selectedFrames.isEmpty {
+                    Button(role: .destructive) { deleteSelectedPhotos() } label: { Label("Delete Selected (\(selectedFrames.count))", systemImage: "trash") }
+                } else {
+                    Button(role: .destructive) { showDeleteAlert = true } label: { Label("Delete Roll", systemImage: "trash") }
+                }
             } label: {
                 Image(systemName: "ellipsis")
                     .font(.system(size: 16, weight: .bold))
@@ -305,8 +345,15 @@ struct RollDetailView: View {
             // Film cover + info chips (horizontal scroll)
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 16) {
-                    // Film cover image
+                    // Film cover image (long-press to change film)
                     filmCoverImage
+                        .contextMenu {
+                            Button {
+                                showFilmPicker = true
+                            } label: {
+                                Label("Change Film Stock", systemImage: "arrow.triangle.2.circlepath")
+                            }
+                        }
 
                     infoChipView(label: "Film format", value: roll.filmFormat.displayName)
 
@@ -315,6 +362,19 @@ struct RollDetailView: View {
                         .background(Color.filmBorder)
 
                     infoChipView(label: "ISO", value: "\(roll.iso)")
+
+                    Divider()
+                        .frame(height: 40)
+                        .background(Color.filmBorder)
+
+                    // Date shooting next to ISO
+                    Button {
+                        editingDate = roll.startDate
+                        showDatePicker = true
+                    } label: {
+                        infoChipView(label: "Date", value: formattedShootingDate)
+                    }
+                    .buttonStyle(.plain)
 
                     Divider()
                         .frame(height: 40)
@@ -340,26 +400,42 @@ struct RollDetailView: View {
             }
 
             if let location = roll.locationName {
-                HStack(spacing: 6) {
-                    Image(systemName: "location.fill")
-                        .font(.system(size: 12))
-                    Text(location)
-                        .font(.system(size: 14, weight: .medium))
-                        .lineLimit(1)
+                Button {
+                    showLocationEditor = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "location.fill")
+                            .font(.system(size: 12))
+                        Text(location)
+                            .font(.system(size: 14, weight: .medium))
+                            .lineLimit(1)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .medium))
+                            .opacity(0.5)
+                    }
+                    .foregroundColor(Color.filmTertiary)
                 }
-                .foregroundColor(Color.filmTertiary)
+                .buttonStyle(.plain)
                 .padding(.horizontal, 16)
             }
 
             if let lab = roll.labName {
-                HStack(spacing: 6) {
-                    Image(systemName: "flask.fill")
-                        .font(.system(size: 12))
-                    Text(lab)
-                        .font(.system(size: 14, weight: .medium))
-                        .lineLimit(1)
+                Button {
+                    showLabPicker = true
+                } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "flask.fill")
+                            .font(.system(size: 12))
+                        Text(lab)
+                            .font(.system(size: 14, weight: .medium))
+                            .lineLimit(1)
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 10, weight: .medium))
+                            .opacity(0.5)
+                    }
+                    .foregroundColor(Color.filmTertiary)
                 }
-                .foregroundColor(Color.filmTertiary)
+                .buttonStyle(.plain)
                 .padding(.horizontal, 16)
             }
 
@@ -728,10 +804,8 @@ struct RollDetailView: View {
     // MARK: - Helpers
 
     private func saveToPhotoAlbum(data: Data) {
-        PHPhotoLibrary.shared().performChanges {
-            let request = PHAssetCreationRequest.forAsset()
-            request.addResource(with: .photo, data: data, options: nil)
-        }
+        // No longer duplicating photos — Reference mode now links directly
+        // This function is kept for backward compatibility but is a no-op
     }
 
     private func finishImport(count: Int) async {
@@ -924,6 +998,142 @@ struct RollDetailView: View {
         try? modelContext.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         dismiss()
+    }
+
+    private func deleteSelectedPhotos() {
+        let frames = roll.frames ?? []
+        let toDelete = frames.filter { selectedFrames.contains($0.id) }
+        for frame in toDelete {
+            if let assetID = frame.photoAssetID {
+                let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                let fileURL = docsDir.appendingPathComponent(assetID)
+                try? FileManager.default.removeItem(at: fileURL)
+            }
+            modelContext.delete(frame)
+        }
+        try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
+        withAnimation(.spring(response: 0.3)) {
+            isSelectMode = false
+            selectedFrames.removeAll()
+        }
+        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    // MARK: - Lab Picker Sheet
+    private var labPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(FilmLab.groupedByCity, id: \.city) { group in
+                        Section {
+                            ForEach(group.labs) { lab in
+                                Button {
+                                    roll.labName = lab.name
+                                    try? modelContext.save()
+                                    showLabPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            Text(lab.description)
+                                                .font(.system(size: 12))
+                                                .foregroundColor(Color.filmTertiary)
+                                                .lineLimit(2)
+                                        }
+                                        Spacer()
+                                        if roll.labName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text(group.city)
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Change Lab")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showLabPicker = false }
+                }
+            }
+        }
+    }
+
+    // MARK: - Film Picker Sheet
+    private var filmPickerSheet: some View {
+        NavigationStack {
+            FilmStockPickerView(selectedFilmName: Binding(
+                get: { roll.filmName },
+                set: { newName in
+                    roll.filmName = newName
+                    try? modelContext.save()
+                    NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
+                    showFilmPicker = false
+                }
+            ))
+            .navigationTitle("Change Film")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showFilmPicker = false }
+                }
+            }
+        }
+    }
+
+    // MARK: - Date Picker Sheet
+    private var datePickerSheet: some View {
+        NavigationStack {
+            VStack(spacing: 20) {
+                DatePicker("Shooting Date", selection: $editingDate, displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .tint(Color.filmAccent)
+                    .padding()
+
+                Button {
+                    roll.startDate = editingDate
+                    try? modelContext.save()
+                    showDatePicker = false
+                } label: {
+                    Text("Save")
+                        .font(.system(size: 17, weight: .bold))
+                        .foregroundColor(Color.filmBackground)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 14)
+                        .background(Capsule().fill(Color.filmAccent))
+                }
+                .padding(.horizontal, 20)
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle("Edit Date")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { showDatePicker = false }
+                }
+            }
+        }
+        .presentationDetents([.medium])
     }
 
     // MARK: - Upload to Google Drive
