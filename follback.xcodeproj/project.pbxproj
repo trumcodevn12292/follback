@@ -372,6 +372,7 @@
 				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
+				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -407,6 +408,7 @@
 				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
+				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -440,6 +442,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
+				CODE_SIGN_ENTITLEMENTS = FilmVaultWidgetExtension.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FilmVaultWidget-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
@@ -469,6 +472,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
+				CODE_SIGN_ENTITLEMENTS = FilmVaultWidgetExtension.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = FilmVaultWidget-Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
