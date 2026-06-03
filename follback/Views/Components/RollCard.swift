@@ -23,7 +23,7 @@ struct RollCard: View {
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(roll.filmName)
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 17, weight: .bold))
                         .foregroundColor(Color.filmText)
                         .lineLimit(1)
 
