@@ -111,7 +111,7 @@ struct RollCard: View {
     // MARK: - Components
 
     private var photoPreviewSize: CGFloat {
-        (UIScreen.main.bounds.width - 32 - 16 - 6) / 4
+        80
     }
 
     private var matchingFilmStock: FilmStock? {
