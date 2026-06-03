@@ -79,13 +79,7 @@ struct FrameEditorView: View {
                     .frame(width: 72, height: 72)
                 Text("#\(currentNumber)")
                     .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundStyle(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                    .foregroundColor(Color.filmAccent)
             }
             Text(frame == nil ? "New Frame" : "Edit Frame")
                 .font(.system(size: 22, weight: .bold, design: .serif))
@@ -237,14 +231,8 @@ struct FrameEditorView: View {
             .padding(.vertical, 18)
             .background(
                 Capsule()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.filmAccent, Color.filmGold],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .shadow(color: Color.filmAccent.opacity(0.35), radius: 12, x: 0, y: 5)
+                    .fill(Color.filmAccent)
+                    .shadow(color: Color.filmAccent.opacity(0.25), radius: 8, x: 0, y: 4)
             )
         }
         .buttonStyle(.plain)

@@ -96,8 +96,8 @@ struct RollsView: View {
                 EditRollDetailsView(roll: roll)
             }
             .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-                    withAnimation(.easeOut(duration: 0.4)) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                    withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
                         isLoading = false
                         appeared = true
                     }
@@ -160,7 +160,10 @@ struct RollsView: View {
                 .fill(Color.filmSurface)
         )
         .padding(.horizontal, 20)
-        .transition(.opacity.combined(with: .move(edge: .top)))
+        .transition(.asymmetric(
+            insertion: .opacity.combined(with: .move(edge: .top)).combined(with: .scale(scale: 0.95, anchor: .top)),
+            removal: .opacity.combined(with: .move(edge: .top))
+        ))
     }
 
     // MARK: - Filters
@@ -183,7 +186,7 @@ struct RollsView: View {
     private func filterPill(_ status: RollStatus?, label: String, count: Int) -> some View {
         let isActive = selectedFilter == status
         return Button {
-            withAnimation(.easeInOut(duration: 0.2)) {
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
                 selectedFilter = (selectedFilter == status) ? nil : status
             }
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
@@ -226,9 +229,10 @@ struct RollsView: View {
                 }
                 .buttonStyle(.plain)
                 .opacity(appeared ? 1 : 0)
-                .offset(y: appeared ? 0 : 15)
+                .offset(y: appeared ? 0 : 18)
+                .scaleEffect(appeared ? 1 : 0.97)
                 .animation(
-                    .easeOut(duration: 0.35).delay(Double(index) * 0.04),
+                    .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
                     value: appeared
                 )
             }
@@ -276,14 +280,14 @@ struct RollsView: View {
     // MARK: - Actions
 
     private func deleteRoll(_ roll: Roll) {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
             modelContext.delete(roll)
             try? modelContext.save()
         }
     }
 
     private func archiveRoll(_ roll: Roll) {
-        withAnimation(.easeInOut(duration: 0.2)) {
+        withAnimation(.spring(response: 0.4, dampingFraction: 0.85)) {
             roll.updateStatus(.archived)
             try? modelContext.save()
         }

@@ -26,14 +26,8 @@ struct DialPicker<T: Hashable>: View {
                                 ZStack {
                                     if isSelected {
                                         Capsule()
-                                            .fill(
-                                                LinearGradient(
-                                                    colors: [Color.filmAccent, Color.filmGold],
-                                                    startPoint: .topLeading,
-                                                    endPoint: .bottomTrailing
-                                                )
-                                            )
-                                            .shadow(color: Color.filmAccent.opacity(0.4), radius: 8, x: 0, y: 3)
+                                            .fill(Color.filmAccent)
+                                            .shadow(color: Color.filmAccent.opacity(0.3), radius: 6, x: 0, y: 2)
                                     } else {
                                         Capsule()
                                             .fill(Color.filmSurfaceSecondary)

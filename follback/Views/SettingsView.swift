@@ -16,6 +16,7 @@ struct SettingsView: View {
     }
     @State private var showClearCacheAlert = false
     @State private var cacheCleared = false
+    @State private var cacheSizeText = "Calculating..."
 
     enum PhotoImportMode: String, CaseIterable {
         case copy = "Copy"
@@ -43,7 +44,7 @@ struct SettingsView: View {
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {
-                withAnimation(.easeOut(duration: 0.4)) {
+                withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
                     appeared = true
                 }
             }
@@ -71,7 +72,7 @@ struct SettingsView: View {
         .padding(.top, 8)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : -10)
-        .animation(.easeOut(duration: 0.3), value: appeared)
+        .animation(.spring(response: 0.45, dampingFraction: 0.82), value: appeared)
     }
 
     private var storageCard: some View {
@@ -120,7 +121,11 @@ struct SettingsView: View {
                             Text("Cleared")
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(Color.filmAccent)
+                                .transition(.opacity.combined(with: .scale))
                         } else {
+                            Text(cacheSizeText)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
                             Image(systemName: "chevron.right")
                                 .font(.system(size: 11, weight: .semibold))
                                 .foregroundColor(Color.filmTertiary.opacity(0.5))
@@ -129,6 +134,7 @@ struct SettingsView: View {
                     .padding(16)
                 }
                 .buttonStyle(.plain)
+                .onAppear { calculateCacheSize() }
             }
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -137,18 +143,72 @@ struct SettingsView: View {
         }
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
-        .animation(.easeOut(duration: 0.35).delay(0.05), value: appeared)
+        .scaleEffect(appeared ? 1 : 0.97)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
+    }
+
+    private func calculateCacheSize() {
+        var totalSize: UInt64 = 0
+
+        // Kingfisher disk cache
+        KingfisherManager.shared.cache.calculateDiskStorageSize { result in
+            if case .success(let size) = result {
+                totalSize += UInt64(size)
+            }
+
+            // URL cache
+            totalSize += UInt64(URLCache.shared.currentDiskUsage)
+
+            // Tmp directory
+            let tmpDir = FileManager.default.temporaryDirectory
+            if let files = try? FileManager.default.contentsOfDirectory(at: tmpDir, includingPropertiesForKeys: [.fileSizeKey]) {
+                for file in files {
+                    if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                        totalSize += UInt64(size)
+                    }
+                }
+            }
+
+            // App Documents cache
+            if let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+                totalSize += folderSize(at: docsDir)
+            }
+
+            DispatchQueue.main.async {
+                cacheSizeText = formatBytes(totalSize)
+            }
+        }
+    }
+
+    private func folderSize(at url: URL) -> UInt64 {
+        var size: UInt64 = 0
+        if let enumerator = FileManager.default.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) {
+            for case let fileURL as URL in enumerator {
+                if let fileSize = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                    size += UInt64(fileSize)
+                }
+            }
+        }
+        return size
+    }
+
+    private func formatBytes(_ bytes: UInt64) -> String {
+        let mb = Double(bytes) / (1024 * 1024)
+        if mb < 1 {
+            let kb = Double(bytes) / 1024
+            return String(format: "%.0f KB", kb)
+        } else if mb >= 1024 {
+            let gb = mb / 1024
+            return String(format: "%.1f GB", gb)
+        }
+        return String(format: "%.1f MB", mb)
     }
 
     private func clearCache() {
-        // Clear Kingfisher image cache
         KingfisherManager.shared.cache.clearMemoryCache()
         KingfisherManager.shared.cache.clearDiskCache()
-
-        // Clear URL cache
         URLCache.shared.removeAllCachedResponses()
 
-        // Clear tmp directory
         let tmpDir = FileManager.default.temporaryDirectory
         if let files = try? FileManager.default.contentsOfDirectory(at: tmpDir, includingPropertiesForKeys: nil) {
             for file in files {
@@ -156,11 +216,14 @@ struct SettingsView: View {
             }
         }
 
-        withAnimation { cacheCleared = true }
+        withAnimation(.spring(response: 0.4)) { cacheCleared = true }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-            withAnimation { cacheCleared = false }
+            withAnimation(.spring(response: 0.4)) {
+                cacheCleared = false
+            }
+            calculateCacheSize()
         }
     }
 }
