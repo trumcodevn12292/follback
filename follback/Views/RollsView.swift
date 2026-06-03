@@ -15,9 +15,11 @@ struct RollsView: View {
     @State private var searchText = ""
     @State private var editingRoll: Roll?
     @State private var filmDetailStock: FilmStock?
-    @State private var shakeDropOffsets: [UUID: CGFloat] = [:]
-    @State private var shakeDropRotations: [UUID: Double] = [:]
-    @State private var isShaking = false
+    @State private var rollsDropped = false
+    @State private var shakeAnimating = false
+    @State private var rollDropOffsets: [UUID: CGFloat] = [:]
+    @State private var rollDropRotations: [UUID: Double] = [:]
+    @State private var rollDropOpacities: [UUID: Double] = [:]
 
     private var filteredRolls: [Roll] {
         var result = rolls
@@ -122,32 +124,61 @@ struct RollsView: View {
     }
 
     private func triggerShakeAnimation() {
-        guard !isShaking else { return }
-        isShaking = true
-        UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
+        guard !shakeAnimating else { return }
+        shakeAnimating = true
 
-        for (index, roll) in filteredRolls.enumerated() {
-            let delay = Double(index) * 0.06
-            withAnimation(.spring(response: 0.6, dampingFraction: 0.5).delay(delay)) {
-                shakeDropOffsets[roll.id] = 800
-                shakeDropRotations[roll.id] = Double.random(in: -15...15)
-            }
-        }
+        if !rollsDropped {
+            // First shake: DROP — rolls fall off screen with gravity-like physics
+            UIImpactFeedbackGenerator(style: .heavy).impactOccurred()
 
-        let totalDuration = Double(filteredRolls.count) * 0.06 + 0.6
-        DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration + 0.3) {
-            for roll in filteredRolls {
-                shakeDropOffsets[roll.id] = -50
-            }
+            let screenHeight = UIScreen.main.bounds.height
             for (index, roll) in filteredRolls.enumerated() {
-                let delay = Double(index) * 0.04
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.7).delay(delay)) {
-                    shakeDropOffsets[roll.id] = 0
-                    shakeDropRotations[roll.id] = 0
+                let stagger = Double(index) * 0.07
+                let randomRotation = Double.random(in: -18...18)
+                let dropDistance = screenHeight + CGFloat.random(in: 100...300)
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + stagger) {
+                    withAnimation(.timingCurve(0.4, 0, 0.9, 0.4, duration: 0.65)) {
+                        rollDropOffsets[roll.id] = dropDistance
+                        rollDropRotations[roll.id] = randomRotation
+                        rollDropOpacities[roll.id] = 0.0
+                    }
                 }
             }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                isShaking = false
+
+            let totalDuration = Double(filteredRolls.count) * 0.07 + 0.7
+            DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+                rollsDropped = true
+                shakeAnimating = false
+                UIImpactFeedbackGenerator(style: .rigid).impactOccurred()
+            }
+        } else {
+            // Second shake: REVERSE — rolls float back up like rewinding a video
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+
+            // Start from the last dropped roll (reverse order for rewind effect)
+            let rollsReversed = Array(filteredRolls.reversed())
+            for (index, roll) in rollsReversed.enumerated() {
+                let stagger = Double(index) * 0.06
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + stagger) {
+                    // First move slightly above final position for overshoot
+                    withAnimation(.spring(response: 0.8, dampingFraction: 0.65, blendDuration: 0.1)) {
+                        rollDropOffsets[roll.id] = 0
+                        rollDropRotations[roll.id] = 0
+                        rollDropOpacities[roll.id] = 1.0
+                    }
+                }
+            }
+
+            let totalDuration = Double(rollsReversed.count) * 0.06 + 1.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + totalDuration) {
+                rollsDropped = false
+                shakeAnimating = false
+                rollDropOffsets.removeAll()
+                rollDropRotations.removeAll()
+                rollDropOpacities.removeAll()
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
         }
     }
@@ -282,9 +313,9 @@ struct RollsView: View {
                     )
                 }
                 .buttonStyle(.plain)
-                .opacity(appeared ? 1 : 0)
-                .offset(y: (appeared ? 0 : 18) + (shakeDropOffsets[roll.id] ?? 0))
-                .rotationEffect(.degrees(shakeDropRotations[roll.id] ?? 0))
+                .opacity((appeared ? 1 : 0) * (rollDropOpacities[roll.id] ?? 1.0))
+                .offset(y: (appeared ? 0 : 18) + (rollDropOffsets[roll.id] ?? 0))
+                .rotationEffect(.degrees(rollDropRotations[roll.id] ?? 0))
                 .scaleEffect(appeared ? 1 : 0.97)
                 .animation(
                     .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
