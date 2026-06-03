@@ -17,6 +17,7 @@ struct SettingsView: View {
     @State private var showResetOnboardingAlert = false
     @ObservedObject private var driveService = GoogleDriveService.shared
     @ObservedObject private var reminderManager = ReminderManager.shared
+    @ObservedObject private var themeManager = ThemeManager.shared
     @AppStorage(ReminderDefaults.enabledKey) private var remindersEnabled = false
     @AppStorage(ReminderDefaults.staleDaysKey) private var staleDays = ReminderDefaults.defaultStaleDays
     @AppStorage(ReminderDefaults.developDaysKey) private var developDays = ReminderDefaults.defaultDevelopDays
@@ -58,6 +59,7 @@ struct SettingsView: View {
             ScrollView(showsIndicators: false) {
                 VStack(spacing: 24) {
                     headerSection
+                    appearanceCard
                     storageCard
                     remindersCard
                     googleDriveCard
@@ -394,6 +396,76 @@ struct SettingsView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
     }
 
+    // MARK: - Appearance Card
+    private var appearanceCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("APPEARANCE")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(alignment: .leading, spacing: 14) {
+                HStack(spacing: 12) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Accent Color")
+                            .font(.system(size: 16, weight: .semibold))
+                            .foregroundColor(Color.filmText)
+                        Text("Used for highlights and buttons across the app")
+                            .font(.system(size: 13))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                    Spacer()
+                }
+
+                let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
+                LazyVGrid(columns: columns, spacing: 14) {
+                    ForEach(AccentOption.all) { option in
+                        let isSelected = themeManager.accentHex.lowercased() == option.hex.lowercased()
+                        Button {
+                            selectAccent(option)
+                        } label: {
+                            VStack(spacing: 6) {
+                                ZStack {
+                                    Circle()
+                                        .fill(option.color)
+                                        .frame(width: 38, height: 38)
+                                    Circle()
+                                        .stroke(Color.filmText, lineWidth: isSelected ? 2.5 : 0)
+                                        .frame(width: 46, height: 46)
+                                    if isSelected {
+                                        Image(systemName: "checkmark")
+                                            .font(.system(size: 15, weight: .bold))
+                                            .foregroundColor(.white)
+                                    }
+                                }
+                                .frame(width: 46, height: 46)
+                                Text(option.name)
+                                    .font(.system(size: 11, weight: isSelected ? .semibold : .regular))
+                                    .foregroundColor(isSelected ? Color.filmText : Color.filmTertiary)
+                            }
+                            .contentShape(Rectangle())
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.04), value: appeared)
+    }
+
+    private func selectAccent(_ option: AccentOption) {
+        guard themeManager.accentHex.lowercased() != option.hex.lowercased() else { return }
+        themeManager.accentHex = option.hex
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
     // MARK: - Reminders Card
 
     private var remindersCard: some View {
@@ -490,18 +562,51 @@ struct SettingsView: View {
                     .foregroundColor(Color.filmTertiary)
             }
             Spacer()
-            Stepper(value: value, in: range) {
+            HStack(spacing: 0) {
+                Button {
+                    adjustStepper(value, by: -1, in: range)
+                } label: {
+                    Image(systemName: "minus")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(value.wrappedValue > range.lowerBound ? Color.filmAccent : Color.filmTertiary)
+                        .frame(width: 38, height: 34)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(value.wrappedValue <= range.lowerBound)
+
                 Text("\(value.wrappedValue) \(unit)")
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
                     .foregroundColor(Color.filmAccent)
+                    .frame(minWidth: 64)
+
+                Button {
+                    adjustStepper(value, by: 1, in: range)
+                } label: {
+                    Image(systemName: "plus")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(value.wrappedValue < range.upperBound ? Color.filmAccent : Color.filmTertiary)
+                        .frame(width: 38, height: 34)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(value.wrappedValue >= range.upperBound)
             }
-            .labelsHidden()
-            .fixedSize()
-            .onChange(of: value.wrappedValue) { _, _ in
-                reminderManager.reschedule(rolls: rolls)
-            }
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.filmSurfaceSecondary)
+                    .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).stroke(Color.filmBorder, lineWidth: 0.5))
+            )
         }
         .padding(16)
+    }
+
+    private func adjustStepper(_ value: Binding<Int>, by delta: Int, in range: ClosedRange<Int>) {
+        let newValue = min(max(value.wrappedValue + delta, range.lowerBound), range.upperBound)
+        guard newValue != value.wrappedValue else { return }
+        value.wrappedValue = newValue
+        reminderManager.reschedule(rolls: rolls)
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
     private func handleRemindersToggle(_ newValue: Bool) {
