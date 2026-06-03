@@ -1,6 +1,5 @@
 import SwiftUI
 import SwiftData
-import Kingfisher
 
 struct SettingsView: View {
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
@@ -54,7 +53,7 @@ struct SettingsView: View {
                     clearCache()
                 }
             } message: {
-                Text("This will remove all cached images. They will be re-downloaded when needed.")
+                Text("This will clear temporary files and URL cache. Cover images will be kept.")
             }
         }
         .background(Color.filmBackground.ignoresSafeArea())
@@ -150,34 +149,20 @@ struct SettingsView: View {
     private func calculateCacheSize() {
         var totalSize: UInt64 = 0
 
-        // Kingfisher disk cache
-        KingfisherManager.shared.cache.calculateDiskStorageSize { result in
-            if case .success(let size) = result {
-                totalSize += UInt64(size)
-            }
+        // URL cache
+        totalSize += UInt64(URLCache.shared.currentDiskUsage)
 
-            // URL cache
-            totalSize += UInt64(URLCache.shared.currentDiskUsage)
-
-            // Tmp directory
-            let tmpDir = FileManager.default.temporaryDirectory
-            if let files = try? FileManager.default.contentsOfDirectory(at: tmpDir, includingPropertiesForKeys: [.fileSizeKey]) {
-                for file in files {
-                    if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize {
-                        totalSize += UInt64(size)
-                    }
+        // Tmp directory
+        let tmpDir = FileManager.default.temporaryDirectory
+        if let files = try? FileManager.default.contentsOfDirectory(at: tmpDir, includingPropertiesForKeys: [.fileSizeKey]) {
+            for file in files {
+                if let size = try? file.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+                    totalSize += UInt64(size)
                 }
             }
-
-            // App Documents cache
-            if let docsDir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
-                totalSize += folderSize(at: docsDir)
-            }
-
-            DispatchQueue.main.async {
-                cacheSizeText = formatBytes(totalSize)
-            }
         }
+
+        cacheSizeText = formatBytes(totalSize)
     }
 
     private func folderSize(at url: URL) -> UInt64 {
@@ -205,8 +190,8 @@ struct SettingsView: View {
     }
 
     private func clearCache() {
-        KingfisherManager.shared.cache.clearMemoryCache()
-        KingfisherManager.shared.cache.clearDiskCache()
+        // Only clear URL cache and temp files — keep Kingfisher image cache
+        // so cover images for films and cameras don't need to reload
         URLCache.shared.removeAllCachedResponses()
 
         let tmpDir = FileManager.default.temporaryDirectory
