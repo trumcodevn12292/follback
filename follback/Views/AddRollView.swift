@@ -31,13 +31,6 @@ struct AddRollView: View {
     @State private var activeCover: ActiveCover?
     @State private var selectedLabName: String?
 
-    // Custom film creation states
-    @State private var newCustomName = ""
-    @State private var newCustomISO = 400
-    @State private var newCustomType = "COLOR_NEGATIVE"
-    @State private var newCustomCoverItem: PhotosPickerItem?
-    @State private var newCustomCoverData: Data?
-
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
     // A single, enum-driven presentation. Stacking several
@@ -511,205 +504,12 @@ struct AddRollView: View {
 
     // MARK: - Custom Film Form Sheet
     private var customFilmFormSheet: some View {
-        NavigationStack {
-            ZStack {
-                Color.filmBackground.ignoresSafeArea()
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
-                        // Cover photo
-                        VStack(spacing: 8) {
-                            Text("COVER PHOTO")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(Color.filmTertiary)
-                                .kerning(0.8)
-                                .frame(maxWidth: .infinity, alignment: .leading)
-
-                            PhotosPicker(selection: $newCustomCoverItem, matching: .images) {
-                                ZStack {
-                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                        .fill(Color.filmSurface)
-                                        .frame(height: 140)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                                .stroke(Color.filmBorder, lineWidth: 0.5)
-                                        )
-
-                                    if let data = newCustomCoverData, let uiImage = UIImage(data: data) {
-                                        Image(uiImage: uiImage)
-                                            .resizable()
-                                            .scaledToFill()
-                                            .frame(height: 140)
-                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-                                    } else {
-                                        VStack(spacing: 8) {
-                                            Image(systemName: "photo.badge.plus")
-                                                .font(.system(size: 28, weight: .light))
-                                                .foregroundColor(Color.filmTertiary)
-                                            Text("Tap to add cover")
-                                                .font(.system(size: 13))
-                                                .foregroundColor(Color.filmTertiary)
-                                        }
-                                    }
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        }
-
-                        // Film name
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("FILM NAME")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(Color.filmTertiary)
-                                .kerning(0.8)
-
-                            TextField("e.g. My Kodak Portra 400", text: $newCustomName)
-                                .font(.system(size: 16))
-                                .foregroundColor(Color.filmText)
-                                .padding(14)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(Color.filmSurface)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                                .stroke(Color.filmBorder, lineWidth: 0.5)
-                                        )
-                                )
-                        }
-
-                        // ISO
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("ISO")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(Color.filmTertiary)
-                                .kerning(0.8)
-
-                            HStack(spacing: 0) {
-                                ForEach(isoOptions, id: \.self) { option in
-                                    Button {
-                                        newCustomISO = option
-                                    } label: {
-                                        Text("\(option)")
-                                            .font(.system(size: 13, weight: newCustomISO == option ? .bold : .medium))
-                                            .foregroundColor(newCustomISO == option ? Color.filmBackground : Color.filmSecondary)
-                                            .frame(maxWidth: .infinity)
-                                            .padding(.vertical, 10)
-                                            .background(
-                                                newCustomISO == option
-                                                    ? AnyView(Capsule().fill(Color.filmAccent))
-                                                    : AnyView(Capsule().fill(Color.clear))
-                                            )
-                                    }
-                                    .buttonStyle(.plain)
-                                }
-                            }
-                            .padding(4)
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color.filmSurface)
-                            )
-                        }
-
-                        // Film type
-                        VStack(alignment: .leading, spacing: 6) {
-                            Text("FILM TYPE")
-                                .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(Color.filmTertiary)
-                                .kerning(0.8)
-
-                            VStack(spacing: 0) {
-                                ForEach(Array(zip(CustomFilm.filmTypes, CustomFilm.filmTypeNames)), id: \.0) { typeCode, typeName in
-                                    Button {
-                                        newCustomType = typeCode
-                                    } label: {
-                                        HStack {
-                                            Text(typeName)
-                                                .font(.system(size: 15, weight: .medium))
-                                                .foregroundColor(Color.filmText)
-                                            Spacer()
-                                            if newCustomType == typeCode {
-                                                Image(systemName: "checkmark")
-                                                    .font(.system(size: 14, weight: .bold))
-                                                    .foregroundColor(Color.filmAccent)
-                                            }
-                                        }
-                                        .padding(.horizontal, 16)
-                                        .padding(.vertical, 14)
-                                    }
-                                    .buttonStyle(.plain)
-
-                                    if typeCode != CustomFilm.filmTypes.last {
-                                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
-                                    }
-                                }
-                            }
-                            .background(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color.filmSurface)
-                            )
-                        }
-
-                        // Save button
-                        Button {
-                            let film = CustomFilm(
-                                id: UUID().uuidString,
-                                name: newCustomName,
-                                iso: newCustomISO,
-                                filmType: newCustomType,
-                                coverImageData: newCustomCoverData
-                            )
-                            customFilmStore.add(film)
-                            selectedCustomFilm = film
-                            selectedFilmStock = nil
-                            iso = film.iso
-                            activeCover = nil
-                            resetCustomForm()
-                            UINotificationFeedbackGenerator().notificationOccurred(.success)
-                        } label: {
-                            Text("Save Custom Film")
-                                .font(.system(size: 17, weight: .bold))
-                                .foregroundColor(Color.filmBackground)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                        .fill(newCustomName.isEmpty ? Color.filmTertiary : Color.filmAccent)
-                                )
-                        }
-                        .disabled(newCustomName.isEmpty)
-                        .buttonStyle(.plain)
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.top, 16)
-                    .padding(.bottom, 40)
-                }
-            }
-            .navigationTitle("Custom Film")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        activeCover = nil
-                        resetCustomForm()
-                    }
-                    .foregroundColor(Color.filmAccent)
-                }
-            }
-            .onChange(of: newCustomCoverItem) { _, item in
-                Task {
-                    if let data = try? await item?.loadTransferable(type: Data.self) {
-                        newCustomCoverData = data
-                    }
-                }
-            }
+        AddCustomFilmSheet(isoOptions: isoOptions) { film in
+            customFilmStore.add(film)
+            selectedCustomFilm = film
+            selectedFilmStock = nil
+            iso = film.iso
         }
-    }
-
-    private func resetCustomForm() {
-        newCustomName = ""
-        newCustomISO = 400
-        newCustomType = "COLOR_NEGATIVE"
-        newCustomCoverItem = nil
-        newCustomCoverData = nil
     }
 
     // MARK: - Step 2: Settings
@@ -1131,6 +931,211 @@ struct AddRollView: View {
                 .foregroundColor(.white)
                 .frame(width: 36, height: 36)
                 .background(Circle().fill(colors[hash]))
+        }
+    }
+}
+
+// Isolated custom-film creation form. Lives in its own view so its
+// PhotosPicker presents from this subtree instead of stacking another modal
+// onto AddRollView (which used to rebuild the wizard and kick back to
+// "Choose Film").
+private struct AddCustomFilmSheet: View {
+    let isoOptions: [Int]
+    var onSave: (CustomFilm) -> Void
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var name = ""
+    @State private var iso = 400
+    @State private var type = "COLOR_NEGATIVE"
+    @State private var coverItem: PhotosPickerItem?
+    @State private var coverData: Data?
+
+    var body: some View {
+        NavigationStack {
+            ZStack {
+                Color.filmBackground.ignoresSafeArea()
+                ScrollView(showsIndicators: false) {
+                    VStack(spacing: 20) {
+                        // Cover photo
+                        VStack(spacing: 8) {
+                            Text("COVER PHOTO")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+
+                            PhotosPicker(selection: $coverItem, matching: .images) {
+                                ZStack {
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .fill(Color.filmSurface)
+                                        .frame(height: 140)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                                        )
+
+                                    if let data = coverData, let uiImage = UIImage(data: data) {
+                                        Image(uiImage: uiImage)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(height: 140)
+                                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                                    } else {
+                                        VStack(spacing: 8) {
+                                            Image(systemName: "photo.badge.plus")
+                                                .font(.system(size: 28, weight: .light))
+                                                .foregroundColor(Color.filmTertiary)
+                                            Text("Tap to add cover")
+                                                .font(.system(size: 13))
+                                                .foregroundColor(Color.filmTertiary)
+                                        }
+                                    }
+                                }
+                            }
+                            .buttonStyle(.plain)
+                        }
+
+                        // Film name
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("FILM NAME")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            TextField("e.g. My Kodak Portra 400", text: $name)
+                                .font(.system(size: 16))
+                                .foregroundColor(Color.filmText)
+                                .padding(14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color.filmSurface)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                                        )
+                                )
+                        }
+
+                        // ISO
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("ISO")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            HStack(spacing: 0) {
+                                ForEach(isoOptions, id: \.self) { option in
+                                    Button {
+                                        iso = option
+                                    } label: {
+                                        Text("\(option)")
+                                            .font(.system(size: 13, weight: iso == option ? .bold : .medium))
+                                            .foregroundColor(iso == option ? Color.filmBackground : Color.filmSecondary)
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 10)
+                                            .background(
+                                                iso == option
+                                                    ? AnyView(Capsule().fill(Color.filmAccent))
+                                                    : AnyView(Capsule().fill(Color.clear))
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(4)
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+
+                        // Film type
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("FILM TYPE")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            VStack(spacing: 0) {
+                                ForEach(Array(zip(CustomFilm.filmTypes, CustomFilm.filmTypeNames)), id: \.0) { typeCode, typeName in
+                                    Button {
+                                        type = typeCode
+                                    } label: {
+                                        HStack {
+                                            Text(typeName)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            Spacer()
+                                            if type == typeCode {
+                                                Image(systemName: "checkmark")
+                                                    .font(.system(size: 14, weight: .bold))
+                                                    .foregroundColor(Color.filmAccent)
+                                            }
+                                        }
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 14)
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    if typeCode != CustomFilm.filmTypes.last {
+                                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                                    }
+                                }
+                            }
+                            .background(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .fill(Color.filmSurface)
+                            )
+                        }
+
+                        // Save button
+                        Button {
+                            let film = CustomFilm(
+                                id: UUID().uuidString,
+                                name: name,
+                                iso: iso,
+                                filmType: type,
+                                coverImageData: coverData
+                            )
+                            onSave(film)
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            dismiss()
+                        } label: {
+                            Text("Save Custom Film")
+                                .font(.system(size: 17, weight: .bold))
+                                .foregroundColor(Color.filmBackground)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 16)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(name.isEmpty ? Color.filmTertiary : Color.filmAccent)
+                                )
+                        }
+                        .disabled(name.isEmpty)
+                        .buttonStyle(.plain)
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 40)
+                }
+            }
+            .navigationTitle("Custom Film")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .foregroundColor(Color.filmAccent)
+                }
+            }
+            .onChange(of: coverItem) { _, item in
+                Task {
+                    if let data = try? await item?.loadTransferable(type: Data.self) {
+                        coverData = data
+                    }
+                }
+            }
         }
     }
 }
