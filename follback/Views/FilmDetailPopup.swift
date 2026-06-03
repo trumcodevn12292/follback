@@ -89,6 +89,7 @@ struct FilmDetailPopup: View {
             ZStack {
                 KFImage(coverURL)
                     .requestModifier(FilmerImageAuth.shared.modifier)
+                    .downsampling(size: CGSize(width: 200, height: 200))
                     .resizable()
                     .scaledToFill()
                     .frame(minWidth: 0, maxWidth: .infinity, minHeight: 0, maxHeight: .infinity)
@@ -115,6 +116,8 @@ struct FilmDetailPopup: View {
            let coverURL = URL(string: coverUrlString) {
             KFImage(coverURL)
                 .requestModifier(FilmerImageAuth.shared.modifier)
+                .downsampling(size: CGSize(width: 800, height: 800))
+                .cacheOriginalImage()
                 .resizable()
                 .scaledToFit()
                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

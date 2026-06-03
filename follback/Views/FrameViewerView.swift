@@ -222,13 +222,16 @@ struct FrameViewerView: View {
 
     private func loadFullImage() {
         guard let assetID = frame.photoAssetID else { return }
+
+        let screenScale = UIScreen.main.scale
+        let maxDimension = max(UIScreen.main.bounds.width, UIScreen.main.bounds.height) * screenScale
+
         if assetID.contains("_frame_") {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(assetID)
-            if let data = try? Data(contentsOf: url), let uiImage = UIImage(data: data) {
-                DispatchQueue.main.async {
-                    self.image = uiImage
-                }
+            DispatchQueue.global(qos: .userInitiated).async {
+                guard let img = downsampledImage(at: url, maxPixel: maxDimension) else { return }
+                DispatchQueue.main.async { self.image = img }
             }
             return
         }
@@ -239,10 +242,12 @@ struct FrameViewerView: View {
         let options = PHImageRequestOptions()
         options.deliveryMode = .highQualityFormat
         options.isSynchronous = false
+        options.isNetworkAccessAllowed = true
 
+        let targetSize = CGSize(width: maxDimension, height: maxDimension)
         manager.requestImage(
             for: asset,
-            targetSize: PHImageManagerMaximumSize,
+            targetSize: targetSize,
             contentMode: .aspectFit,
             options: options
         ) { uiImage, _ in

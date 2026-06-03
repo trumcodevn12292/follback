@@ -136,6 +136,8 @@ struct CamerasView: View {
                 if let coverUrl = model?.fullCoverUrl, let url = URL(string: coverUrl) {
                     KFImage(url)
                         .requestModifier(FilmerImageAuth.shared.modifier)
+                        .downsampling(size: CGSize(width: 144, height: 144))
+                        .cacheOriginalImage()
                         .resizable()
                         .scaledToFill()
                         .frame(width: 72, height: 72)
@@ -169,6 +171,7 @@ struct CamerasView: View {
                let url = URL(string: logoUrl) {
                 KFImage(url)
                     .requestModifier(FilmerImageAuth.shared.modifier)
+                    .downsampling(size: CGSize(width: 80, height: 40))
                     .resizable()
                     .scaledToFit()
                     .frame(height: 20)
@@ -205,6 +208,8 @@ struct CamerasView: View {
                     if let coverUrl = model.fullCoverUrl, let url = URL(string: coverUrl) {
                         KFImage(url)
                             .requestModifier(FilmerImageAuth.shared.modifier)
+                            .downsampling(size: CGSize(width: 240, height: 240))
+                            .cacheOriginalImage()
                             .resizable()
                             .scaledToFill()
                             .frame(height: 120)
