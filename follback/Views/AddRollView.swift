@@ -40,19 +40,23 @@ struct AddRollView: View {
     private enum ActiveCover: Identifiable {
         case camera
         case location
-        case customFilm
         case lab
         case filmDetail(FilmStock)
         var id: String {
             switch self {
             case .camera: return "camera"
             case .location: return "location"
-            case .customFilm: return "customFilm"
             case .lab: return "lab"
             case .filmDetail(let stock): return "filmDetail-\(stock.id)"
             }
         }
     }
+
+    // Custom Film is pushed (navigationDestination) instead of presented as a
+    // second full-screen cover. Its PhotosPicker is an out-of-process modal;
+    // opening it on top of two stacked covers tore down the wizard. A push
+    // keeps the picker only one modal level deep.
+    @State private var showCustomFilmForm = false
 
     private var filteredStocks: [(brand: String, stocks: [FilmStock])] {
         if searchText.isEmpty {
@@ -110,8 +114,6 @@ struct AddRollView: View {
                     latitude: $locationLatitude,
                     longitude: $locationLongitude
                 )
-            case .customFilm:
-                customFilmFormSheet
             case .lab:
                 addRollLabPickerSheet
             case .filmDetail(let stock):
@@ -120,6 +122,9 @@ struct AddRollView: View {
                 }
                 .background(ClearBackgroundView())
             }
+        }
+        .navigationDestination(isPresented: $showCustomFilmForm) {
+            customFilmFormSheet
         }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
@@ -238,7 +243,7 @@ struct AddRollView: View {
 
                 // Custom film button → opens form sheet
                 Button {
-                    activeCover = .customFilm
+                    showCustomFilmForm = true
                 } label: {
                     HStack(spacing: 12) {
                         ZStack {
@@ -509,6 +514,7 @@ struct AddRollView: View {
             selectedCustomFilm = film
             selectedFilmStock = nil
             iso = film.iso
+            showCustomFilmForm = false
         }
     }
 
@@ -951,9 +957,10 @@ private struct AddCustomFilmSheet: View {
     @State private var coverData: Data?
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Color.filmBackground.ignoresSafeArea()
+        ZStack {
+            Color.filmBackground.ignoresSafeArea()
+            VStack(spacing: 0) {
+                customFilmHeader
                 ScrollView(showsIndicators: false) {
                     VStack(spacing: 20) {
                         // Cover photo
@@ -1119,23 +1126,45 @@ private struct AddCustomFilmSheet: View {
                     .padding(.bottom, 40)
                 }
             }
-            .navigationTitle("Custom Film")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .foregroundColor(Color.filmAccent)
-                }
-            }
-            .onChange(of: coverItem) { _, item in
-                Task {
-                    if let data = try? await item?.loadTransferable(type: Data.self) {
-                        coverData = data
-                    }
+        }
+        .navigationBarHidden(true)
+        .onChange(of: coverItem) { _, item in
+            Task {
+                if let data = try? await item?.loadTransferable(type: Data.self) {
+                    coverData = data
                 }
             }
         }
+    }
+
+    private var customFilmHeader: some View {
+        HStack {
+            Button {
+                dismiss()
+            } label: {
+                Image(systemName: "chevron.left")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .frame(width: 38, height: 38)
+                    .background(
+                        Circle()
+                            .fill(Color.filmSurface)
+                            .overlay(Circle().stroke(Color.filmBorder, lineWidth: 0.5))
+                    )
+            }
+
+            Spacer()
+
+            Text("Custom Film")
+                .font(.system(size: 17, weight: .bold))
+                .foregroundColor(Color.filmText)
+
+            Spacer()
+
+            Color.clear.frame(width: 38, height: 38)
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 }
