@@ -6,7 +6,7 @@ import WidgetKit
 
 struct ContentView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
-    @State private var selectedTab = 0
+    @SceneStorage("selectedTab") private var selectedTab = 0
     @State private var tabAppeared = false
     @State private var showNewRoll = false
     @Environment(\.modelContext) private var modelContext

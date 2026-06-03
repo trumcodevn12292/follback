@@ -16,8 +16,14 @@ extension Color {
     /// Elevated surface for modals/popovers
     static let filmSurfaceElevated = Color(hex: "#1E1A16")
 
-    /// Primary accent — rich amber gold
-    static let filmAccent = Color(hex: "#E8A832")
+    /// Default accent hex (rich amber gold).
+    static let defaultAccentHex = "#E8A832"
+
+    /// Primary accent — user-customizable in Settings → Appearance.
+    /// Computed so changing the stored accent updates the whole app.
+    static var filmAccent: Color {
+        Color(hex: UserDefaults.standard.string(forKey: "accentColorHex") ?? defaultAccentHex)
+    }
 
     /// Secondary accent — deep warm gold
     static let filmGold = Color(hex: "#C47F17")
@@ -94,23 +100,29 @@ extension Color {
 
 // MARK: - Gradient Presets
 extension LinearGradient {
-    static let filmAccentGradient = LinearGradient(
-        colors: [Color.filmGradientStart, Color.filmGradientMid, Color.filmGradientEnd],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var filmAccentGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.filmAccent, Color.filmGradientMid, Color.filmGradientEnd],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 
-    static let filmWarmGradient = LinearGradient(
-        colors: [Color.filmAccent, Color.filmGold],
-        startPoint: .leading,
-        endPoint: .trailing
-    )
+    static var filmWarmGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.filmAccent, Color.filmGold],
+            startPoint: .leading,
+            endPoint: .trailing
+        )
+    }
 
-    static let filmSubtleGradient = LinearGradient(
-        colors: [Color.filmAccent.opacity(0.15), Color.filmGold.opacity(0.05)],
-        startPoint: .topLeading,
-        endPoint: .bottomTrailing
-    )
+    static var filmSubtleGradient: LinearGradient {
+        LinearGradient(
+            colors: [Color.filmAccent.opacity(0.15), Color.filmGold.opacity(0.05)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 
     static let filmGlassGradient = LinearGradient(
         colors: [Color.white.opacity(0.08), Color.white.opacity(0.02)],
