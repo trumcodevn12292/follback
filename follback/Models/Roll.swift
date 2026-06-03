@@ -21,6 +21,26 @@ class Roll {
     var createdAt: Date
     var updatedAt: Date
 
+    // MARK: - Development recipe log
+    var devDeveloper: String?       // e.g. "Kodak D-76", "Rodinal"
+    var devDilution: String?        // e.g. "1+1", "1+50"
+    var devTempC: Double?           // temperature in °C
+    var devTimeSeconds: Int?        // development time in seconds
+    var devAgitation: String?       // e.g. "30s initial, 3 inversions / 30s"
+    var devNotes: String?           // free-form recipe notes
+    var developedDate: Date?        // when it was developed
+
+    /// True when any development recipe field has been filled in.
+    var hasDevRecipe: Bool {
+        (devDeveloper?.isEmpty == false) ||
+        (devDilution?.isEmpty == false) ||
+        devTempC != nil ||
+        devTimeSeconds != nil ||
+        (devAgitation?.isEmpty == false) ||
+        (devNotes?.isEmpty == false) ||
+        developedDate != nil
+    }
+
     @Relationship(deleteRule: .nullify)
     var camera: Camera?
 
