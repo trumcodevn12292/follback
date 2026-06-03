@@ -50,13 +50,6 @@ struct FilmLab: Identifiable, Hashable {
             services: ["C-41", "E-6", "B&W", "120", "Large Format"]
         ),
         FilmLab(
-            name: "Hanoi Film Store",
-            city: "Hà Nội",
-            description: "Vừa bán film vừa nhận tráng scan.",
-            logoUrl: nil,
-            services: ["C-41", "B&W", "Scan", "Film Sales"]
-        ),
-        FilmLab(
             name: "Nadar Lab",
             city: "Hà Nội",
             description: "Được cộng đồng film Hà Nội nhắc đến khá thường xuyên.",

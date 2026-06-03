@@ -4,6 +4,7 @@ import PhotosUI
 import Photos
 import DGCharts
 import Kingfisher
+import UniformTypeIdentifiers
 
 enum FrameSheetTarget: Identifiable {
     case new(Int)
@@ -34,6 +35,11 @@ struct RollDetailView: View {
     @State private var showEditDetails = false
     @State private var showContactSheet = false
     @State private var filmDetailStock: FilmStock?
+    @State private var showImportOptions = false
+    @State private var showFileImporter = false
+    @State private var showDriveLinkAlert = false
+    @State private var driveLinkText = ""
+    @ObservedObject private var driveService = GoogleDriveService.shared
 
     private var matchingFilmStock: FilmStock? {
         FilmStock.allStocks.first { stock in
@@ -116,6 +122,37 @@ struct RollDetailView: View {
             }
             .background(ClearBackgroundView())
         }
+        .confirmationDialog("Import Photos", isPresented: $showImportOptions, titleVisibility: .visible) {
+            Button("From Files / Folder") { showFileImporter = true }
+            Button("From Google Drive Link") {
+                if driveService.isSignedIn {
+                    driveLinkText = ""
+                    showDriveLinkAlert = true
+                } else {
+                    Task { await driveService.signIn() }
+                }
+            }
+            Button("From Photo Library") { showPhotoPicker = true }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Choose where to import photos from. \(emptySlotCount) slot\(emptySlotCount == 1 ? "" : "s") available.")
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.image],
+            allowsMultipleSelection: true
+        ) { result in
+            Task { await importFromFiles(result) }
+        }
+        .alert("Google Drive Link", isPresented: $showDriveLinkAlert) {
+            TextField("Paste Drive folder or file link", text: $driveLinkText)
+            Button("Cancel", role: .cancel) { }
+            Button("Import") {
+                Task { await importFromDriveLink(driveLinkText) }
+            }
+        } message: {
+            Text("Paste a Google Drive folder or file link to download and import photos.")
+        }
         .onAppear {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 appeared = true
@@ -154,7 +191,7 @@ struct RollDetailView: View {
 
             if hasPhotos {
                 Button {
-                    showPhotoPicker = true
+                    showImportOptions = true
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
                 } label: {
                     Image(systemName: "plus")
@@ -392,7 +429,7 @@ struct RollDetailView: View {
     private var importButton: some View {
         Button {
             if !isImporting {
-                showPhotoPicker = true
+                showImportOptions = true
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             }
         } label: {
@@ -453,7 +490,7 @@ struct RollDetailView: View {
         .padding(.bottom, 90)
     }
 
-    // MARK: - Photo Import
+    // MARK: - Photo Import (from Photo Library)
     private func importPhotos(_ items: [PhotosPickerItem]) async {
         guard !items.isEmpty else { return }
         await MainActor.run { isImporting = true }
@@ -463,6 +500,9 @@ struct RollDetailView: View {
         }
 
         var importedCount = 0
+        let importMode = UserDefaults.standard.string(forKey: "photoImportMode") ?? "Copy"
+        let shouldUploadToDrive = driveService.isSignedIn
+
         for (index, item) in items.enumerated() {
             guard index < emptySlots.count else { break }
             let slotNumber = emptySlots[index]
@@ -475,6 +515,14 @@ struct RollDetailView: View {
                     .appendingPathComponent(filename)
                 try? jpegData.write(to: url)
 
+                if importMode == "Reference" {
+                    saveToPhotoAlbum(data: jpegData)
+                }
+
+                if shouldUploadToDrive {
+                    Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+                }
+
                 if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
                     existingFrame.photoAssetID = filename
                 } else {
@@ -486,7 +534,136 @@ struct RollDetailView: View {
             }
         }
 
-        if importedCount > 0 {
+        await finishImport(count: importedCount)
+    }
+
+    // MARK: - Import from Files
+
+    private func importFromFiles(_ result: Result<[URL], Error>) async {
+        guard case .success(let urls) = result, !urls.isEmpty else { return }
+
+        let imageURLs = urls.filter { url in
+            let ext = url.pathExtension.lowercased()
+            return ["jpg", "jpeg", "png", "heic", "heif", "tiff", "bmp", "webp"].contains(ext)
+        }
+
+        guard !imageURLs.isEmpty else {
+            await showToast("No images found in selection")
+            return
+        }
+
+        await MainActor.run { isImporting = true }
+        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let emptySlots = (1...roll.capacity).filter { num in
+            !frames.contains { $0.number == num && $0.photoAssetID != nil }
+        }
+
+        guard !emptySlots.isEmpty else {
+            await showToast("No empty slots available")
+            return
+        }
+
+        var importedCount = 0
+        let importMode = UserDefaults.standard.string(forKey: "photoImportMode") ?? "Copy"
+        let shouldUploadToDrive = driveService.isSignedIn
+
+        for (index, url) in imageURLs.enumerated() {
+            guard index < emptySlots.count else { break }
+            let slotNumber = emptySlots[index]
+
+            let accessing = url.startAccessingSecurityScopedResource()
+            defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+            guard let data = try? Data(contentsOf: url),
+                  let uiImage = UIImage(data: data),
+                  let jpegData = uiImage.jpegData(compressionQuality: 0.9) else { continue }
+
+            let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+            let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(filename)
+            try? jpegData.write(to: destURL)
+
+            if importMode == "Reference" {
+                saveToPhotoAlbum(data: jpegData)
+            }
+
+            if shouldUploadToDrive {
+                Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+            }
+
+            if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+                existingFrame.photoAssetID = filename
+            } else {
+                let newFrame = Frame(number: slotNumber, photoAssetID: filename)
+                newFrame.roll = roll
+                modelContext.insert(newFrame)
+            }
+            importedCount += 1
+        }
+
+        await finishImport(count: importedCount)
+    }
+
+    // MARK: - Import from Google Drive Link
+
+    private func importFromDriveLink(_ link: String) async {
+        guard !link.isEmpty else { return }
+        await MainActor.run { isImporting = true }
+
+        let downloaded = await driveService.downloadFromLink(link)
+        guard !downloaded.isEmpty else {
+            await showToast("No images found at link")
+            return
+        }
+
+        let frames = (roll.frames ?? []).sorted { $0.number < $1.number }
+        let emptySlots = (1...roll.capacity).filter { num in
+            !frames.contains { $0.number == num && $0.photoAssetID != nil }
+        }
+
+        var importedCount = 0
+        let shouldUploadToDrive = driveService.isSignedIn
+
+        for (index, file) in downloaded.enumerated() {
+            guard index < emptySlots.count else { break }
+            let slotNumber = emptySlots[index]
+
+            guard let uiImage = UIImage(data: file.data),
+                  let jpegData = uiImage.jpegData(compressionQuality: 0.9) else { continue }
+
+            let filename = "\(roll.id.uuidString)_frame_\(slotNumber).jpg"
+            let destURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(filename)
+            try? jpegData.write(to: destURL)
+
+            if shouldUploadToDrive {
+                Task { await driveService.uploadPhoto(data: jpegData, filename: "FilmVault/\(roll.filmName)/frame_\(slotNumber).jpg") }
+            }
+
+            if let existingFrame = frames.first(where: { $0.number == slotNumber }) {
+                existingFrame.photoAssetID = filename
+            } else {
+                let newFrame = Frame(number: slotNumber, photoAssetID: filename)
+                newFrame.roll = roll
+                modelContext.insert(newFrame)
+            }
+            importedCount += 1
+        }
+
+        await finishImport(count: importedCount)
+    }
+
+    // MARK: - Helpers
+
+    private func saveToPhotoAlbum(data: Data) {
+        PHPhotoLibrary.shared().performChanges {
+            let request = PHAssetCreationRequest.forAsset()
+            request.addResource(with: .photo, data: data, options: nil)
+        }
+    }
+
+    private func finishImport(count: Int) async {
+        if count > 0 {
             roll.checkAutoComplete()
             try? modelContext.save()
             await MainActor.run {
@@ -494,25 +671,32 @@ struct RollDetailView: View {
                 selectedPhotos = []
                 let completed = roll.isCompleted
                 toastMessage = completed
-                    ? "Roll complete! \(importedCount) photo\(importedCount == 1 ? "" : "s") imported"
-                    : "Imported \(importedCount) photo\(importedCount == 1 ? "" : "s")"
-                withAnimation(.easeOut(duration: 0.3)) {
-                    showToastFlag = true
-                }
+                    ? "Roll complete! \(count) photo\(count == 1 ? "" : "s") imported"
+                    : "Imported \(count) photo\(count == 1 ? "" : "s")"
+                withAnimation(.easeOut(duration: 0.3)) { showToastFlag = true }
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             }
-
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             await MainActor.run {
-                withAnimation(.easeIn(duration: 0.3)) {
-                    showToastFlag = false
-                }
+                withAnimation(.easeIn(duration: 0.3)) { showToastFlag = false }
             }
         } else {
             await MainActor.run {
                 isImporting = false
                 selectedPhotos = []
             }
+        }
+    }
+
+    private func showToast(_ message: String) async {
+        await MainActor.run {
+            isImporting = false
+            toastMessage = message
+            withAnimation(.easeOut(duration: 0.3)) { showToastFlag = true }
+        }
+        try? await Task.sleep(nanoseconds: 3_000_000_000)
+        await MainActor.run {
+            withAnimation(.easeIn(duration: 0.3)) { showToastFlag = false }
         }
     }
 
