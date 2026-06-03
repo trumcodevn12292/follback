@@ -16,7 +16,7 @@ final class GoogleDriveService: NSObject, ObservableObject {
     private var refreshToken: String?
 
     private let clientID = ""
-    private let redirectURI = "com.filmvault.app:/oauth2redirect"
+    private let redirectURI = "com.williamcachamwri.filmvault:/oauth2redirect"
     private let tokenURL = "https://oauth2.googleapis.com/token"
     private let driveUploadURL = "https://www.googleapis.com/upload/drive/v3/files"
 
@@ -51,7 +51,7 @@ final class GoogleDriveService: NSObject, ObservableObject {
         guard let url = URL(string: authURL) else { return }
 
         await MainActor.run {
-            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "com.filmvault.app") { [weak self] callbackURL, error in
+            let session = ASWebAuthenticationSession(url: url, callbackURLScheme: "com.williamcachamwri.filmvault") { [weak self] callbackURL, error in
                 guard let self, let callbackURL, error == nil else { return }
                 if let code = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?
                     .queryItems?.first(where: { $0.name == "code" })?.value {
