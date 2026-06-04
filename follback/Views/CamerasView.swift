@@ -299,17 +299,17 @@ struct AddCameraSheet: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(Color.filmText)
                 .frame(maxWidth: 120)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
     }
 
     private func parsedCost(_ text: String) -> Double? {
-        let cleaned = text
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: ",", with: ".")
-        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
-        return value
+        Money.parseAmount(text)
     }
 
     private func saveCamera() {
@@ -420,9 +420,7 @@ struct EditCameraSheet: View {
                 lens = camera.lens ?? ""
                 type = camera.cameraType
                 format = camera.filmFormat
-                priceText = camera.purchasePrice.map {
-                    $0.truncatingRemainder(dividingBy: 1) == 0 ? String(Int($0)) : String($0)
-                } ?? ""
+                priceText = camera.purchasePrice.map { Money.editableText($0) } ?? ""
             }
         }
         .presentationDetents([.medium, .large])
@@ -459,17 +457,17 @@ struct EditCameraSheet: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(Color.filmText)
                 .frame(maxWidth: 120)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 14)
     }
 
     private func parsedCost(_ text: String) -> Double? {
-        let cleaned = text
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: ",", with: ".")
-        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
-        return value
+        Money.parseAmount(text)
     }
 
     private func saveChanges() {

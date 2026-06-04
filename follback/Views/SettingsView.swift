@@ -1049,6 +1049,9 @@ struct InsightsView: View {
     @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
     @ObservedObject private var l10n = LocalizationManager.shared
 
+    @State private var appeared = false
+    @State private var barProgress: CGFloat = 0
+
     // MARK: Totals
 
     private var filmTotal: Double { rolls.compactMap { $0.filmCost }.reduce(0, +) }
@@ -1122,25 +1125,30 @@ struct InsightsView: View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 totalCard
+                    .modifier(EntranceEffect(appeared: appeared, index: 0))
 
                 if !filmStats.isEmpty {
                     section(title: L("Most-shot films")) {
                         VStack(spacing: 10) {
-                            ForEach(filmStats.prefix(5)) { stat in
+                            ForEach(Array(filmStats.prefix(5).enumerated()), id: \.element.id) { idx, stat in
                                 filmRow(stat)
+                                    .modifier(EntranceEffect(appeared: appeared, index: 2 + idx))
                             }
                         }
                     }
+                    .modifier(EntranceEffect(appeared: appeared, index: 1))
                 }
 
                 if !cameraStats.isEmpty {
                     section(title: L("Most-used cameras")) {
                         VStack(spacing: 10) {
-                            ForEach(cameraStats.prefix(5)) { stat in
+                            ForEach(Array(cameraStats.prefix(5).enumerated()), id: \.element.id) { idx, stat in
                                 cameraRow(stat)
+                                    .modifier(EntranceEffect(appeared: appeared, index: 8 + idx))
                             }
                         }
                     }
+                    .modifier(EntranceEffect(appeared: appeared, index: 7))
                 }
             }
             .padding(.horizontal, 16)
@@ -1150,6 +1158,14 @@ struct InsightsView: View {
         .background(Color.filmBackground.ignoresSafeArea())
         .navigationTitle(L("Insights"))
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            guard !appeared else { return }
+            // Each card animates with its own staggered delay via EntranceEffect.
+            appeared = true
+            withAnimation(.spring(response: 0.9, dampingFraction: 0.85).delay(0.2)) {
+                barProgress = 1
+            }
+        }
     }
 
     // MARK: Total card
@@ -1216,6 +1232,8 @@ struct InsightsView: View {
                         .frame(width: max(6, geo.size.width * fraction - 3))
                 }
             }
+            .scaleEffect(x: barProgress, anchor: .leading)
+            .opacity(barProgress)
         }
         .frame(height: 14)
     }
@@ -1346,5 +1364,23 @@ struct InsightsView: View {
                     .foregroundColor(Color.filmTertiary)
             }
         }
+    }
+}
+
+/// Staggered fade + slide + subtle scale entrance for Insights cards.
+private struct EntranceEffect: ViewModifier {
+    let appeared: Bool
+    let index: Int
+
+    func body(content: Content) -> some View {
+        content
+            .opacity(appeared ? 1 : 0)
+            .offset(y: appeared ? 0 : 24)
+            .scaleEffect(appeared ? 1 : 0.96, anchor: .top)
+            .animation(
+                .spring(response: 0.55, dampingFraction: 0.82)
+                    .delay(Double(index) * 0.06),
+                value: appeared
+            )
     }
 }

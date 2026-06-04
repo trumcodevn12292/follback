@@ -856,18 +856,17 @@ struct AddRollView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(Color.filmText)
                 .frame(maxWidth: 110)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
         }
         .padding(.horizontal, 18)
         .padding(.vertical, 14)
     }
 
-    /// Parses a user-typed amount, tolerating both "." and "," decimal marks.
     private func parsedCost(_ text: String) -> Double? {
-        let cleaned = text
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: ",", with: ".")
-        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
-        return value
+        Money.parseAmount(text)
     }
 
     // MARK: - Helpers

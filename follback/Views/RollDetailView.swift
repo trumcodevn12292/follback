@@ -2328,23 +2328,21 @@ struct EditRollDetailsView: View {
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundColor(Color.filmText)
                 .frame(maxWidth: 110)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
         }
         .padding(16)
     }
 
-    /// Renders a stored amount without trailing ".0" for whole numbers.
+    /// Renders a stored amount as grouped input text without trailing ".0".
     private func formattedCostInput(_ value: Double) -> String {
-        value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(value))
-            : String(value)
+        Money.editableText(value)
     }
 
     private func parsedCost(_ text: String) -> Double? {
-        let cleaned = text
-            .trimmingCharacters(in: .whitespaces)
-            .replacingOccurrences(of: ",", with: ".")
-        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
-        return value
+        Money.parseAmount(text)
     }
 
     private func settingsRow<Content: View>(_ label: String, value: String, @ViewBuilder trailing: () -> Content) -> some View {

@@ -171,6 +171,57 @@ enum Money {
         let locale = NSLocale(localeIdentifier: appLocale().identifier)
         return locale.displayName(forKey: .currencySymbol, value: target) ?? target
     }
+
+    /// Live formatting for a price text field: groups the integer part with
+    /// thousands separators ("1,500") while the user types, keeping a single
+    /// "." decimal mark and at most two fractional digits.
+    static func groupedInput(_ raw: String) -> String {
+        var hasDot = false
+        var intDigits = ""
+        var fracDigits = ""
+        for ch in raw {
+            if ch.isNumber {
+                if hasDot {
+                    if fracDigits.count < 2 { fracDigits.append(ch) }
+                } else {
+                    intDigits.append(ch)
+                }
+            } else if (ch == "." || ch == ",") && !hasDot && !intDigits.isEmpty {
+                // First separator after some digits starts the decimal part.
+                hasDot = true
+            }
+        }
+        while intDigits.count > 1 && intDigits.first == "0" { intDigits.removeFirst() }
+
+        let grouped: String
+        if intDigits.isEmpty {
+            grouped = hasDot ? "0" : ""
+        } else {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.groupingSeparator = ","
+            formatter.maximumFractionDigits = 0
+            grouped = formatter.string(from: NSDecimalNumber(string: intDigits)) ?? intDigits
+        }
+        return hasDot ? grouped + "." + fracDigits : grouped
+    }
+
+    /// Parses a user-typed amount, ignoring grouping separators. Returns nil for
+    /// empty or non-positive values.
+    static func parseAmount(_ text: String) -> Double? {
+        let cleaned = text.filter { $0.isNumber || $0 == "." }
+        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
+        return value
+    }
+
+    /// Renders a stored amount as grouped input text (no currency symbol),
+    /// dropping ".0" for whole numbers. Used to prefill edit fields.
+    static func editableText(_ value: Double) -> String {
+        let base = value.truncatingRemainder(dividingBy: 1) == 0
+            ? String(Int(value))
+            : String(value)
+        return groupedInput(base)
+    }
 }
 
 // MARK: - Runtime language switching (Bundle swizzling)
