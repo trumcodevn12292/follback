@@ -30,13 +30,33 @@ struct FilmVaultApp: App {
                 .task {
                     await FilmerImageAuth.shared.ensureToken()
                 }
+                .onAppear {
+                    migrateDataIfNeeded()
+                }
         }
-        .modelContainer(for: [Roll.self, Frame.self, Camera.self])
+        .modelContainer(sharedModelContainer)
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background || newPhase == .active {
                 WidgetCenter.shared.reloadAllTimelines()
             }
         }
+    }
+
+    private var sharedModelContainer = try! ModelContainer(
+        for: Roll.self, Frame.self, Camera.self, CustomFilmModel.self
+    )
+
+    private func migrateDataIfNeeded() {
+        let context = sharedModelContainer.mainContext
+        CustomFilmModel.migrateFromUserDefaults(modelContext: context)
+        KeychainService.migrateFromUserDefaults(
+            userDefaultsKey: "google_drive_access_token",
+            keychainKey: "google_drive_access_token"
+        )
+        KeychainService.migrateFromUserDefaults(
+            userDefaultsKey: "google_drive_refresh_token",
+            keychainKey: "google_drive_refresh_token"
+        )
     }
 }
 
@@ -78,15 +98,18 @@ class SceneDelegate: NSObject, UIWindowSceneDelegate {
     }
 
     private func handleShortcutItem(_ item: UIApplicationShortcutItem) {
-        switch item.type {
-        case "com.williamcachamwri.FilmVault.newRoll":
+        if item.type == "com.williamcachamwri.FilmVault.newRoll" {
             NotificationCenter.default.post(name: .quickActionNewRoll, object: nil)
-        case "com.williamcachamwri.FilmVault.settings":
+        } else if item.type == "com.williamcachamwri.FilmVault.settings" {
             NotificationCenter.default.post(name: .quickActionSettings, object: nil)
-        case "com.williamcachamwri.FilmVault.recentRoll":
-            NotificationCenter.default.post(name: .quickActionRecentRoll, object: nil)
-        default:
-            break
+        } else if item.type.hasPrefix("com.williamcachamwri.FilmVault.recentRoll") {
+            let userInfo: [AnyHashable: Any]?
+            if let rollID = item.userInfo?["rollID"] as? String {
+                userInfo = ["rollID": rollID]
+            } else {
+                userInfo = nil
+            }
+            NotificationCenter.default.post(name: .quickActionRecentRoll, object: nil, userInfo: userInfo)
         }
     }
 }

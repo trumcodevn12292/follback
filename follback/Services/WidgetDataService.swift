@@ -16,8 +16,6 @@ struct WidgetDataService {
             .prefix(10)
             .map { widgetRollData(for: $0) }
 
-        // Roll currently being shot (most recently updated in-progress roll),
-        // plus quick counts so the widget can surface live status at a glance.
         let activeRollModel = rolls
             .filter { $0.rollStatus == .inProgress && $0.filledFrames < $0.capacity }
             .sorted { $0.updatedAt > $1.updatedAt }
@@ -25,21 +23,51 @@ struct WidgetDataService {
         let shootingCount = rolls.filter { $0.rollStatus == .inProgress && $0.filledFrames < $0.capacity }.count
         let toDevelopCount = rolls.filter { $0.rollStatus == .completed }.count
 
+        // Insights
+        let distinctFilms = Set(rolls.map { $0.filmName }.filter { !$0.isEmpty }).count
+
+        let filmCost = rolls.compactMap { $0.filmCost }.reduce(0, +)
+        let devCost = rolls.compactMap { $0.devCost }.reduce(0, +)
+
+        let filmStats: [WidgetFilmStatData] = {
+            let groups = Dictionary(grouping: rolls.filter { !$0.filmName.isEmpty }) { $0.filmName }
+            let stats: [WidgetFilmStatData] = groups.map { name, group in
+                let sample = group[0]
+                return WidgetFilmStatData(
+                    name: name,
+                    iso: sample.iso,
+                    format: sample.filmFormat.displayName,
+                    rollCount: group.count,
+                    photos: group.reduce(0) { $0 + $1.filledFrames },
+                    coverImageFile: coverImageFileName(for: name)
+                )
+            }
+            return stats
+                .sorted { $0.rollCount != $1.rollCount ? $0.rollCount > $1.rollCount : $0.photos > $1.photos }
+                .prefix(3)
+                .map { $0 }
+        }()
+
+        let streakWeeks = computeStreakWeeks(from: rolls)
+
         let widgetData = WidgetSharedData(
             totalRolls: totalRolls,
             totalPhotos: totalPhotos,
             shootingCount: shootingCount,
             toDevelopCount: toDevelopCount,
             activeRoll: activeRollModel.map { widgetRollData(for: $0) },
-            recentRolls: Array(recentRolls)
+            recentRolls: Array(recentRolls),
+            distinctFilms: distinctFilms,
+            streakWeeks: streakWeeks,
+            filmCost: filmCost,
+            devCost: devCost,
+            filmStats: filmStats
         )
 
         if let encoded = try? JSONEncoder().encode(widgetData) {
             defaults.set(encoded, forKey: "widgetData")
         }
 
-        // Snapshot used by App Intents / Siri Shortcuts (works without launching
-        // the app). Includes every roll plus which one is currently shooting.
         let activeRoll = rolls
             .filter { ($0.rollStatus == .inProgress) }
             .sorted { $0.updatedAt > $1.updatedAt }
@@ -62,9 +90,6 @@ struct WidgetDataService {
 
         WidgetCenter.shared.reloadAllTimelines()
 
-        // Cache cover images for widget + Live Activity. Always include the
-        // active roll so its cover is available in the Dynamic Island / Lock
-        // Screen even when it is not among the most recent rolls.
         Task {
             var coversToCache = Array(recentRolls)
             if let active = activeRollModel.map({ widgetRollData(for: $0) }),
@@ -73,6 +98,38 @@ struct WidgetDataService {
             }
             await cacheCoverImages(for: coversToCache)
         }
+    }
+
+    // MARK: - Insights
+
+    private static func computeStreakWeeks(from rolls: [Roll]) -> Int {
+        var dates: [Date] = rolls.map { $0.startDate }
+        for roll in rolls {
+            for frame in roll.frames ?? [] where frame.photoAssetID != nil {
+                dates.append(frame.capturedAt ?? frame.createdAt)
+            }
+        }
+        let cal = Calendar.current
+        let weeks = Set(dates.compactMap {
+            cal.dateInterval(of: .weekOfYear, for: $0)?.start
+        })
+        guard !weeks.isEmpty,
+              let thisWeek = cal.dateInterval(of: .weekOfYear, for: Date())?.start
+        else { return 0 }
+
+        var anchor = thisWeek
+        if !weeks.contains(anchor) {
+            guard let prev = cal.date(byAdding: .weekOfYear, value: -1, to: thisWeek),
+                  weeks.contains(prev) else { return 0 }
+            anchor = prev
+        }
+        var streak = 0
+        var cursor: Date? = anchor
+        while let c = cursor, weeks.contains(c) {
+            streak += 1
+            cursor = cal.date(byAdding: .weekOfYear, value: -1, to: c)
+        }
+        return streak
     }
 
     private static func widgetRollData(for roll: Roll) -> WidgetRollData {
@@ -149,6 +206,8 @@ struct WidgetDataService {
     }
 }
 
+// MARK: - Data Models
+
 struct WidgetSharedData: Codable {
     let totalRolls: Int
     let totalPhotos: Int
@@ -156,6 +215,29 @@ struct WidgetSharedData: Codable {
     let toDevelopCount: Int
     let activeRoll: WidgetRollData?
     let recentRolls: [WidgetRollData]
+    let distinctFilms: Int?
+    let streakWeeks: Int?
+    let filmCost: Double?
+    let devCost: Double?
+    let filmStats: [WidgetFilmStatData]?
+
+    init(totalRolls: Int, totalPhotos: Int, shootingCount: Int, toDevelopCount: Int,
+         activeRoll: WidgetRollData?, recentRolls: [WidgetRollData],
+         distinctFilms: Int? = nil, streakWeeks: Int? = nil,
+         filmCost: Double? = nil, devCost: Double? = nil,
+         filmStats: [WidgetFilmStatData]? = nil) {
+        self.totalRolls = totalRolls
+        self.totalPhotos = totalPhotos
+        self.shootingCount = shootingCount
+        self.toDevelopCount = toDevelopCount
+        self.activeRoll = activeRoll
+        self.recentRolls = recentRolls
+        self.distinctFilms = distinctFilms
+        self.streakWeeks = streakWeeks
+        self.filmCost = filmCost
+        self.devCost = devCost
+        self.filmStats = filmStats
+    }
 }
 
 struct WidgetRollData: Codable {
@@ -169,6 +251,15 @@ struct WidgetRollData: Codable {
     let cameraName: String?
     let format: String
     let pushPull: String?
+}
+
+struct WidgetFilmStatData: Codable {
+    let name: String
+    let iso: Int
+    let format: String
+    let rollCount: Int
+    let photos: Int
+    let coverImageFile: String?
 }
 
 // MARK: - App Intents snapshot

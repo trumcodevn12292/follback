@@ -18,3 +18,14 @@
 "To Develop" = "في انتظار التحميض";
 "Recent" = "الأخيرة";
 "No roll in progress right now." = "لا يوجد فيلم قيد التصوير حاليًا.";
+
+/* Insights tab */
+"Overview" = "نظرة عامة";
+"Stats" = "إحصائيات";
+"Films" = "أفلام";
+"week" = "أسبوع";
+"weeks" = "أسابيع";
+"Spent" = "المصروف";
+"Top Films" = "أفضل الأفلام";
+"Film" = "فيلم";
+"Dev" = "تحميض";

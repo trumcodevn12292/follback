@@ -18,3 +18,14 @@
 "To Develop" = "Chờ tráng";
 "Recent" = "Gần đây";
 "No roll in progress right now." = "Hiện không có cuộn nào đang chụp.";
+
+/* Insights tab */
+"Overview" = "Tổng quan";
+"Stats" = "Thống kê";
+"Films" = "Phim";
+"week" = "tuần";
+"weeks" = "tuần";
+"Spent" = "Đã chi";
+"Top Films" = "Phim chụp nhiều nhất";
+"Film" = "Phim";
+"Dev" = "Tráng";

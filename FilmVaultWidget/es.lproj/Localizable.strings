@@ -18,3 +18,14 @@
 "To Develop" = "Por revelar";
 "Recent" = "Recientes";
 "No roll in progress right now." = "Ahora mismo no hay ningún carrete en curso.";
+
+/* Insights tab */
+"Overview" = "Vista general";
+"Stats" = "Estadísticas";
+"Films" = "Películas";
+"week" = "semana";
+"weeks" = "semanas";
+"Spent" = "Gastado";
+"Top Films" = "Películas principales";
+"Film" = "Película";
+"Dev" = "Revelado";

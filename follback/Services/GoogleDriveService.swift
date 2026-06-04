@@ -74,8 +74,8 @@ final class GoogleDriveService: NSObject, ObservableObject {
         totalStorage = 0
         usedStorage = 0
 
-        UserDefaults.standard.removeObject(forKey: accessTokenKey)
-        UserDefaults.standard.removeObject(forKey: refreshTokenKey)
+        KeychainService.delete(key: accessTokenKey)
+        KeychainService.delete(key: refreshTokenKey)
         UserDefaults.standard.removeObject(forKey: userEmailKey)
         UserDefaults.standard.removeObject(forKey: userNameKey)
     }
@@ -98,9 +98,9 @@ final class GoogleDriveService: NSObject, ObservableObject {
             self.accessToken = access
             self.refreshToken = (json["refresh_token"] as? String) ?? self.refreshToken
             self.isSignedIn = true
-            UserDefaults.standard.set(access, forKey: accessTokenKey)
+            KeychainService.save(key: accessTokenKey, value: access)
             if let refresh = self.refreshToken {
-                UserDefaults.standard.set(refresh, forKey: refreshTokenKey)
+                KeychainService.save(key: refreshTokenKey, value: refresh)
             }
         }
 
@@ -122,7 +122,7 @@ final class GoogleDriveService: NSObject, ObservableObject {
 
         await MainActor.run {
             self.accessToken = access
-            UserDefaults.standard.set(access, forKey: accessTokenKey)
+            KeychainService.save(key: accessTokenKey, value: access)
         }
         return true
     }
@@ -317,8 +317,8 @@ final class GoogleDriveService: NSObject, ObservableObject {
     }
 
     private func loadSavedCredentials() {
-        accessToken = UserDefaults.standard.string(forKey: accessTokenKey)
-        refreshToken = UserDefaults.standard.string(forKey: refreshTokenKey)
+        accessToken = KeychainService.read(key: accessTokenKey)
+        refreshToken = KeychainService.read(key: refreshTokenKey)
         userEmail = UserDefaults.standard.string(forKey: userEmailKey)
         userName = UserDefaults.standard.string(forKey: userNameKey)
         isSignedIn = accessToken != nil && refreshToken != nil

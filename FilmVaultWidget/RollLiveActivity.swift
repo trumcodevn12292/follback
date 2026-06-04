@@ -5,10 +5,6 @@ import UIKit
 
 // MARK: - Live Activity (Lock Screen + Dynamic Island)
 
-/// Live Activity that shows the roll you are currently shooting on the Lock
-/// Screen and in the Dynamic Island. All labels are localized via `WL(...)`
-/// using the language the user picked inside the app (shared through the App
-/// Group), and the layout flips to RTL when Arabic is selected.
 struct RollLiveActivity: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: FilmVaultRollAttributes.self) { context in
@@ -16,86 +12,156 @@ struct RollLiveActivity: Widget {
                 .environment(\.layoutDirection, widgetLayoutDirection())
                 .widgetURL(URL(string: "filmvault://roll/\(context.attributes.rollID)"))
         } dynamicIsland: { context in
-            dynamicIsland(context: context)
+            DynamicIsland {
+                DynamicIslandExpandedRegion(.leading) {
+                    expandedLeading(context)
+                }
+                DynamicIslandExpandedRegion(.trailing) {
+                    expandedTrailing(context)
+                }
+                DynamicIslandExpandedRegion(.bottom) {
+                    expandedBottom(context)
+                }
+            } compactLeading: {
+                compactLeading(context)
+            } compactTrailing: {
+                compactTrailing(context)
+            } minimal: {
+                minimal(context)
+            }
+            .widgetURL(URL(string: "filmvault://roll/\(context.attributes.rollID)"))
+            .keylineTint(.orange)
         }
     }
 
-    private func dynamicIsland(context: ActivityViewContext<FilmVaultRollAttributes>) -> DynamicIsland {
+    // MARK: - Dynamic Island Expanded
+
+    private func expandedLeading(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
+        HStack(spacing: 8) {
+            filmThumbnail(filmName: context.attributes.filmName, size: 30, cornerRadius: 7)
+
+            VStack(alignment: .leading, spacing: 2) {
+                HStack(spacing: 4) {
+                    Circle()
+                        .fill(.green)
+                        .frame(width: 5, height: 5)
+                    Text(context.attributes.filmName)
+                        .font(.system(size: 13, weight: .semibold))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.65)
+                }
+                if let cam = context.attributes.cameraName, !cam.isEmpty {
+                    Text(cam)
+                        .font(.system(size: 10))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                }
+            }
+        }
+        .padding(.leading, 2)
+    }
+
+    private func expandedTrailing(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
+        let shot = context.state.shotFrames
+        let cap = context.attributes.capacity
+        return VStack(alignment: .trailing, spacing: 1) {
+            Text("\(shot)")
+                .font(.system(size: 22, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText())
+            Text("/\(cap)")
+                .font(.system(size: 12, weight: .medium, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+        }
+        .padding(.trailing, 4)
+    }
+
+    private func expandedBottom(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
         let shot = context.state.shotFrames
         let cap = context.attributes.capacity
         let progress = cap > 0 ? min(1.0, Double(shot) / Double(cap)) : 0
+        let remaining = max(0, cap - shot)
 
-        return DynamicIsland {
-            DynamicIslandExpandedRegion(.leading) {
-                HStack(alignment: .center, spacing: 8) {
-                    liveActivityFilmIcon(context.attributes.filmName, size: 28)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(context.attributes.filmName)
-                            .font(.system(size: 14, weight: .semibold))
-                            .lineLimit(2)
-                            .minimumScaleFactor(0.7)
-                            .fixedSize(horizontal: false, vertical: true)
-                        if let cam = context.attributes.cameraName, !cam.isEmpty {
-                            Text(cam)
-                                .font(.system(size: 11))
-                                .foregroundStyle(.secondary)
-                                .lineLimit(1)
-                        }
+        return VStack(spacing: 8) {
+            ProgressView(value: progress)
+                .tint(.orange)
+
+            HStack(spacing: 0) {
+                if remaining > 0 {
+                    HStack(spacing: 4) {
+                        Text("\(remaining)")
+                            .font(.system(size: 12, weight: .bold, design: .rounded))
+                            .monospacedDigit()
+                            .contentTransition(.numericText())
+                        Text(WL("left"))
+                            .font(.system(size: 12))
                     }
-                }
-                .padding(.leading, 4)
-            }
-            DynamicIslandExpandedRegion(.trailing) {
-                VStack(alignment: .trailing, spacing: 1) {
-                    Text("\(shot)/\(cap)")
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                    Text(WL(context.state.statusKey))
-                        .font(.system(size: 11))
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .minimumScaleFactor(0.7)
-                }
-                .padding(.trailing, 4)
-            }
-            DynamicIslandExpandedRegion(.bottom) {
-                VStack(alignment: .leading, spacing: 6) {
-                    ProgressView(value: progress)
-                        .tint(.orange)
-                    HStack {
-                        Text(context.attributes.isoText)
-                        if let pp = context.attributes.pushPullText, !pp.isEmpty {
-                            Text("•")
-                            Text(pp)
-                        }
-                        Spacer()
-                        Text(WL("%d left", max(0, cap - shot)))
-                    }
-                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
+                } else {
+                    Label(WL("Full"), systemImage: "checkmark.circle.fill")
+                        .font(.system(size: 11, weight: .medium))
+                        .foregroundStyle(.green)
                 }
-                .padding(.horizontal, 4)
-                .padding(.top, 2)
-                .environment(\.layoutDirection, widgetLayoutDirection())
+
+                Spacer()
+
+                Text(WL(context.state.statusKey))
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundStyle(.orange)
             }
-        } compactLeading: {
-            liveActivityFilmIcon(context.attributes.filmName, size: 20)
-        } compactTrailing: {
-            Text("\(shot)/\(cap)")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .monospacedDigit()
-        } minimal: {
+        }
+        .padding(.horizontal, 4)
+        .padding(.top, 2)
+        .environment(\.layoutDirection, widgetLayoutDirection())
+    }
+
+    // MARK: - Dynamic Island Compact & Minimal
+
+    private func compactLeading(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
+        filmThumbnail(filmName: context.attributes.filmName, size: 22, cornerRadius: 5)
+    }
+
+    private func compactTrailing(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
+        let shot = context.state.shotFrames
+        let cap = context.attributes.capacity
+        return HStack(spacing: 2) {
             Text("\(shot)")
-                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .font(.system(size: 14, weight: .bold, design: .rounded))
                 .monospacedDigit()
+                .contentTransition(.numericText())
+            Text("/\(cap)")
+                .font(.system(size: 10, weight: .regular, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.secondary)
+                .contentTransition(.numericText())
+        }
+    }
+
+    private func minimal(_ context: ActivityViewContext<FilmVaultRollAttributes>) -> some View {
+        let shot = context.state.shotFrames
+        let cap = context.attributes.capacity
+        let progress = cap > 0 ? min(1.0, Double(shot) / Double(cap)) : 0
+        return ZStack {
+            Circle()
+                .stroke(Color.orange.opacity(0.2), lineWidth: 2)
+            Circle()
+                .trim(from: 0, to: progress)
+                .stroke(Color.orange, style: StrokeStyle(lineWidth: 2, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            Text("\(shot)")
+                .font(.system(size: 10, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .contentTransition(.numericText())
                 .foregroundStyle(.orange)
         }
-        .widgetURL(URL(string: "filmvault://roll/\(context.attributes.rollID)"))
-        .keylineTint(.orange)
+        .padding(2)
     }
 }
 
-// MARK: - Lock Screen view
+// MARK: - Lock Screen View
 
 private struct LockScreenLiveActivityView: View {
     let context: ActivityViewContext<FilmVaultRollAttributes>
@@ -105,80 +171,129 @@ private struct LockScreenLiveActivityView: View {
     private var progress: Double {
         cap > 0 ? min(1.0, Double(shot) / Double(cap)) : 0
     }
+    private var remaining: Int { max(0, cap - shot) }
 
     var body: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                if let cover = liveActivityCoverImage(for: context.attributes.filmName) {
-                    Image(uiImage: cover)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 42, height: 42)
-                        .clipShape(Circle())
-                }
-                Circle()
-                    .stroke(Color.orange.opacity(0.2), lineWidth: 5)
-                Circle()
-                    .trim(from: 0, to: progress)
-                    .stroke(Color.orange, style: StrokeStyle(lineWidth: 5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                if liveActivityCoverImage(for: context.attributes.filmName) == nil {
-                    Image(systemName: "film")
-                        .font(.system(size: 18))
-                        .foregroundStyle(.orange)
-                }
-            }
-            .frame(width: 52, height: 52)
+        VStack(spacing: 0) {
+            HStack(spacing: 14) {
+                filmThumbnail(filmName: context.attributes.filmName, size: 46, cornerRadius: 10)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(WL("Now Shooting"))
-                    .font(.system(size: 10, weight: .bold))
-                    .kerning(0.6)
-                    .foregroundStyle(.orange)
-                Text(context.attributes.filmName)
-                    .font(.system(size: 16, weight: .semibold))
-                    .lineLimit(1)
-                HStack(spacing: 6) {
-                    Text(context.attributes.isoText)
-                    if let cam = context.attributes.cameraName, !cam.isEmpty {
-                        Text("•")
-                        Text(cam).lineLimit(1)
+                VStack(alignment: .leading, spacing: 3) {
+                    HStack(spacing: 4) {
+                        Circle()
+                            .fill(.orange)
+                            .frame(width: 5, height: 5)
+                        Text(WL("Now Shooting"))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundStyle(.orange)
                     }
-                    if let pp = context.attributes.pushPullText, !pp.isEmpty {
-                        Text("•")
-                        Text(pp)
+
+                    Text(context.attributes.filmName)
+                        .font(.system(size: 17, weight: .bold))
+                        .lineLimit(1)
+
+                    HStack(spacing: 4) {
+                        Text(context.attributes.isoText)
+                            .font(.system(size: 11, weight: .medium))
+                        if let cam = context.attributes.cameraName, !cam.isEmpty {
+                            Text("\u{00B7}")
+                                .foregroundStyle(.tertiary)
+                            Text(cam)
+                                .font(.system(size: 11))
+                                .lineLimit(1)
+                        }
+                        if let pp = context.attributes.pushPullText, !pp.isEmpty {
+                            Text("\u{00B7}")
+                                .foregroundStyle(.tertiary)
+                            Text(pp)
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundStyle(.orange)
+                        }
                     }
-                }
-                .font(.system(size: 12))
-                .foregroundStyle(.secondary)
-            }
-
-            Spacer(minLength: 8)
-
-            VStack(alignment: .trailing, spacing: 2) {
-                Text("\(shot)/\(cap)")
-                    .font(.system(size: 22, weight: .bold, design: .rounded))
-                    .monospacedDigit()
-                Text(WL("%d left", max(0, cap - shot)))
-                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
+                }
+
+                Spacer(minLength: 8)
+
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text("\(shot)")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text("/\(cap)")
+                        .font(.system(size: 12, weight: .medium, design: .rounded))
+                        .monospacedDigit()
+                        .foregroundStyle(.secondary)
+                        .contentTransition(.numericText())
+                }
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 14)
+            .padding(.bottom, 10)
+
+            HStack(spacing: 10) {
+                ProgressView(value: progress)
+                    .tint(.orange)
+
+                if remaining > 0 {
+                    Text("\(remaining)")
+                        .font(.system(size: 12, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                        .contentTransition(.numericText())
+                    Text(WL("left"))
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                } else {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 12))
+                        .foregroundStyle(.green)
+                    Text(WL("Full"))
+                        .font(.system(size: 11, weight: .semibold))
+                        .foregroundStyle(.green)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.bottom, 12)
         }
-        .padding(16)
         .activityBackgroundTint(Color.black.opacity(0.55))
         .activitySystemActionForegroundColor(.orange)
     }
 }
 
+// MARK: - Shared Thumbnail Builder
+
+@ViewBuilder
+private func filmThumbnail(filmName: String, size: CGFloat, cornerRadius: CGFloat) -> some View {
+    if let cover = liveActivityCoverImage(for: filmName) {
+        Image(uiImage: cover)
+            .resizable()
+            .scaledToFill()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .stroke(Color.orange.opacity(0.3), lineWidth: 1)
+            )
+    } else {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(Color.orange.opacity(0.12))
+            .frame(width: size, height: size)
+            .overlay(
+                Image(systemName: "film")
+                    .font(.system(size: size * 0.42, weight: .medium))
+                    .foregroundStyle(.orange)
+            )
+    }
+}
+
+// MARK: - Layout Direction
+
 private func widgetLayoutDirection() -> LayoutDirection {
     widgetLanguageCode() == "ar" ? .rightToLeft : .leftToRight
 }
 
-// MARK: - Film cover helpers
+// MARK: - Film Cover Helpers
 
-/// Loads the cached film cover image (written by the app into the shared App
-/// Group container under `WidgetCovers/`) for the given film name. Returns nil
-/// when no cover has been cached for that film.
 func liveActivityCoverImage(for filmName: String) -> UIImage? {
     let safeName = filmName
         .replacingOccurrences(of: " ", with: "_")
@@ -191,9 +306,6 @@ func liveActivityCoverImage(for filmName: String) -> UIImage? {
         .appendingPathComponent("cover_\(safeName).jpg")
     guard let data = try? Data(contentsOf: fileURL),
           let image = UIImage(data: data) else { return nil }
-    // Live Activities / Dynamic Island have a much tighter rendering budget than
-    // home-screen widgets, so a full-resolution cover renders blank. Downscale
-    // to a small thumbnail so it always displays.
     return image.downscaled(toMaxDimension: 120)
 }
 
@@ -209,22 +321,5 @@ private extension UIImage {
         return renderer.image { _ in
             self.draw(in: CGRect(origin: .zero, size: newSize))
         }
-    }
-}
-
-/// Shows the film cover thumbnail when available, falling back to the orange
-/// filmstrip SF Symbol when no cover has been cached.
-@ViewBuilder
-func liveActivityFilmIcon(_ filmName: String, size: CGFloat) -> some View {
-    if let cover = liveActivityCoverImage(for: filmName) {
-        Image(uiImage: cover)
-            .resizable()
-            .scaledToFill()
-            .frame(width: size, height: size)
-            .clipShape(RoundedRectangle(cornerRadius: size * 0.24, style: .continuous))
-    } else {
-        Image(systemName: "film")
-            .font(.system(size: size * 0.72))
-            .foregroundStyle(.orange)
     }
 }

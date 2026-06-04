@@ -18,3 +18,14 @@
 "To Develop" = "Проявить";
 "Recent" = "Недавние";
 "No roll in progress right now." = "Сейчас нет плёнки в работе.";
+
+/* Insights tab */
+"Overview" = "Обзор";
+"Stats" = "Статистика";
+"Films" = "Плёнки";
+"week" = "неделя";
+"weeks" = "недели";
+"Spent" = "Потрачено";
+"Top Films" = "Популярные плёнки";
+"Film" = "Плёнка";
+"Dev" = "Проявка";

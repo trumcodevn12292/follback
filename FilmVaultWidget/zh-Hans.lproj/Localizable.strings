@@ -18,3 +18,14 @@
 "To Develop" = "待冲洗";
 "Recent" = "最近";
 "No roll in progress right now." = "目前没有正在拍摄的胶卷。";
+
+/* Insights tab */
+"Overview" = "概览";
+"Stats" = "统计";
+"Films" = "胶卷";
+"week" = "周";
+"weeks" = "周";
+"Spent" = "支出";
+"Top Films" = "热门胶卷";
+"Film" = "胶卷";
+"Dev" = "冲扫";

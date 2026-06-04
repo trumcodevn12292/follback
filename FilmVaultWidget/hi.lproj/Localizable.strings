@@ -18,3 +18,14 @@
 "To Develop" = "डेवलप करना है";
 "Recent" = "हाल के";
 "No roll in progress right now." = "अभी कोई रोल चल नहीं रहा है।";
+
+/* Insights tab */
+"Overview" = "अवलोकन";
+"Stats" = "आँकड़े";
+"Films" = "फ़िल्में";
+"week" = "सप्ताह";
+"weeks" = "सप्ताह";
+"Spent" = "खर्च";
+"Top Films" = "शीर्ष फ़िल्में";
+"Film" = "फ़िल्म";
+"Dev" = "डेवलप";

@@ -35,19 +35,33 @@ struct FilmVaultWidgetData: Codable {
     let toDevelopCount: Int
     let activeRoll: WidgetRollItem?
     let recentRolls: [WidgetRollItem]
+    let distinctFilms: Int?
+    let streakWeeks: Int?
+    let filmCost: Double?
+    let devCost: Double?
+    let filmStats: [WidgetFilmStatItem]?
 
     enum CodingKeys: String, CodingKey {
         case totalRolls, totalPhotos, shootingCount, toDevelopCount, activeRoll, recentRolls
+        case distinctFilms, streakWeeks, filmCost, devCost, filmStats
     }
 
     init(totalRolls: Int, totalPhotos: Int, shootingCount: Int, toDevelopCount: Int,
-         activeRoll: WidgetRollItem?, recentRolls: [WidgetRollItem]) {
+         activeRoll: WidgetRollItem?, recentRolls: [WidgetRollItem],
+         distinctFilms: Int? = nil, streakWeeks: Int? = nil,
+         filmCost: Double? = nil, devCost: Double? = nil,
+         filmStats: [WidgetFilmStatItem]? = nil) {
         self.totalRolls = totalRolls
         self.totalPhotos = totalPhotos
         self.shootingCount = shootingCount
         self.toDevelopCount = toDevelopCount
         self.activeRoll = activeRoll
         self.recentRolls = recentRolls
+        self.distinctFilms = distinctFilms
+        self.streakWeeks = streakWeeks
+        self.filmCost = filmCost
+        self.devCost = devCost
+        self.filmStats = filmStats
     }
 
     init(from decoder: Decoder) throws {
@@ -58,6 +72,46 @@ struct FilmVaultWidgetData: Codable {
         toDevelopCount = try c.decodeIfPresent(Int.self, forKey: .toDevelopCount) ?? 0
         activeRoll = try c.decodeIfPresent(WidgetRollItem.self, forKey: .activeRoll)
         recentRolls = try c.decodeIfPresent([WidgetRollItem].self, forKey: .recentRolls) ?? []
+        distinctFilms = try c.decodeIfPresent(Int.self, forKey: .distinctFilms)
+        streakWeeks = try c.decodeIfPresent(Int.self, forKey: .streakWeeks)
+        filmCost = try c.decodeIfPresent(Double.self, forKey: .filmCost)
+        devCost = try c.decodeIfPresent(Double.self, forKey: .devCost)
+        filmStats = try c.decodeIfPresent([WidgetFilmStatItem].self, forKey: .filmStats)
+    }
+}
+
+struct WidgetFilmStatItem: Codable, Identifiable {
+    let id: UUID
+    let name: String
+    let iso: Int
+    let format: String
+    let rollCount: Int
+    let photos: Int
+    let coverImageFile: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, iso, format, rollCount, photos, coverImageFile
+    }
+
+    init(name: String, iso: Int, format: String, rollCount: Int, photos: Int, coverImageFile: String? = nil) {
+        self.id = UUID()
+        self.name = name
+        self.iso = iso
+        self.format = format
+        self.rollCount = rollCount
+        self.photos = photos
+        self.coverImageFile = coverImageFile
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decode(String.self, forKey: .name)
+        iso = try c.decode(Int.self, forKey: .iso)
+        format = try c.decodeIfPresent(String.self, forKey: .format) ?? ""
+        rollCount = try c.decode(Int.self, forKey: .rollCount)
+        photos = try c.decode(Int.self, forKey: .photos)
+        coverImageFile = try c.decodeIfPresent(String.self, forKey: .coverImageFile)
     }
 }
 
@@ -120,13 +174,15 @@ struct FilmVaultTimelineProvider: TimelineProvider {
     func getSnapshot(in context: Context, completion: @escaping (FilmVaultEntry) -> Void) {
         let data = loadWidgetData()
         let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
-        completion(FilmVaultEntry(date: Date(), data: data, recentPage: page))
+        let tab = WidgetTabStore.currentTab
+        completion(FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FilmVaultEntry>) -> Void) {
         let data = loadWidgetData()
         let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
-        let entry = FilmVaultEntry(date: Date(), data: data, recentPage: page)
+        let tab = WidgetTabStore.currentTab
+        let entry = FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab)
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -148,6 +204,7 @@ struct FilmVaultEntry: TimelineEntry {
     let date: Date
     let data: FilmVaultWidgetData
     var recentPage: Int = 0
+    var insightsTab: Int = 0
 }
 
 extension FilmVaultWidgetData {
@@ -164,6 +221,15 @@ extension FilmVaultWidgetData {
                 WidgetRollItem(id: "3", filmName: "Ektar 100", photoCount: 36, capacity: 36, status: "Developed", iso: 100, cameraName: "Leica M6", format: "35mm"),
                 WidgetRollItem(id: "4", filmName: "Gold 200", photoCount: 12, capacity: 36, status: "In Progress", iso: 200, cameraName: "Olympus MJU", format: "35mm"),
                 WidgetRollItem(id: "5", filmName: "Tri-X 400", photoCount: 36, capacity: 36, status: "Completed", iso: 400, cameraName: "Pentax K1000", format: "35mm"),
+            ],
+            distinctFilms: 8,
+            streakWeeks: 3,
+            filmCost: 150.0,
+            devCost: 75.0,
+            filmStats: [
+                WidgetFilmStatItem(name: "Portra 400", iso: 400, format: "35mm", rollCount: 12, photos: 432),
+                WidgetFilmStatItem(name: "HP5 Plus", iso: 400, format: "35mm", rollCount: 8, photos: 288),
+                WidgetFilmStatItem(name: "Ektar 100", iso: 100, format: "35mm", rollCount: 3, photos: 108),
             ]
         )
     }
@@ -482,8 +548,62 @@ struct FilmVaultWidgetEntryView: View {
 
     private var largeWidget: some View {
         VStack(alignment: .leading, spacing: 0) {
-            headerBar()
+            largeHeaderBar
 
+            if entry.insightsTab == 0 {
+                largeOverviewContent
+            } else {
+                largeInsightsContent
+            }
+        }
+        .padding(16)
+        .containerBackground(for: .widget) { background }
+    }
+
+    private var largeHeaderBar: some View {
+        HStack(spacing: 6) {
+            Image("WidgetAppIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: 16, height: 16)
+                .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+            Text("FilmVault")
+                .font(.system(size: 13, weight: .heavy, design: .rounded))
+                .foregroundColor(.white.opacity(0.92))
+            Spacer()
+
+            tabButton(index: 0, label: WL("Overview"))
+            tabButton(index: 1, label: WL("Stats"))
+
+            Button(intent: RefreshWidgetIntent()) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white.opacity(0.45))
+            }
+            .buttonStyle(.plain)
+            .padding(.leading, 4)
+        }
+    }
+
+    private func tabButton(index: Int, label: String) -> some View {
+        Button(intent: WidgetTabSwitchIntent(tab: index)) {
+            Text(label)
+                .font(.system(size: 10, weight: entry.insightsTab == index ? .heavy : .medium))
+                .foregroundColor(entry.insightsTab == index ? .orange : .white.opacity(0.45))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(
+                    Capsule()
+                        .fill(entry.insightsTab == index ? Color.orange.opacity(0.15) : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+
+    // MARK: - Overview Tab
+
+    private var largeOverviewContent: some View {
+        VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
                 statChip("\(entry.data.totalRolls)", WL("rolls"), .white, "film")
                 statChip("\(entry.data.totalPhotos)", WL("photos"), .orange, "camera.fill")
@@ -557,8 +677,194 @@ struct FilmVaultWidgetEntryView: View {
 
             Spacer(minLength: 0)
         }
-        .padding(16)
-        .containerBackground(for: .widget) { background }
+    }
+
+    // MARK: - Insights Tab
+
+    private var largeInsightsContent: some View {
+        let data = entry.data
+        let hasCost = (data.filmCost ?? 0) > 0 || (data.devCost ?? 0) > 0
+        let totalSpent = (data.filmCost ?? 0) + (data.devCost ?? 0)
+        let streakWeeks = data.streakWeeks ?? 0
+        let distinctFilms = data.distinctFilms ?? 0
+        let films = data.filmStats ?? []
+        let maxRolls = films.first?.rollCount ?? 1
+
+        return VStack(alignment: .leading, spacing: 0) {
+            // Stats tiles
+            HStack(spacing: 6) {
+                insightsStatTile(value: "\(data.totalRolls)", label: WL("rolls"), icon: "film")
+                insightsStatTile(value: "\(data.totalPhotos)", label: WL("photos"), icon: "photo.on.rectangle")
+                insightsStatTile(
+                    value: "\(streakWeeks)",
+                    label: streakWeeks == 1 ? WL("week") : WL("weeks"),
+                    icon: "flame.fill",
+                    accent: streakWeeks > 0
+                )
+                insightsStatTile(value: "\(distinctFilms)", label: WL("Films"), icon: "sparkles")
+            }
+            .padding(.top, 10)
+
+            // Spending
+            if hasCost {
+                VStack(spacing: 6) {
+                    HStack {
+                        Text(WL("Spent"))
+                            .font(.system(size: 10, weight: .bold))
+                            .foregroundColor(.white.opacity(0.45))
+                            .kerning(0.5)
+                        Spacer()
+                        Text(totalSpentFormatted(totalSpent))
+                            .font(.system(size: 14, weight: .bold, design: .rounded))
+                            .foregroundColor(.white)
+                    }
+                    spendingBar(filmCost: data.filmCost ?? 0, devCost: data.devCost ?? 0, total: totalSpent)
+                    HStack(spacing: 12) {
+                        if (data.filmCost ?? 0) > 0 {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(.white)
+                                    .frame(width: 6, height: 6)
+                                Text(WL("Film"))
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                        }
+                        if (data.devCost ?? 0) > 0 {
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(.orange)
+                                    .frame(width: 6, height: 6)
+                                Text(WL("Dev"))
+                                    .font(.system(size: 9, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.5))
+                            }
+                        }
+                        Spacer(minLength: 0)
+                    }
+                }
+                .padding(.top, 8)
+            }
+
+            // Top films
+            if !films.isEmpty {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text(WL("Top Films"))
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.white.opacity(0.45))
+                        .kerning(0.5)
+                        .padding(.top, 10)
+                        .padding(.bottom, 6)
+
+                    ForEach(Array(films.prefix(3).enumerated()), id: \.element.id) { idx, film in
+                        HStack(spacing: 8) {
+                            if let fileName = film.coverImageFile,
+                               let cover = loadCoverImage(fileName: fileName) {
+                                Image(uiImage: cover)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 24, height: 24)
+                                    .clipShape(RoundedRectangle(cornerRadius: 5, style: .continuous))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                            .stroke(Color.orange.opacity(0.25), lineWidth: 0.5)
+                                    )
+                            } else {
+                                Text(String(film.name.prefix(1)).uppercased())
+                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .foregroundColor(.orange)
+                                    .frame(width: 24, height: 24)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                            .fill(Color.orange.opacity(0.12))
+                                    )
+                            }
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(film.name)
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .lineLimit(1)
+                                Text("ISO \(film.iso) \u{00B7} \(film.format)")
+                                    .font(.system(size: 9))
+                                    .foregroundColor(.white.opacity(0.4))
+                            }
+
+                            Spacer(minLength: 4)
+
+                            Text("\(film.rollCount)")
+                                .font(.system(size: 13, weight: .bold, design: .rounded))
+                                .foregroundColor(.white)
+                            Text(WL("rolls"))
+                                .font(.system(size: 8, weight: .medium))
+                                .foregroundColor(.white.opacity(0.4))
+                        }
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .fill(Color.white.opacity(0.03))
+                        )
+
+                        if idx < min(films.count, 3) - 1 {
+                            Spacer().frame(height: 4)
+                        }
+                    }
+                }
+            }
+
+            Spacer(minLength: 0)
+        }
+    }
+
+    private func insightsStatTile(value: String, label: String, icon: String, accent: Bool = false) -> some View {
+        VStack(spacing: 3) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(accent ? .orange : .white.opacity(0.5))
+            Text(value)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+                .minimumScaleFactor(0.7)
+            Text(label)
+                .font(.system(size: 8, weight: .medium))
+                .foregroundColor(.white.opacity(0.45))
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(0.05))
+        )
+    }
+
+    private func spendingBar(filmCost: Double, devCost: Double, total: Double) -> some View {
+        GeometryReader { geo in
+            HStack(spacing: 2) {
+                let filmFrac = total > 0 ? filmCost / total : 0
+                let devFrac = total > 0 ? devCost / total : 0
+                if filmFrac > 0 {
+                    Capsule()
+                        .fill(Color.white)
+                        .frame(width: max(4, geo.size.width * filmFrac - 1))
+                }
+                if devFrac > 0 {
+                    Capsule()
+                        .fill(Color.orange)
+                        .frame(width: max(4, geo.size.width * devFrac - 1))
+                }
+            }
+        }
+        .frame(height: 6)
+    }
+
+    private func totalSpentFormatted(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = 2
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
     }
 
     private func activeBanner(_ roll: WidgetRollItem) -> some View {
@@ -639,10 +945,14 @@ struct FilmVaultWidgetEntryView: View {
     }
 
     private func loadCoverImage(for roll: WidgetRollItem) -> UIImage? {
-        guard let fileName = roll.coverImageFile,
-              let containerURL = FileManager.default.containerURL(
-                forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
-              ) else { return nil }
+        guard let fileName = roll.coverImageFile else { return nil }
+        return loadCoverImage(fileName: fileName)
+    }
+
+    private func loadCoverImage(fileName: String) -> UIImage? {
+        guard let containerURL = FileManager.default.containerURL(
+            forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
+        ) else { return nil }
         let fileURL = containerURL.appendingPathComponent("WidgetCovers").appendingPathComponent(fileName)
         guard let data = try? Data(contentsOf: fileURL) else { return nil }
         return UIImage(data: data)
@@ -816,6 +1126,41 @@ struct WidgetRecentPrevIntent: AppIntent {
 
     func perform() async throws -> some IntentResult {
         WidgetPageStore.advance(by: -1)
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+// MARK: - Widget Tab Switching
+
+enum WidgetTabStore {
+    static let suiteName = "group.com.williamcachamwri.FilmVault"
+    static let key = "widgetInsightsTab"
+
+    static var currentTab: Int {
+        get {
+            UserDefaults(suiteName: suiteName)?.integer(forKey: key) ?? 0
+        }
+        set {
+            UserDefaults(suiteName: suiteName)?.set(newValue, forKey: key)
+        }
+    }
+}
+
+struct WidgetTabSwitchIntent: AppIntent {
+    static var title: LocalizedStringResource = "Switch Widget Tab"
+
+    @Parameter(title: "Tab Index")
+    var tab: Int
+
+    init() {}
+
+    init(tab: Int) {
+        self.tab = tab
+    }
+
+    func perform() async throws -> some IntentResult {
+        WidgetTabStore.currentTab = tab
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }

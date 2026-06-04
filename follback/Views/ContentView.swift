@@ -71,8 +71,12 @@ struct ContentView: View {
             .onReceive(NotificationCenter.default.publisher(for: .quickActionSettings)) { _ in
                 selectedTab = 3
             }
-            .onReceive(NotificationCenter.default.publisher(for: .quickActionRecentRoll)) { _ in
+            .onReceive(NotificationCenter.default.publisher(for: .quickActionRecentRoll)) { notification in
                 selectedTab = 0
+                if let rollID = notification.userInfo?["rollID"] as? String,
+                   UUID(uuidString: rollID) != nil {
+                    WidgetDeepLink.shared.pendingRollID = rollID
+                }
             }
             .sheet(isPresented: $showNewRoll) {
                 NavigationStack {
@@ -156,14 +160,25 @@ struct ContentView: View {
             )
         ]
 
-        if let recentRoll = rolls.sorted(by: { $0.startDate > $1.startDate }).first {
-            let recentItem = UIApplicationShortcutItem(
-                type: "com.williamcachamwri.FilmVault.recentRoll",
-                localizedTitle: recentRoll.filmName,
-                localizedSubtitle: "Recent roll",
-                icon: UIApplicationShortcutIcon(systemImageName: "film")
+        let recentRolls = rolls
+            .sorted { $0.startDate > $1.startDate }
+            .prefix(3)
+
+        for (index, roll) in recentRolls.enumerated() {
+            let subtitle: String
+            if let camera = roll.camera {
+                subtitle = "\(camera.brand) \(camera.name)"
+            } else {
+                subtitle = "\(roll.filledFrames)/\(roll.capacity)"
+            }
+            let item = UIApplicationShortcutItem(
+                type: "com.williamcachamwri.FilmVault.recentRoll.\(index)",
+                localizedTitle: roll.filmName.isEmpty ? "Untitled" : roll.filmName,
+                localizedSubtitle: subtitle,
+                icon: UIApplicationShortcutIcon(systemImageName: "film"),
+                userInfo: ["rollID": roll.id.uuidString as NSString]
             )
-            shortcuts.insert(recentItem, at: 0)
+            shortcuts.insert(item, at: 0)
         }
 
         UIApplication.shared.shortcutItems = shortcuts

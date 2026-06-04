@@ -586,6 +586,27 @@ struct RollsView: View {
                     .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
                     value: appeared
                 )
+                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+                    Button(role: .destructive) {
+                        deleteRoll(roll)
+                    } label: {
+                        Label("Delete", systemImage: "trash")
+                    }
+                    Button {
+                        archiveRoll(roll)
+                    } label: {
+                        Label("Archive", systemImage: "archivebox")
+                    }
+                    .tint(Color.filmTertiary)
+                }
+                .swipeActions(edge: .leading, allowsFullSwipe: false) {
+                    Button {
+                        duplicateRoll(roll)
+                    } label: {
+                        Label("Duplicate", systemImage: "plus.square.on.square")
+                    }
+                    .tint(Color.filmAccent)
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -644,6 +665,27 @@ struct RollsView: View {
             try? modelContext.save()
             NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
         }
+    }
+
+    private func duplicateRoll(_ roll: Roll) {
+        let newRoll = Roll(
+            filmName: roll.filmName,
+            camera: roll.camera,
+            capacity: roll.capacity,
+            iso: roll.iso,
+            format: roll.filmFormat,
+            evCompensation: roll.evCompensation,
+            pushPull: roll.pushPull,
+            startDate: Date(),
+            locationName: roll.locationName,
+            labName: roll.labName
+        )
+        newRoll.filmCost = roll.filmCost
+        newRoll.devCost = roll.devCost
+        newRoll.notes = roll.notes
+        modelContext.insert(newRoll)
+        try? modelContext.save()
+        NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
     }
 }
 

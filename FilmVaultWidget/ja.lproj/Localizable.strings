@@ -18,3 +18,14 @@
 "To Develop" = "現像待ち";
 "Recent" = "最近";
 "No roll in progress right now." = "現在撮影中のフィルムはありません。";
+
+/* Insights tab */
+"Overview" = "概要";
+"Stats" = "統計";
+"Films" = "フィルム";
+"week" = "週";
+"weeks" = "週";
+"Spent" = "支出額";
+"Top Films" = "トップフィルム";
+"Film" = "フィルム";
+"Dev" = "現像";

@@ -18,3 +18,14 @@
 "To Develop" = "To Develop";
 "Recent" = "Recent";
 "No roll in progress right now." = "No roll in progress right now.";
+
+/* Insights tab */
+"Overview" = "Overview";
+"Stats" = "Stats";
+"Films" = "Films";
+"week" = "week";
+"weeks" = "weeks";
+"Spent" = "Spent";
+"Top Films" = "Top Films";
+"Film" = "Film";
+"Dev" = "Dev";
