@@ -1,6 +1,7 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Live Activity (Lock Screen + Dynamic Island)
 
@@ -32,8 +33,7 @@ struct RollLiveActivity: Widget {
                             .font(.system(size: 14, weight: .semibold))
                             .lineLimit(1)
                     } icon: {
-                        Image(systemName: "film")
-                            .foregroundStyle(.orange)
+                        liveActivityFilmIcon(context.attributes.filmName, size: 20)
                     }
                     if let cam = context.attributes.cameraName, !cam.isEmpty {
                         Text(cam)
@@ -73,8 +73,7 @@ struct RollLiveActivity: Widget {
                 .environment(\.layoutDirection, widgetLayoutDirection())
             }
         } compactLeading: {
-            Image(systemName: "film")
-                .foregroundStyle(.orange)
+            liveActivityFilmIcon(context.attributes.filmName, size: 20)
         } compactTrailing: {
             Text("\(shot)/\(cap)")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -104,15 +103,24 @@ private struct LockScreenLiveActivityView: View {
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
+                if let cover = liveActivityCoverImage(for: context.attributes.filmName) {
+                    Image(uiImage: cover)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 42, height: 42)
+                        .clipShape(Circle())
+                }
                 Circle()
                     .stroke(Color.orange.opacity(0.2), lineWidth: 5)
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(Color.orange, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                Image(systemName: "film")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.orange)
+                if liveActivityCoverImage(for: context.attributes.filmName) == nil {
+                    Image(systemName: "film")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.orange)
+                }
             }
             .frame(width: 52, height: 52)
 
@@ -158,4 +166,40 @@ private struct LockScreenLiveActivityView: View {
 
 private func widgetLayoutDirection() -> LayoutDirection {
     widgetLanguageCode() == "ar" ? .rightToLeft : .leftToRight
+}
+
+// MARK: - Film cover helpers
+
+/// Loads the cached film cover image (written by the app into the shared App
+/// Group container under `WidgetCovers/`) for the given film name. Returns nil
+/// when no cover has been cached for that film.
+func liveActivityCoverImage(for filmName: String) -> UIImage? {
+    let safeName = filmName
+        .replacingOccurrences(of: " ", with: "_")
+        .replacingOccurrences(of: "/", with: "_")
+    guard let containerURL = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
+    ) else { return nil }
+    let fileURL = containerURL
+        .appendingPathComponent("WidgetCovers")
+        .appendingPathComponent("cover_\(safeName).jpg")
+    guard let data = try? Data(contentsOf: fileURL) else { return nil }
+    return UIImage(data: data)
+}
+
+/// Shows the film cover thumbnail when available, falling back to the orange
+/// filmstrip SF Symbol when no cover has been cached.
+@ViewBuilder
+func liveActivityFilmIcon(_ filmName: String, size: CGFloat) -> some View {
+    if let cover = liveActivityCoverImage(for: filmName) {
+        Image(uiImage: cover)
+            .resizable()
+            .scaledToFill()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.24, style: .continuous))
+    } else {
+        Image(systemName: "film")
+            .font(.system(size: size * 0.72))
+            .foregroundStyle(.orange)
+    }
 }
