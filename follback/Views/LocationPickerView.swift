@@ -207,7 +207,7 @@ struct LocationPickerView: View {
 
     private func selectMapItem(_ item: MKMapItem) {
         hasUserSelection = true
-        let coord = item.location.coordinate
+        let coord = item.placemark.coordinate
         withAnimation {
             selectedPin = coord
             cameraPosition = .region(MKCoordinateRegion(
@@ -215,30 +215,34 @@ struct LocationPickerView: View {
                 span: MKCoordinateSpan(latitudeDelta: 0.005, longitudeDelta: 0.005)
             ))
         }
-        resolvedAddress = formattedAddress(for: item) ?? item.name ?? "Selected location"
+        resolvedAddress = formattedAddress(for: item.placemark) ?? item.name ?? "Selected location"
         searchResults = []
         searchText = ""
     }
 
     private func reverseGeocode(_ coordinate: CLLocationCoordinate2D) {
-        Task {
-            let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
-            guard let request = MKReverseGeocodingRequest(location: location) else { return }
-            if let items = try? await request.mapItems, let mapItem = items.first {
-                await MainActor.run {
-                    resolvedAddress = formattedAddress(for: mapItem) ?? mapItem.name ?? "Selected location"
-                }
+        let location = CLLocation(latitude: coordinate.latitude, longitude: coordinate.longitude)
+        CLGeocoder().reverseGeocodeLocation(location) { placemarks, _ in
+            guard let placemark = placemarks?.first else { return }
+            let address = formattedAddress(for: placemark) ?? placemark.name ?? "Selected location"
+            DispatchQueue.main.async {
+                resolvedAddress = address
             }
         }
     }
 
-    private func formattedAddress(for item: MKMapItem) -> String? {
-        guard let addr = item.address else { return nil }
-        if let short = addr.shortAddress, !short.isEmpty {
-            return short
+    private func formattedAddress(for placemark: CLPlacemark) -> String? {
+        var parts: [String] = []
+        if let name = placemark.name { parts.append(name) }
+        if let locality = placemark.locality { parts.append(locality) }
+        if let admin = placemark.administrativeArea { parts.append(admin) }
+        if let country = placemark.country { parts.append(country) }
+        var unique: [String] = []
+        for part in parts where !part.isEmpty && !unique.contains(part) {
+            unique.append(part)
         }
-        let full = addr.fullAddress
-        return full.isEmpty ? nil : full
+        let joined = unique.joined(separator: ", ")
+        return joined.isEmpty ? nil : joined
     }
 }
 
