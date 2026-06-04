@@ -217,3 +217,21 @@
 "%d roll" = "%d roll";
 "%d rolls" = "%d rolls";
 "Developed" = "Developed";
+
+/* Added: Labs management */
+"Labs" = "Labs";
+"LABS" = "LABS";
+"No labs yet" = "No labs yet";
+"Add the labs you use to track where each roll is developed" = "Add the labs you use to track where each roll is developed";
+"Add Lab" = "Add Lab";
+"Edit Lab" = "Edit Lab";
+"Avatar" = "Avatar";
+"LAB NAME" = "LAB NAME";
+"e.g. The Lab Saigon" = "e.g. The Lab Saigon";
+"DESCRIPTION" = "DESCRIPTION";
+"e.g. C-41 & B&W, scan included (optional)" = "e.g. C-41 & B&W, scan included (optional)";
+"Save Lab" = "Save Lab";
+"MY LABS" = "MY LABS";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "Imported %d rolls, %d cameras, %d custom films, %d labs.";
+"Import failed: %@" = "Import failed: %@";
+"Delete Lab" = "Delete Lab";

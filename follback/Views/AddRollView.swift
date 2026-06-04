@@ -8,6 +8,7 @@ struct AddRollView: View {
     @Environment(\.dismiss) private var dismiss
     @Query(sort: \Camera.name) var cameras: [Camera]
     @StateObject private var customFilmStore = CustomFilmStore.shared
+    @ObservedObject private var customLabStore = CustomLabStore.shared
 
     @State private var step = 0
     @State private var selectedFilmStock: FilmStock?
@@ -559,7 +560,7 @@ struct AddRollView: View {
                                     }
                                 } label: {
                                     HStack(spacing: 6) {
-                                        Text(selectedCamera?.displayNameWithLens ?? "Select Camera")
+                                        Text(selectedCamera?.displayNameWithLens ?? L("Select Camera"))
                                             .font(.system(size: 15))
                                             .foregroundColor(selectedCamera != nil ? Color.filmSecondary : Color.filmTertiary)
                                             .lineLimit(1)
@@ -718,7 +719,7 @@ struct AddRollView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color.filmText)
                             Spacer()
-                            Text(locationName ?? "Add Location")
+                            Text(locationName ?? L("Add Location"))
                                 .font(.system(size: 14))
                                 .foregroundColor(locationName != nil ? Color.filmSecondary : Color.filmTertiary)
                                 .lineLimit(1)
@@ -742,7 +743,7 @@ struct AddRollView: View {
                                 .font(.system(size: 16, weight: .medium))
                                 .foregroundColor(Color.filmText)
                             Spacer()
-                            Text(selectedLabName ?? "Select Lab")
+                            Text(selectedLabName ?? L("Select Lab"))
                                 .font(.system(size: 14))
                                 .foregroundColor(selectedLabName != nil ? Color.filmSecondary : Color.filmTertiary)
                                 .lineLimit(1)
@@ -863,6 +864,49 @@ struct AddRollView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    if !customLabStore.labs.isEmpty {
+                        Section {
+                            ForEach(customLabStore.labs) { lab in
+                                Button {
+                                    selectedLabName = lab.name
+                                    activeCover = nil
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        CustomLabAvatar(lab: lab, size: 36)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            if !lab.labDescription.isEmpty {
+                                                Text(lab.labDescription)
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color.filmTertiary)
+                                                    .lineLimit(2)
+                                            }
+                                        }
+                                        Spacer()
+                                        if selectedLabName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text("MY LABS")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
                     ForEach(FilmLab.groupedByCity, id: \.city) { group in
                         Section {
                             ForEach(group.labs) { lab in

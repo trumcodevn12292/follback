@@ -306,3 +306,21 @@
 "%d roll" = "%d 本";
 "%d rolls" = "%d 本";
 "Developed" = "現像済み";
+
+/* Added: Labs management */
+"Labs" = "ラボ";
+"LABS" = "ラボ";
+"No labs yet" = "ラボがまだありません";
+"Add the labs you use to track where each roll is developed" = "よく使うラボを追加して、各フィルムの現像先を記録しましょう";
+"Add Lab" = "ラボを追加";
+"Edit Lab" = "ラボを編集";
+"Avatar" = "アイコン";
+"LAB NAME" = "ラボ名";
+"e.g. The Lab Saigon" = "例：The Lab Saigon";
+"DESCRIPTION" = "説明";
+"e.g. C-41 & B&W, scan included (optional)" = "例：C-41・白黒、スキャン込み（任意）";
+"Save Lab" = "ラボを保存";
+"MY LABS" = "マイラボ";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "%d 本、%d 台のカメラ、%d 件のカスタムフィルム、%d 件のラボをインポートしました。";
+"Import failed: %@" = "インポートに失敗しました：%@";
+"Delete Lab" = "ラボを削除";

@@ -218,3 +218,21 @@
 "%d roll" = "%d 卷";
 "%d rolls" = "%d 卷";
 "Developed" = "已冲洗";
+
+/* Added: Labs management */
+"Labs" = "冲洗店";
+"LABS" = "冲洗店";
+"No labs yet" = "还没有冲洗店";
+"Add the labs you use to track where each roll is developed" = "添加你常用的冲洗店，记录每卷在哪里冲洗";
+"Add Lab" = "添加冲洗店";
+"Edit Lab" = "编辑冲洗店";
+"Avatar" = "头像";
+"LAB NAME" = "冲洗店名称";
+"e.g. The Lab Saigon" = "例如 The Lab Saigon";
+"DESCRIPTION" = "描述";
+"e.g. C-41 & B&W, scan included (optional)" = "例如 C-41 和黑白，含扫描（可选）";
+"Save Lab" = "保存冲洗店";
+"MY LABS" = "我的冲洗店";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "已导入 %d 卷、%d 台相机、%d 个自定义胶片、%d 家冲洗店。";
+"Import failed: %@" = "导入失败：%@";
+"Delete Lab" = "删除冲洗店";
