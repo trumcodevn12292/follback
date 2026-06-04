@@ -352,3 +352,19 @@
 "Start logging a new film roll in FilmVault." = "ابدأ تسجيل فيلم جديد في FilmVault.";
 "Roll" = "فيلم";
 "How many frames left on ${roll}" = "كم لقطة تبقّت على ${roll}";
+
+/* Advanced search & filters */
+"Filter & Sort" = "التصفية والترتيب";
+"Sort" = "الترتيب";
+"Newest first" = "الأحدث أولاً";
+"Oldest first" = "الأقدم أولاً";
+"Most shot" = "الأكثر تصويراً";
+"Least shot" = "الأقل تصويراً";
+"Name A–Z" = "الاسم أ–ي";
+"Lab" = "المختبر";
+"Year" = "السنة";
+"Push / Pull" = "Push / Pull";
+"Pushed" = "مدفوع (Push)";
+"Pulled" = "مسحوب (Pull)";
+"Clear all" = "مسح الكل";
+"Show %d rolls" = "عرض %d بكرة";

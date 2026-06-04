@@ -266,3 +266,19 @@
 "Start logging a new film roll in FilmVault." = "在 FilmVault 中开始记录新胶卷。";
 "Roll" = "胶卷";
 "How many frames left on ${roll}" = "${roll} 还剩多少张";
+
+/* Advanced search & filters */
+"Filter & Sort" = "筛选与排序";
+"Sort" = "排序";
+"Newest first" = "最新优先";
+"Oldest first" = "最早优先";
+"Most shot" = "拍摄最多";
+"Least shot" = "拍摄最少";
+"Name A–Z" = "名称 A–Z";
+"Lab" = "冲洗店";
+"Year" = "年份";
+"Push / Pull" = "增感 / 减感";
+"Pushed" = "增感";
+"Pulled" = "减感";
+"Clear all" = "全部清除";
+"Show %d rolls" = "显示 %d 个胶卷";

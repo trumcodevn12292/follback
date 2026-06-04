@@ -14,21 +14,23 @@ struct WidgetDataService {
         let recentRolls = rolls
             .sorted { $0.startDate > $1.startDate }
             .prefix(6)
-            .map { roll in
-                let coverFileName = coverImageFileName(for: roll.filmName)
-                return WidgetRollData(
-                    id: roll.id.uuidString,
-                    filmName: roll.filmName,
-                    photoCount: (roll.frames ?? []).filter { $0.photoAssetID != nil }.count,
-                    capacity: roll.capacity,
-                    status: roll.status,
-                    coverImageFile: coverFileName
-                )
-            }
+            .map { widgetRollData(for: $0) }
+
+        // Roll currently being shot (most recently updated in-progress roll),
+        // plus quick counts so the widget can surface live status at a glance.
+        let activeRollModel = rolls
+            .filter { $0.rollStatus == .inProgress && $0.filledFrames < $0.capacity }
+            .sorted { $0.updatedAt > $1.updatedAt }
+            .first
+        let shootingCount = rolls.filter { $0.rollStatus == .inProgress && $0.filledFrames < $0.capacity }.count
+        let toDevelopCount = rolls.filter { $0.rollStatus == .completed }.count
 
         let widgetData = WidgetSharedData(
             totalRolls: totalRolls,
             totalPhotos: totalPhotos,
+            shootingCount: shootingCount,
+            toDevelopCount: toDevelopCount,
+            activeRoll: activeRollModel.map { widgetRollData(for: $0) },
             recentRolls: Array(recentRolls)
         )
 
@@ -64,6 +66,39 @@ struct WidgetDataService {
         Task {
             await cacheCoverImages(for: Array(recentRolls))
         }
+    }
+
+    private static func widgetRollData(for roll: Roll) -> WidgetRollData {
+        WidgetRollData(
+            id: roll.id.uuidString,
+            filmName: roll.filmName,
+            photoCount: (roll.frames ?? []).filter { $0.photoAssetID != nil }.count,
+            capacity: roll.capacity,
+            status: roll.status,
+            coverImageFile: coverImageFileName(for: roll.filmName),
+            iso: roll.iso,
+            cameraName: cameraName(roll.camera),
+            format: roll.filmFormat.displayName,
+            pushPull: pushPullText(roll.pushPull)
+        )
+    }
+
+    private static func cameraName(_ camera: Camera?) -> String? {
+        guard let camera else { return nil }
+        let combined = "\(camera.brand) \(camera.name)".trimmingCharacters(in: .whitespaces)
+        return combined.isEmpty ? nil : combined
+    }
+
+    private static func pushPullText(_ value: Float) -> String? {
+        guard value != 0 else { return nil }
+        let rounded = (value * 10).rounded() / 10
+        let number: String
+        if rounded == rounded.rounded() {
+            number = String(Int(rounded))
+        } else {
+            number = String(format: "%.1f", rounded)
+        }
+        return rounded > 0 ? "+\(number)" : number
     }
 
     private static func coverImageFileName(for filmName: String) -> String? {
@@ -110,6 +145,9 @@ struct WidgetDataService {
 struct WidgetSharedData: Codable {
     let totalRolls: Int
     let totalPhotos: Int
+    let shootingCount: Int
+    let toDevelopCount: Int
+    let activeRoll: WidgetRollData?
     let recentRolls: [WidgetRollData]
 }
 
@@ -120,6 +158,10 @@ struct WidgetRollData: Codable {
     let capacity: Int
     let status: String
     let coverImageFile: String?
+    let iso: Int
+    let cameraName: String?
+    let format: String
+    let pushPull: String?
 }
 
 // MARK: - App Intents snapshot

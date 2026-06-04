@@ -14,3 +14,7 @@
 "Shot" = "已拍完";
 "Developed" = "已冲洗";
 "Archived" = "已归档";
+
+"To Develop" = "待冲洗";
+"Recent" = "最近";
+"No roll in progress right now." = "目前没有正在拍摄的胶卷。";

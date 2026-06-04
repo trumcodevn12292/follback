@@ -355,3 +355,19 @@
 "Start logging a new film roll in FilmVault." = "Начните вести запись новой плёнки в FilmVault.";
 "Roll" = "Плёнка";
 "How many frames left on ${roll}" = "Сколько кадров осталось на ${roll}";
+
+/* Advanced search & filters */
+"Filter & Sort" = "Фильтр и сортировка";
+"Sort" = "Сортировка";
+"Newest first" = "Сначала новые";
+"Oldest first" = "Сначала старые";
+"Most shot" = "Больше всего кадров";
+"Least shot" = "Меньше всего кадров";
+"Name A–Z" = "Название А–Я";
+"Lab" = "Лаборатория";
+"Year" = "Год";
+"Push / Pull" = "Push / Pull";
+"Pushed" = "Push (повышение)";
+"Pulled" = "Pull (понижение)";
+"Clear all" = "Очистить всё";
+"Show %d rolls" = "Показать %d плёнок";

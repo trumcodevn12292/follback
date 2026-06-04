@@ -353,3 +353,19 @@
 "Start logging a new film roll in FilmVault." = "Empieza a registrar un nuevo carrete en FilmVault.";
 "Roll" = "Carrete";
 "How many frames left on ${roll}" = "Cuántos fotogramas quedan en ${roll}";
+
+/* Advanced search & filters */
+"Filter & Sort" = "Filtrar y ordenar";
+"Sort" = "Ordenar";
+"Newest first" = "Más recientes primero";
+"Oldest first" = "Más antiguos primero";
+"Most shot" = "Más fotos";
+"Least shot" = "Menos fotos";
+"Name A–Z" = "Nombre A–Z";
+"Lab" = "Laboratorio";
+"Year" = "Año";
+"Push / Pull" = "Push / Pull";
+"Pushed" = "Forzado (push)";
+"Pulled" = "Reducido (pull)";
+"Clear all" = "Borrar todo";
+"Show %d rolls" = "Ver %d carretes";

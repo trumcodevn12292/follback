@@ -31,7 +31,34 @@ func WL(_ key: String, _ args: CVarArg...) -> String {
 struct FilmVaultWidgetData: Codable {
     let totalRolls: Int
     let totalPhotos: Int
+    let shootingCount: Int
+    let toDevelopCount: Int
+    let activeRoll: WidgetRollItem?
     let recentRolls: [WidgetRollItem]
+
+    enum CodingKeys: String, CodingKey {
+        case totalRolls, totalPhotos, shootingCount, toDevelopCount, activeRoll, recentRolls
+    }
+
+    init(totalRolls: Int, totalPhotos: Int, shootingCount: Int, toDevelopCount: Int,
+         activeRoll: WidgetRollItem?, recentRolls: [WidgetRollItem]) {
+        self.totalRolls = totalRolls
+        self.totalPhotos = totalPhotos
+        self.shootingCount = shootingCount
+        self.toDevelopCount = toDevelopCount
+        self.activeRoll = activeRoll
+        self.recentRolls = recentRolls
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        totalRolls = try c.decode(Int.self, forKey: .totalRolls)
+        totalPhotos = try c.decode(Int.self, forKey: .totalPhotos)
+        shootingCount = try c.decodeIfPresent(Int.self, forKey: .shootingCount) ?? 0
+        toDevelopCount = try c.decodeIfPresent(Int.self, forKey: .toDevelopCount) ?? 0
+        activeRoll = try c.decodeIfPresent(WidgetRollItem.self, forKey: .activeRoll)
+        recentRolls = try c.decodeIfPresent([WidgetRollItem].self, forKey: .recentRolls) ?? []
+    }
 }
 
 struct WidgetRollItem: Codable, Identifiable {
@@ -41,9 +68,31 @@ struct WidgetRollItem: Codable, Identifiable {
     let capacity: Int
     let status: String
     let coverImageFile: String?
+    let iso: Int
+    let cameraName: String?
+    let format: String
+    let pushPull: String?
+
+    var framesLeft: Int { max(0, capacity - photoCount) }
+    var progress: Double { capacity > 0 ? min(1.0, Double(photoCount) / Double(capacity)) : 0 }
 
     enum CodingKeys: String, CodingKey {
-        case id, filmName, photoCount, capacity, status, coverImageFile
+        case id, filmName, photoCount, capacity, status, coverImageFile, iso, cameraName, format, pushPull
+    }
+
+    init(id: String, filmName: String, photoCount: Int, capacity: Int, status: String,
+         coverImageFile: String? = nil, iso: Int = 0, cameraName: String? = nil,
+         format: String = "", pushPull: String? = nil) {
+        self.id = id
+        self.filmName = filmName
+        self.photoCount = photoCount
+        self.capacity = capacity
+        self.status = status
+        self.coverImageFile = coverImageFile
+        self.iso = iso
+        self.cameraName = cameraName
+        self.format = format
+        self.pushPull = pushPull
     }
 
     init(from decoder: Decoder) throws {
@@ -54,6 +103,10 @@ struct WidgetRollItem: Codable, Identifiable {
         capacity = try container.decode(Int.self, forKey: .capacity)
         status = try container.decode(String.self, forKey: .status)
         coverImageFile = try container.decodeIfPresent(String.self, forKey: .coverImageFile)
+        iso = try container.decodeIfPresent(Int.self, forKey: .iso) ?? 0
+        cameraName = try container.decodeIfPresent(String.self, forKey: .cameraName)
+        format = try container.decodeIfPresent(String.self, forKey: .format) ?? ""
+        pushPull = try container.decodeIfPresent(String.self, forKey: .pushPull)
     }
 }
 
@@ -94,28 +147,20 @@ struct FilmVaultEntry: TimelineEntry {
     let data: FilmVaultWidgetData
 }
 
-extension WidgetRollItem {
-    init(id: String, filmName: String, photoCount: Int, capacity: Int, status: String, coverImageFile: String? = nil) {
-        self.id = id
-        self.filmName = filmName
-        self.photoCount = photoCount
-        self.capacity = capacity
-        self.status = status
-        self.coverImageFile = coverImageFile
-    }
-}
-
 extension FilmVaultWidgetData {
     static var placeholder: FilmVaultWidgetData {
         FilmVaultWidgetData(
-            totalRolls: 5,
-            totalPhotos: 128,
+            totalRolls: 12,
+            totalPhotos: 248,
+            shootingCount: 2,
+            toDevelopCount: 3,
+            activeRoll: WidgetRollItem(id: "2", filmName: "HP5 Plus", photoCount: 24, capacity: 36, status: "In Progress", coverImageFile: nil, iso: 400, cameraName: "Nikon FM2", format: "35mm", pushPull: "+1"),
             recentRolls: [
-                WidgetRollItem(id: "1", filmName: "Portra 400", photoCount: 32, capacity: 36, status: "completed"),
-                WidgetRollItem(id: "2", filmName: "HP5 Plus", photoCount: 24, capacity: 36, status: "inProgress"),
-                WidgetRollItem(id: "3", filmName: "Ektar 100", photoCount: 36, capacity: 36, status: "developed"),
-                WidgetRollItem(id: "4", filmName: "Gold 200", photoCount: 12, capacity: 36, status: "inProgress"),
-                WidgetRollItem(id: "5", filmName: "Tri-X 400", photoCount: 36, capacity: 36, status: "completed"),
+                WidgetRollItem(id: "1", filmName: "Portra 400", photoCount: 32, capacity: 36, status: "Completed", iso: 400, cameraName: "Canon AE-1", format: "35mm"),
+                WidgetRollItem(id: "2", filmName: "HP5 Plus", photoCount: 24, capacity: 36, status: "In Progress", iso: 400, cameraName: "Nikon FM2", format: "35mm", pushPull: "+1"),
+                WidgetRollItem(id: "3", filmName: "Ektar 100", photoCount: 36, capacity: 36, status: "Developed", iso: 100, cameraName: "Leica M6", format: "35mm"),
+                WidgetRollItem(id: "4", filmName: "Gold 200", photoCount: 12, capacity: 36, status: "In Progress", iso: 200, cameraName: "Olympus MJU", format: "35mm"),
+                WidgetRollItem(id: "5", filmName: "Tri-X 400", photoCount: 36, capacity: 36, status: "Completed", iso: 400, cameraName: "Pentax K1000", format: "35mm"),
             ]
         )
     }
@@ -146,172 +191,335 @@ struct FilmVaultWidgetEntryView: View {
         }
     }
 
+    // MARK: - Shared pieces
+
+    private var background: some View {
+        LinearGradient(
+            colors: [Color(red: 0.09, green: 0.09, blue: 0.12), Color(red: 0.03, green: 0.03, blue: 0.05)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private func headerBar(small: Bool = false) -> some View {
+        HStack(spacing: 6) {
+            Image("WidgetAppIcon")
+                .resizable()
+                .scaledToFit()
+                .frame(width: small ? 14 : 16, height: small ? 14 : 16)
+                .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
+            Text("FilmVault")
+                .font(.system(size: small ? 12 : 13, weight: .heavy, design: .rounded))
+                .foregroundColor(.white.opacity(0.92))
+            Spacer()
+            Button(intent: RefreshWidgetIntent()) {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: small ? 10 : 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.45))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    private func metaLine(_ roll: WidgetRollItem, size: CGFloat = 11) -> some View {
+        HStack(spacing: 5) {
+            Text("ISO \(roll.iso)")
+            if !roll.format.isEmpty {
+                Text("•")
+                Text(roll.format)
+            }
+            if let cam = roll.cameraName, !cam.isEmpty {
+                Text("•")
+                Text(cam).lineLimit(1)
+            }
+            if let pp = roll.pushPull, !pp.isEmpty {
+                Text("•")
+                Text(pp).foregroundColor(.orange)
+            }
+        }
+        .font(.system(size: size))
+        .foregroundColor(.white.opacity(0.5))
+        .lineLimit(1)
+    }
+
+    private func progressRing(_ roll: WidgetRollItem, size: CGFloat, line: CGFloat = 3) -> some View {
+        ZStack {
+            Circle().stroke(Color.white.opacity(0.1), lineWidth: line)
+            Circle()
+                .trim(from: 0, to: CGFloat(roll.progress))
+                .stroke(statusColor(roll.status), style: StrokeStyle(lineWidth: line, lineCap: .round))
+                .rotationEffect(.degrees(-90))
+            VStack(spacing: 0) {
+                Text("\(roll.photoCount)")
+                    .font(.system(size: size * 0.30, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Rectangle().fill(Color.white.opacity(0.25)).frame(width: size * 0.26, height: 1)
+                Text("\(roll.capacity)")
+                    .font(.system(size: size * 0.22, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+        }
+        .frame(width: size, height: size)
+    }
+
+    private func progressBar(_ roll: WidgetRollItem, height: CGFloat = 5) -> some View {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Color.white.opacity(0.1))
+                Capsule()
+                    .fill(statusColor(roll.status))
+                    .frame(width: max(0, geo.size.width * CGFloat(roll.progress)))
+            }
+        }
+        .frame(height: height)
+    }
+
+    private func statChip(_ value: String, _ label: String, _ color: Color, _ systemName: String) -> some View {
+        HStack(spacing: 8) {
+            Image(systemName: systemName)
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(color)
+                .frame(width: 16)
+            Text(value)
+                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.5))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.white.opacity(0.05))
+        )
+    }
+
+    private func nowShootingTag() -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(Color.orange).frame(width: 6, height: 6)
+            Text(WL("Now Shooting"))
+                .font(.system(size: 10, weight: .bold))
+                .kerning(0.5)
+                .foregroundColor(.orange)
+        }
+    }
+
     // MARK: - Small Widget
+
     private var smallWidget: some View {
+        Group {
+            if let roll = entry.data.activeRoll {
+                smallActive(roll)
+            } else {
+                smallStats
+            }
+        }
+        .padding(14)
+        .containerBackground(for: .widget) { background }
+        .widgetURL(URL(string: smallDeepLink))
+    }
+
+    private var smallDeepLink: String {
+        if let roll = entry.data.activeRoll { return "filmvault://roll/\(roll.id)" }
+        return "filmvault://rolls"
+    }
+
+    private func smallActive(_ roll: WidgetRollItem) -> some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack(spacing: 6) {
-                Image("WidgetAppIcon")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 14, height: 14)
-                    .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                Text("FilmVault")
-                    .font(.system(size: 12, weight: .heavy, design: .rounded))
-                    .foregroundColor(.white.opacity(0.9))
+            HStack {
+                nowShootingTag()
                 Spacer()
                 Button(intent: RefreshWidgetIntent()) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white.opacity(0.5))
+                        .foregroundColor(.white.opacity(0.4))
                 }
                 .buttonStyle(.plain)
             }
 
-            Spacer()
+            Spacer(minLength: 4)
 
-            // Stats
-            VStack(alignment: .leading, spacing: 6) {
-                HStack(alignment: .firstTextBaseline, spacing: 3) {
-                    Text("\(entry.data.totalRolls)")
-                        .font(.system(size: 34, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                    Text(WL("rolls"))
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(.white.opacity(0.5))
-                }
+            Text(roll.filmName)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(.white)
+                .lineLimit(1)
+            metaLine(roll, size: 10)
 
-                // Mini progress bar
-                HStack(spacing: 4) {
-                    Image(systemName: "camera.fill")
-                        .font(.system(size: 10))
-                        .foregroundColor(.orange)
-                    Text(WL("%d photos", entry.data.totalPhotos))
-                        .font(.system(size: 12, weight: .semibold, design: .rounded))
-                        .foregroundColor(.orange)
-                }
+            Spacer(minLength: 6)
+
+            HStack(alignment: .lastTextBaseline, spacing: 2) {
+                Text("\(roll.photoCount)")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text("/\(roll.capacity)")
+                    .font(.system(size: 15, weight: .semibold, design: .rounded))
+                    .foregroundColor(.white.opacity(0.4))
+                Spacer()
+                Text(WL("%d left", roll.framesLeft))
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundColor(.white.opacity(0.5))
             }
+            progressBar(roll)
+                .padding(.top, 5)
         }
-        .padding(14)
-        .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+    }
+
+    private var smallStats: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            headerBar(small: true)
+            Spacer()
+            HStack(alignment: .firstTextBaseline, spacing: 3) {
+                Text("\(entry.data.totalRolls)")
+                    .font(.system(size: 34, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text(WL("rolls"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.5))
+            }
+            HStack(spacing: 4) {
+                Image(systemName: "camera.fill")
+                    .font(.system(size: 10))
+                    .foregroundColor(.orange)
+                Text(WL("%d photos", entry.data.totalPhotos))
+                    .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    .foregroundColor(.orange)
+            }
+            .padding(.top, 5)
+            HStack(spacing: 10) {
+                miniStat("\(entry.data.shootingCount)", WL("Shooting"), .orange)
+                miniStat("\(entry.data.toDevelopCount)", WL("To Develop"), .green)
+            }
+            .padding(.top, 8)
+        }
+    }
+
+    private func miniStat(_ value: String, _ label: String, _ color: Color) -> some View {
+        HStack(spacing: 4) {
+            Circle().fill(color).frame(width: 5, height: 5)
+            Text(value)
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .foregroundColor(.white.opacity(0.85))
+            Text(label)
+                .font(.system(size: 9, weight: .medium))
+                .foregroundColor(.white.opacity(0.45))
+                .lineLimit(1)
         }
     }
 
     // MARK: - Medium Widget
+
     private var mediumWidget: some View {
-        HStack(spacing: 0) {
-            // Left: Stats
-            VStack(alignment: .leading, spacing: 0) {
-                HStack(spacing: 6) {
-                    Image("WidgetAppIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 14, height: 14)
-                        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                    Text("FilmVault")
-                        .font(.system(size: 12, weight: .heavy, design: .rounded))
-                        .foregroundColor(.white.opacity(0.9))
-                    Spacer()
-                    Button(intent: RefreshWidgetIntent()) {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white.opacity(0.5))
-                    }
-                    .buttonStyle(.plain)
-                }
+        HStack(spacing: 12) {
+            mediumLeft
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                Spacer()
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("\(entry.data.totalRolls)")
-                        .font(.system(size: 36, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-                    Text(WL("%d photos", entry.data.totalPhotos))
-                        .font(.system(size: 13, weight: .semibold, design: .rounded))
-                        .foregroundColor(.orange)
-                }
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.trailing, 12)
-
-            // Divider
             RoundedRectangle(cornerRadius: 1)
                 .fill(Color.white.opacity(0.08))
                 .frame(width: 1)
-                .padding(.vertical, 4)
+                .padding(.vertical, 2)
 
-            // Right: Roll list
-            VStack(alignment: .leading, spacing: 7) {
-                ForEach(entry.data.recentRolls.prefix(4)) { roll in
-                    rollRowMedium(roll)
-                }
+            VStack(spacing: 7) {
+                statChip("\(entry.data.totalRolls)", WL("rolls"), .white, "film")
+                statChip("\(entry.data.totalPhotos)", WL("photos"), .orange, "camera.fill")
+                statChip("\(entry.data.shootingCount)", WL("Shooting"), .orange, "dot.radiowaves.left.and.right")
+                statChip("\(entry.data.toDevelopCount)", WL("To Develop"), .green, "timer")
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.leading, 12)
+            .frame(width: 138)
         }
         .padding(14)
-        .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        .containerBackground(for: .widget) { background }
+        .widgetURL(URL(string: smallDeepLink))
+    }
+
+    @ViewBuilder
+    private var mediumLeft: some View {
+        if let roll = entry.data.activeRoll {
+            VStack(alignment: .leading, spacing: 0) {
+                nowShootingTag()
+                Spacer(minLength: 6)
+                HStack(spacing: 12) {
+                    progressRing(roll, size: 58, line: 5)
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text(roll.filmName)
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundColor(.white)
+                            .lineLimit(1)
+                        Text(WL("%d left", roll.framesLeft))
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(statusColor(roll.status))
+                    }
+                }
+                Spacer(minLength: 6)
+                metaLine(roll, size: 11)
+            }
+        } else {
+            VStack(alignment: .leading, spacing: 0) {
+                headerBar()
+                Spacer()
+                Text("\(entry.data.totalRolls)")
+                    .font(.system(size: 38, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+                Text(WL("%d photos", entry.data.totalPhotos))
+                    .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    .foregroundColor(.orange)
+                Spacer()
+                Text(WL("No roll in progress right now."))
+                    .font(.system(size: 11))
+                    .foregroundColor(.white.opacity(0.4))
+                    .lineLimit(2)
+            }
         }
     }
 
     // MARK: - Large Widget
+
     private var largeWidget: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Header
-            HStack {
-                HStack(spacing: 8) {
-                    Image("WidgetAppIcon")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 18, height: 18)
-                        .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                    Text("FilmVault")
-                        .font(.system(size: 14, weight: .heavy, design: .rounded))
-                        .foregroundColor(.white)
-                }
-                Spacer()
-                Button(intent: RefreshWidgetIntent()) {
-                    Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white.opacity(0.5))
-                }
-                .buttonStyle(.plain)
-                HStack(spacing: 12) {
-                    statBadge(value: "\(entry.data.totalRolls)", label: WL("rolls"), color: .white)
-                    statBadge(value: "\(entry.data.totalPhotos)", label: WL("photos"), color: .orange)
+            headerBar()
+
+            HStack(spacing: 8) {
+                statChip("\(entry.data.totalRolls)", WL("rolls"), .white, "film")
+                statChip("\(entry.data.totalPhotos)", WL("photos"), .orange, "camera.fill")
+            }
+            .padding(.top, 10)
+            HStack(spacing: 8) {
+                statChip("\(entry.data.shootingCount)", WL("Shooting"), .orange, "dot.radiowaves.left.and.right")
+                statChip("\(entry.data.toDevelopCount)", WL("To Develop"), .green, "timer")
+            }
+            .padding(.top, 7)
+
+            if let roll = entry.data.activeRoll {
+                if let url = URL(string: "filmvault://roll/\(roll.id)") {
+                    Link(destination: url) { activeBanner(roll) }
+                } else {
+                    activeBanner(roll)
                 }
             }
 
-            // Separator
-            RoundedRectangle(cornerRadius: 1)
-                .fill(Color.white.opacity(0.06))
-                .frame(height: 1)
-                .padding(.vertical, 12)
+            HStack {
+                Text(WL("Recent"))
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.white.opacity(0.45))
+                    .kerning(0.6)
+                Spacer()
+            }
+            .padding(.top, 12)
+            .padding(.bottom, 2)
 
-            // Roll list
-            VStack(alignment: .leading, spacing: 0) {
-                ForEach(Array(entry.data.recentRolls.prefix(6).enumerated()), id: \.element.id) { index, roll in
+            VStack(spacing: 0) {
+                let items = Array(entry.data.recentRolls.prefix(entry.data.activeRoll == nil ? 4 : 3).enumerated())
+                ForEach(items, id: \.element.id) { index, roll in
                     if let url = URL(string: "filmvault://roll/\(roll.id)") {
-                        Link(destination: url) {
-                            rollRowLarge(roll)
-                        }
+                        Link(destination: url) { rollRow(roll) }
                     } else {
-                        rollRowLarge(roll)
+                        rollRow(roll)
                     }
-                    if index < min(entry.data.recentRolls.count - 1, 5) {
-                        Divider()
-                            .background(Color.white.opacity(0.04))
-                            .padding(.vertical, 6)
+                    if index < items.count - 1 {
+                        Divider().background(Color.white.opacity(0.05)).padding(.vertical, 5)
                     }
                 }
             }
@@ -319,78 +527,83 @@ struct FilmVaultWidgetEntryView: View {
             Spacer(minLength: 0)
         }
         .padding(16)
-        .containerBackground(for: .widget) {
-            LinearGradient(
-                colors: [Color(red: 0.08, green: 0.08, blue: 0.1), Color(red: 0.04, green: 0.04, blue: 0.06)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        }
+        .containerBackground(for: .widget) { background }
     }
 
-    // MARK: - Lock Screen Widgets
-
-    private var lockScreenCircular: some View {
-        ZStack {
-            AccessoryWidgetBackground()
-            VStack(spacing: 1) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 12, weight: .bold))
-                Text("\(entry.data.totalRolls)")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+    private func activeBanner(_ roll: WidgetRollItem) -> some View {
+        HStack(spacing: 12) {
+            progressRing(roll, size: 50, line: 4)
+            VStack(alignment: .leading, spacing: 3) {
+                nowShootingTag()
+                Text(roll.filmName)
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                metaLine(roll, size: 10)
             }
-        }
-        .containerBackground(for: .widget) { AccessoryWidgetBackground() }
-    }
-
-    private var lockScreenRectangular: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            HStack(spacing: 4) {
-                Image(systemName: "camera.fill")
-                    .font(.system(size: 11, weight: .bold))
-                Text("FilmVault")
-                    .font(.system(size: 12, weight: .bold))
-            }
-            HStack(spacing: 8) {
-                Text(WL("%d rolls", entry.data.totalRolls))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-                Text("•")
-                    .foregroundColor(.secondary)
-                Text(WL("%d photos", entry.data.totalPhotos))
-                    .font(.system(size: 13, weight: .semibold, design: .rounded))
-            }
-            if let recent = entry.data.recentRolls.first {
-                Text(recent.filmName)
-                    .font(.system(size: 11))
-                    .foregroundColor(.secondary)
-            }
-        }
-        .containerBackground(for: .widget) { Color.clear }
-    }
-
-    private var lockScreenInline: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "camera.fill")
-            Text(WL("%d rolls • %d photos", entry.data.totalRolls, entry.data.totalPhotos))
-        }
-        .containerBackground(for: .widget) { Color.clear }
-    }
-
-    // MARK: - Components
-
-    private func rollRowMedium(_ roll: WidgetRollItem) -> some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(statusColor(roll.status))
-                .frame(width: 6, height: 6)
-            Text(roll.filmName)
-                .font(.system(size: 12, weight: .medium))
-                .foregroundColor(.white.opacity(0.9))
-                .lineLimit(1)
             Spacer()
-            Text("\(roll.photoCount)/\(roll.capacity)")
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
-                .foregroundColor(.white.opacity(0.4))
+            Text(WL("%d left", roll.framesLeft))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(statusColor(roll.status))
+        }
+        .padding(11)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.orange.opacity(0.10))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .stroke(Color.orange.opacity(0.25), lineWidth: 0.5)
+                )
+        )
+        .padding(.top, 10)
+    }
+
+    private func rollRow(_ roll: WidgetRollItem) -> some View {
+        HStack(spacing: 10) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [statusColor(roll.status).opacity(0.3), statusColor(roll.status).opacity(0.1)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 32, height: 32)
+                if let uiImage = loadCoverImage(for: roll) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 32, height: 32)
+                        .clipShape(RoundedRectangle(cornerRadius: 7, style: .continuous))
+                } else {
+                    Text(String(roll.filmName.prefix(1)).uppercased())
+                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .foregroundColor(statusColor(roll.status))
+                }
+            }
+            .frame(width: 32, height: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(roll.filmName)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .lineLimit(1)
+                HStack(spacing: 5) {
+                    Circle().fill(statusColor(roll.status)).frame(width: 5, height: 5)
+                    Text(WL(statusDisplayKey(roll.status)))
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.45))
+                    Text("·").foregroundColor(.white.opacity(0.3))
+                    Text(WL("%d of %d frames", roll.photoCount, roll.capacity))
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.45))
+                }
+            }
+
+            Spacer()
+
+            progressRing(roll, size: 24, line: 2.5)
         }
     }
 
@@ -404,77 +617,113 @@ struct FilmVaultWidgetEntryView: View {
         return UIImage(data: data)
     }
 
-    private func rollRowLarge(_ roll: WidgetRollItem) -> some View {
-        HStack(spacing: 10) {
-            // Film cover thumbnail
-            ZStack {
-                RoundedRectangle(cornerRadius: 6, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [statusColor(roll.status).opacity(0.3), statusColor(roll.status).opacity(0.1)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 28, height: 28)
+    // MARK: - Lock Screen Widgets
 
-                if let uiImage = loadCoverImage(for: roll) {
-                    Image(uiImage: uiImage)
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 28, height: 28)
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                } else {
-                    Text(String(roll.filmName.prefix(1)).uppercased())
-                        .font(.system(size: 13, weight: .bold, design: .rounded))
-                        .foregroundColor(statusColor(roll.status))
+    private var lockScreenCircular: some View {
+        ZStack {
+            AccessoryWidgetBackground()
+            if let roll = entry.data.activeRoll {
+                Circle()
+                    .trim(from: 0, to: CGFloat(roll.progress))
+                    .stroke(style: StrokeStyle(lineWidth: 4, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                    .padding(3)
+                VStack(spacing: 0) {
+                    Text("\(roll.photoCount)")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                    Text("\(roll.capacity)")
+                        .font(.system(size: 10, weight: .medium, design: .rounded))
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                VStack(spacing: 1) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 12, weight: .bold))
+                    Text("\(entry.data.totalRolls)")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
                 }
             }
-            .frame(width: 28, height: 28)
+        }
+        .containerBackground(for: .widget) { AccessoryWidgetBackground() }
+    }
 
-            VStack(alignment: .leading, spacing: 2) {
+    private var lockScreenRectangular: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if let roll = entry.data.activeRoll {
+                HStack(spacing: 4) {
+                    Image(systemName: "dot.radiowaves.left.and.right")
+                        .font(.system(size: 11, weight: .bold))
+                    Text(WL("Now Shooting"))
+                        .font(.system(size: 12, weight: .bold))
+                }
                 Text(roll.filmName)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
                     .lineLimit(1)
-                Text(WL("%d of %d frames", roll.photoCount, roll.capacity))
-                    .font(.system(size: 11, weight: .regular))
-                    .foregroundColor(.white.opacity(0.4))
+                HStack(spacing: 6) {
+                    Text("\(roll.photoCount)/\(roll.capacity)")
+                        .font(.system(size: 12, weight: .semibold, design: .rounded))
+                    Text("·")
+                        .foregroundColor(.secondary)
+                    Text(WL("%d left", roll.framesLeft))
+                        .font(.system(size: 12))
+                        .foregroundColor(.secondary)
+                }
+            } else {
+                HStack(spacing: 4) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 11, weight: .bold))
+                    Text("FilmVault")
+                        .font(.system(size: 12, weight: .bold))
+                }
+                HStack(spacing: 8) {
+                    Text(WL("%d rolls", entry.data.totalRolls))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                    Text("•").foregroundColor(.secondary)
+                    Text(WL("%d photos", entry.data.totalPhotos))
+                        .font(.system(size: 13, weight: .semibold, design: .rounded))
+                }
+                if let recent = entry.data.recentRolls.first {
+                    Text(recent.filmName)
+                        .font(.system(size: 11))
+                        .foregroundColor(.secondary)
+                }
             }
-
-            Spacer()
-
-            // Progress ring
-            ZStack {
-                Circle()
-                    .stroke(Color.white.opacity(0.08), lineWidth: 2.5)
-                Circle()
-                    .trim(from: 0, to: CGFloat(roll.photoCount) / CGFloat(max(roll.capacity, 1)))
-                    .stroke(statusColor(roll.status), style: StrokeStyle(lineWidth: 2.5, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-            }
-            .frame(width: 22, height: 22)
         }
+        .containerBackground(for: .widget) { Color.clear }
     }
 
-    private func statBadge(value: String, label: String, color: Color) -> some View {
-        VStack(spacing: 1) {
-            Text(value)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
-                .foregroundColor(color)
-            Text(label)
-                .font(.system(size: 9, weight: .medium))
-                .foregroundColor(color.opacity(0.6))
+    private var lockScreenInline: some View {
+        HStack(spacing: 4) {
+            if let roll = entry.data.activeRoll {
+                Image(systemName: "film")
+                Text("\(roll.filmName) \(roll.photoCount)/\(roll.capacity)")
+            } else {
+                Image(systemName: "camera.fill")
+                Text(WL("%d rolls • %d photos", entry.data.totalRolls, entry.data.totalPhotos))
+            }
         }
+        .containerBackground(for: .widget) { Color.clear }
     }
+
+    // MARK: - Status helpers
 
     private func statusColor(_ status: String) -> Color {
-        switch status {
-        case "inProgress": return .orange
+        switch status.lowercased() {
+        case "inprogress", "in progress": return .orange
         case "completed": return .green
         case "developed": return .blue
         case "archived": return .gray
         default: return .orange
+        }
+    }
+
+    private func statusDisplayKey(_ status: String) -> String {
+        switch status.lowercased() {
+        case "inprogress", "in progress": return "Shooting"
+        case "completed": return "Shot"
+        case "developed": return "Developed"
+        case "archived": return "Archived"
+        default: return "Shooting"
         }
     }
 }

@@ -14,3 +14,7 @@
 "Shot" = "تم التصوير";
 "Developed" = "تم التحميض";
 "Archived" = "مؤرشف";
+
+"To Develop" = "في انتظار التحميض";
+"Recent" = "الأخيرة";
+"No roll in progress right now." = "لا يوجد فيلم قيد التصوير حاليًا.";
