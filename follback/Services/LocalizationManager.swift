@@ -142,27 +142,60 @@ enum Money {
         UserDefaults.standard.string(forKey: currencyKey) ?? defaultCode
     }
 
-    /// Formats an amount as currency using the app's selected language locale so
-    /// grouping/decimal separators match the UI language. Whole numbers drop the
-    /// fractional part for a cleaner look.
-    static func format(_ amount: Double, code: String? = nil) -> String {
+    /// Representative locale for each supported currency so grouping size,
+    /// grouping separator and decimal separator follow that currency's own
+    /// conventions (e.g. VND "1.500.000", EUR "1.500.000,00", INR "15,00,000",
+    /// RUB "1 500 000,00").
+    static func currencyLocale(for code: String? = nil) -> Locale {
+        let target = code ?? currencyCode
+        let map: [String: String] = [
+            "USD": "en_US", "EUR": "de_DE", "GBP": "en_GB", "JPY": "ja_JP",
+            "VND": "vi_VN", "CNY": "zh_Hans_CN", "KRW": "ko_KR", "INR": "hi_IN",
+            "RUB": "ru_RU", "AUD": "en_AU", "CAD": "en_CA", "THB": "th_TH",
+            "SGD": "en_SG"
+        ]
+        return Locale(identifier: map[target] ?? "en_US")
+    }
+
+    /// Number of fractional digits a currency uses by convention (0 for JPY,
+    /// VND, KRW; 2 for USD, EUR, …).
+    static func fractionDigits(for code: String? = nil) -> Int {
+        let target = code ?? currencyCode
         let formatter = NumberFormatter()
         formatter.numberStyle = .currency
-        formatter.locale = appLocale()
-        formatter.currencyCode = code ?? currencyCode
-        formatter.maximumFractionDigits = amount.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        formatter.currencyCode = target
+        formatter.locale = Locale(identifier: "en_US")
+        _ = formatter.string(from: 0)
+        return formatter.maximumFractionDigits
+    }
+
+    private static func decimalFormatter(for code: String?) -> NumberFormatter {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = currencyLocale(for: code)
+        formatter.usesGroupingSeparator = true
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = fractionDigits(for: code)
+        return formatter
+    }
+
+    /// Formats an amount as currency using the currency's own locale so the
+    /// grouping/decimal style and fraction digits match that currency.
+    static func format(_ amount: Double, code: String? = nil) -> String {
+        let target = code ?? currencyCode
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = currencyLocale(for: target)
+        formatter.currencyCode = target
+        formatter.minimumFractionDigits = 0
+        formatter.maximumFractionDigits = fractionDigits(for: target)
         return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
     }
 
-    /// Formats just the grouped number (no currency symbol), so a big amount can
-    /// be shown next to a separate currency-code label. Whole numbers drop the
-    /// fractional part.
-    static func formatNumber(_ amount: Double) -> String {
-        let formatter = NumberFormatter()
-        formatter.numberStyle = .decimal
-        formatter.locale = appLocale()
-        formatter.maximumFractionDigits = amount.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
-        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+    /// Formats just the grouped number (no currency symbol), respecting the
+    /// currency's grouping/decimal conventions.
+    static func formatNumber(_ amount: Double, code: String? = nil) -> String {
+        decimalFormatter(for: code).string(from: NSNumber(value: amount)) ?? "\(amount)"
     }
 
     /// Symbol (e.g. "$", "₫") for the given currency code, for use as a field prefix.
@@ -172,55 +205,81 @@ enum Money {
         return locale.displayName(forKey: .currencySymbol, value: target) ?? target
     }
 
-    /// Live formatting for a price text field: groups the integer part with
-    /// thousands separators ("1,500") while the user types, keeping a single
-    /// "." decimal mark and at most two fractional digits.
-    static func groupedInput(_ raw: String) -> String {
-        var hasDot = false
+    /// Live formatting for a price text field. Groups the integer part using the
+    /// currency's own grouping rules while the user types, and keeps a single
+    /// decimal mark (only when the currency uses fractional digits).
+    static func groupedInput(_ raw: String, code: String? = nil) -> String {
+        let loc = currencyLocale(for: code)
+        let groupSep = loc.groupingSeparator ?? ","
+        let decSep = loc.decimalSeparator ?? "."
+        let maxFrac = fractionDigits(for: code)
+
         var intDigits = ""
         var fracDigits = ""
+        var hasDec = false
         for ch in raw {
             if ch.isNumber {
-                if hasDot {
-                    if fracDigits.count < 2 { fracDigits.append(ch) }
+                if hasDec {
+                    if fracDigits.count < maxFrac { fracDigits.append(ch) }
                 } else {
                     intDigits.append(ch)
                 }
-            } else if (ch == "." || ch == ",") && !hasDot && !intDigits.isEmpty {
-                // First separator after some digits starts the decimal part.
-                hasDot = true
+            } else if maxFrac > 0 && !hasDec && !intDigits.isEmpty {
+                let s = String(ch)
+                // A separator that isn't the grouping separator starts the decimals.
+                if s != groupSep && (s == decSep || s == "." || s == ",") {
+                    hasDec = true
+                }
             }
         }
         while intDigits.count > 1 && intDigits.first == "0" { intDigits.removeFirst() }
 
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = loc
+        formatter.usesGroupingSeparator = true
+        formatter.maximumFractionDigits = 0
+
         let grouped: String
         if intDigits.isEmpty {
-            grouped = hasDot ? "0" : ""
+            grouped = hasDec ? "0" : ""
         } else {
-            let formatter = NumberFormatter()
-            formatter.numberStyle = .decimal
-            formatter.groupingSeparator = ","
-            formatter.maximumFractionDigits = 0
             grouped = formatter.string(from: NSDecimalNumber(string: intDigits)) ?? intDigits
         }
-        return hasDot ? grouped + "." + fracDigits : grouped
+        return hasDec ? grouped + decSep + fracDigits : grouped
     }
 
-    /// Parses a user-typed amount, ignoring grouping separators. Returns nil for
-    /// empty or non-positive values.
-    static func parseAmount(_ text: String) -> Double? {
-        let cleaned = text.filter { $0.isNumber || $0 == "." }
+    /// Parses a user-typed amount, stripping the currency's grouping separators
+    /// and normalizing its decimal mark. Returns nil for empty/non-positive.
+    static func parseAmount(_ text: String, code: String? = nil) -> Double? {
+        let loc = currencyLocale(for: code)
+        let groupSep = loc.groupingSeparator ?? ","
+        let decSep = loc.decimalSeparator ?? "."
+        var s = text
+        for sep in [groupSep, " ", "\u{00a0}", "\u{202f}"] {
+            s = s.replacingOccurrences(of: sep, with: "")
+        }
+        s = s.replacingOccurrences(of: decSep, with: ".")
+
+        var cleaned = ""
+        var dotUsed = false
+        for ch in s {
+            if ch.isNumber {
+                cleaned.append(ch)
+            } else if ch == "." && !dotUsed {
+                cleaned.append(".")
+                dotUsed = true
+            }
+        }
         guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
         return value
     }
 
-    /// Renders a stored amount as grouped input text (no currency symbol),
-    /// dropping ".0" for whole numbers. Used to prefill edit fields.
-    static func editableText(_ value: Double) -> String {
-        let base = value.truncatingRemainder(dividingBy: 1) == 0
-            ? String(Int(value))
-            : String(value)
-        return groupedInput(base)
+    /// Renders a stored amount as grouped input text (no currency symbol) using
+    /// the currency's conventions, dropping trailing zeros. Used to prefill
+    /// edit fields.
+    static func editableText(_ value: Double, code: String? = nil) -> String {
+        decimalFormatter(for: code).string(from: NSNumber(value: value)) ?? "\(value)"
     }
 }
 
