@@ -1,165 +1,253 @@
 /* FilmVault UI strings (hi) */
+
 "+ Add Camera" = "+ कैमरा जोड़ें";
-"ABOUT" = "के बारे में";
-"APERTURE" = "APERTURE";
-"APPEARANCE" = "उपस्थिति";
+
+"ABOUT" = "परिचय";
+"APERTURE" = "अपर्चर";
+"APPEARANCE" = "दिखावट";
 "Accent Color" = "एक्सेंट रंग";
+
 "Add Camera" = "कैमरा जोड़ें";
-"Add your cameras and lenses to track which gear you use with each roll" = "यह ट्रैक करने के लिए कि आप प्रत्येक रोल के साथ किस गियर का उपयोग करते हैं, अपने कैमरे और लेंस जोड़ें";
-"Add your own film stock" = "अपना स्वयं का फ़िल्म स्टॉक जोड़ें";
-"Aperture" = "छेद";
-"Archive" = "पुरालेख";
-"BASIC SETTINGS" = "बुनियादी सेटिंग्स";
+"Add your cameras and lenses to track which gear you use with each roll" = "हर रोल में इस्तेमाल होने वाले कैमरा और लेंस को ट्रैक करने के लिए जोड़ें";
+"Add your own film stock" = "अपना फिल्म स्टॉक जोड़ें";
+
+"Aperture" = "अपर्चर";
+"Archive" = "आर्काइव";
+
+"BASIC SETTINGS" = "बेसिक सेटिंग्स";
 "Basic Info" = "बुनियादी जानकारी";
-"Browse Camera Database" = "कैमरा डेटाबेस ब्राउज़ करें";
-"Browse the full camera database" = "संपूर्ण कैमरा डेटाबेस ब्राउज़ करें";
+
+"Browse Camera Database" = "कैमरा डेटाबेस देखें";
+"Browse the full camera database" = "पूरा कैमरा डेटाबेस देखें";
+
 "CAMERAS" = "कैमरा";
-"CONTACT SHEET" = "संपर्क पत्र";
+"CONTACT SHEET" = "कॉन्टैक्ट शीट";
 "COVER PHOTO" = "कवर फोटो";
 "CREATE POST" = "पोस्ट बनाएं";
+
 "Camera" = "कैमरा";
 "Camera Database" = "कैमरा डेटाबेस";
 "Camera Details" = "कैमरा विवरण";
-"Camera access needed" = "कैमरा पहुंच की आवश्यकता है";
+"Camera access needed" = "कैमरा एक्सेस आवश्यक है";
 "Cameras" = "कैमरा";
-"Cancel" = "रद्द करना";
+
+"Cancel" = "रद्द करें";
+
 "Change Camera" = "कैमरा बदलें";
 "Change Film" = "फिल्म बदलें";
-"Change Film Stock" = "फ़िल्म स्टॉक बदलें";
+"Change Film Stock" = "फिल्म स्टॉक बदलें";
 "Change Lab" = "लैब बदलें";
-"Choose Film" = "फ़िल्म चुनें";
+
+"Choose Film" = "फिल्म चुनें";
 "Choose from 930+ cameras" = "930+ कैमरों में से चुनें";
-"Clear" = "स्पष्ट";
-"Clear Cache" = "कैश को साफ़ करें";
-"Clear Recipe" = "स्पष्ट नुस्खा";
-"Cleared" = "साफ़ किया गया";
-"Close" = "बंद करना";
-"Confirm" = "पुष्टि करना";
-"Confirm Location" = "स्थान की पुष्टि करें";
-"Contact Sheet" = "संपर्क पत्र";
-"Copied!" = "नकल की गई!";
-"Copy Drive Link" = "ड्राइव लिंक कॉपी करें";
+
+"Clear" = "साफ करें";
+"Clear Cache" = "कैश साफ करें";
+"Clear Recipe" = "रेसिपी साफ करें";
+"Cleared" = "साफ हो गया";
+
+"Close" = "बंद करें";
+"Confirm" = "पुष्टि करें";
+"Confirm Location" = "लोकेशन की पुष्टि करें";
+
+"Contact Sheet" = "कॉन्टैक्ट शीट";
+"Copied!" = "कॉपी हो गया!";
+"Copy Drive Link" = "Google Drive लिंक कॉपी करें";
+
 "Copyright" = "कॉपीराइट";
+
 "Create Custom Film" = "कस्टम फिल्म बनाएं";
 "Create Post" = "पोस्ट बनाएं";
+
 "Custom Film" = "कस्टम फिल्म";
+
 "DATA" = "डेटा";
-"DEVELOPING LAB" = "प्रयोगशाला का विकास";
-"DEVELOPMENT" = "विकास";
-"Darkroom" = "अँधेरा कमरा";
-"Delete" = "मिटाना";
-"Delete Roll" = "रोल हटाएँ";
-"Details" = "विवरण";
-"Developing Lab" = "प्रयोगशाला का विकास करना";
-"Development Recipe" = "विकास नुस्खा";
+"DEVELOPING LAB" = "डेवलपिंग लैब";
+"DEVELOPMENT" = "डेवलपमेंट";
+
+"Darkroom" = "डार्करूम";
+"Delete" = "डिलीट करें";
+"Delete Roll" = "रोल डिलीट करें";
+
+"Details" = "डिटेल्स";
+"Developing Lab" = "डेवलपिंग लैब";
+"Development Recipe" = "डेवलपमेंट रेसिपी";
 "Done" = "हो गया";
-"EV Compensation" = "ईवी मुआवजा";
-"Edit Camera" = "कैमरा संपादित करें";
-"Edit Date" = "संपादन की तारीख";
-"Edit Details" = "विवरण संपादित करें";
-"Enable Reminders" = "अनुस्मारक सक्षम करें";
-"Enable camera access for FilmVault in Settings to use the light meter." = "लाइट मीटर का उपयोग करने के लिए सेटिंग्स में फिल्मवॉल्ट के लिए कैमरा एक्सेस सक्षम करें।";
-"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "रोल अनुस्मारक प्राप्त करने के लिए iOS सेटिंग्स में FilmVault के लिए सूचनाएं सक्षम करें।";
-"Export Data" = "डेटा निर्यात करें";
-"Exposure" = "खुलासा";
-"Exposures" = "निवेश जोखिम";
-"FILM NAME" = "फ़िल्म का नाम";
+
+"EV Compensation" = "एक्सपोज़र कंपन्सेशन";
+
+"Edit Camera" = "कैमरा एडिट करें";
+"Edit Date" = "तारीख एडिट करें";
+"Edit Details" = "डिटेल्स एडिट करें";
+
+"Enable Reminders" = "रिमाइंडर चालू करें";
+
+"Enable camera access for FilmVault in Settings to use the light meter." = "लाइट मीटर इस्तेमाल करने के लिए Settings में FilmVault का कैमरा एक्सेस चालू करें।";
+"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "रोल रिमाइंडर पाने के लिए iOS Settings में FilmVault की नोटिफिकेशन चालू करें।";
+
+"Export Data" = "डेटा एक्सपोर्ट करें";
+
+"Exposure" = "एक्सपोज़र";
+"Exposures" = "एक्सपोज़र";
+
+"FILM NAME" = "फिल्म नाम";
 "FILM STOCK" = "फिल्म स्टॉक";
-"FILM TYPE" = "फिल्म का प्रकार";
-"FILMVAULT" = "फिल्मवॉल्ट";
-"Find" = "खोजो";
-"Flash" = "चमक";
-"Format" = "प्रारूप";
-"GENERAL" = "सामान्य";
-"GOOGLE DRIVE" = "गूगल हाँकना";
-"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "उन रोल के बारे में सूचना प्राप्त करें जिनकी आप अभी भी शूटिंग कर रहे हैं और तैयार रोल विकसित होने की प्रतीक्षा कर रहे हैं।";
-"ISO" = "आईएसओ";
-"Import" = "आयात";
-"Import Data" = "डेटा आयात करें";
-"Import Photos" = "फ़ोटो आयात करें";
-"Import complete" = "आयात पूर्ण";
-"Import photos from your camera roll to fill this film roll" = "इस फ़िल्म रोल को भरने के लिए अपने कैमरा रोल से फ़ोटो आयात करें";
+"FILM TYPE" = "फिल्म टाइप";
+
+"FILMVAULT" = "FilmVault";
+
+"Find" = "खोजें";
+"Flash" = "फ्लैश";
+"Format" = "फॉर्मेट";
+
+"GENERAL" = "जनरल";
+"GOOGLE DRIVE" = "Google Drive";
+
+"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "चल रहे और डेवलप होने वाले रोल्स की नोटिफिकेशन पाएं।";
+
+"ISO" = "ISO";
+"Import" = "इम्पोर्ट";
+"Import Data" = "डेटा इम्पोर्ट करें";
+"Import Photos" = "फोटो इम्पोर्ट करें";
+"Import complete" = "इम्पोर्ट पूरा हुआ";
+
+"Import photos from your camera roll to fill this film roll" = "अपने कैमरा रोल से फोटो इम्पोर्ट करके फिल्म रोल भरें";
+
 "LANGUAGE" = "भाषा";
-"LIGHT METER" = "प्रकाश मीटर";
-"LOCATION" = "जगह";
-"Light Meter" = "प्रकाश मीटर";
-"Location" = "जगह";
-"Log your developer, dilution, temperature, time and push/pull." = "अपने डेवलपर, तनुकरण, तापमान, समय और पुश/पुल को लॉग करें।";
-"MY CUSTOM FILMS" = "मेरी कस्टम फ़िल्में";
-"Mark Active" = "सक्रिय चिह्नित करें";
-"Mark Developed" = "मार्क विकसित";
-"NOTES" = "टिप्पणियाँ";
+"LIGHT METER" = "लाइट मीटर";
+"LOCATION" = "लोकेशन";
+
+"Light Meter" = "लाइट मीटर";
+"Location" = "लोकेशन";
+
+"Log your developer, dilution, temperature, time and push/pull." = "डेवलपर, डायल्यूशन, तापमान, समय और push/pull लॉग करें।";
+
+"MY CUSTOM FILMS" = "मेरी कस्टम फिल्म्स";
+
+"Mark Active" = "एक्टिव मार्क करें";
+"Mark Developed" = "डेवलप्ड मार्क करें";
+
+"NOTES" = "नोट्स";
+
 "New Camera" = "नया कैमरा";
 "New Roll" = "नया रोल";
+
 "Next" = "अगला";
-"No Camera" = "कैमरा नहीं";
+
+"No Camera" = "कोई कैमरा नहीं";
 "No Selection" = "कोई चयन नहीं";
-"No cameras yet" = "अभी तक कोई कैमरा नहीं है";
-"No cameras yet. Add cameras from the Cameras tab." = "अभी तक कोई कैमरा नहीं है. कैमरा टैब से कैमरे जोड़ें.";
+"No cameras yet" = "अभी कोई कैमरा नहीं";
+"No cameras yet. Add cameras from the Cameras tab." = "अभी कोई कैमरा नहीं। Cameras टैब से कैमरा जोड़ें।";
+
 "No photo" = "कोई फोटो नहीं";
-"No photos yet" = "अभी तक कोई फ़ोटो नहीं";
-"No results found" = "कोई परिणाम नहीं मिला";
-"No rolls yet" = "अभी तक कोई रोल नहीं";
-"Notes" = "टिप्पणियाँ";
+"No photos yet" = "अभी कोई फोटो नहीं";
+"No results found" = "कोई रिज़ल्ट नहीं मिला";
+"No rolls yet" = "अभी कोई रोल नहीं";
+
+"Notes" = "नोट्स";
+
 "OK" = "ठीक है";
-"Open Settings" = "खुली सेटिंग";
-"PHOTOS" = "तस्वीरें";
-"Paste a Google Drive folder or file link to download and import photos." = "फ़ोटो डाउनलोड करने और आयात करने के लिए Google Drive फ़ोल्डर या फ़ाइल लिंक चिपकाएँ।";
-"Photo" = "तस्वीर";
-"Photo Import" = "फ़ोटो आयात";
-"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "तस्वीरें आपकी फोटो लाइब्रेरी से जुड़ी रहती हैं, इसलिए पुनः इंस्टॉल करने के बाद हर चीज का बैकअप बना रहता है। आयात को मौजूदा डेटा में मर्ज किया जाता है।";
-"Photos will be stitched into a seamless carousel" = "फ़ोटो को एक निर्बाध हिंडोले में सिला जाएगा";
-"Push/Pull" = "पुश पुल";
-"REMINDERS" = "रिमाइंडर";
+"Open Settings" = "Settings खोलें";
+
+"PHOTOS" = "फोटो";
+
+"Paste a Google Drive folder or file link to download and import photos." = "Google Drive फोल्डर या फाइल लिंक पेस्ट करें फोटो इम्पोर्ट करने के लिए।";
+
+"Photo" = "फोटो";
+"Photo Import" = "फोटो इम्पोर्ट";
+
+"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "फोटो आपकी Photo Library से लिंक रहती हैं, जिससे रीइंस्टॉल के बाद डेटा सुरक्षित रहता है। इम्पोर्ट मौजूदा डेटा में मर्ज होता है।";
+
+"Photos will be stitched into a seamless carousel" = "फोटो एक seamless carousel में दिखेंगी";
+
+"Push/Pull" = "Push/Pull";
+
+"REMINDERS" = "रिमाइंडर्स";
+
 "Reset" = "रीसेट करें";
-"Reset Onboarding" = "ऑनबोर्डिंग रीसेट करें";
-"Restore from a backup file" = "बैकअप फ़ाइल से पुनर्स्थापित करें";
+"Reset Onboarding" = "Onboarding रीसेट करें";
+
+"Restore from a backup file" = "बैकअप फाइल से रिस्टोर करें";
+
 "Rolls" = "रोल्स";
+
 "SETTINGS" = "सेटिंग्स";
-"SLIDES" = "स्लाइड";
-"STORAGE" = "भंडारण";
-"Save" = "बचाना";
-"Save Camera" = "कैमरा सहेजें";
-"Save Changes" = "परिवर्तनों को सुरक्षित करें";
-"Save Custom Film" = "कस्टम फ़िल्म सहेजें";
-"Save Frame" = "फ़्रेम सहेजें";
-"Save Recipe" = "नुस्खा सहेजें";
-"Saved to Photos" = "फ़ोटो में सहेजा गया";
-"Seamless Carousel" = "निर्बाध हिंडोला";
-"Search rolls and frames" = "रोल और फ़्रेम खोजें";
-"Select" = "चुनना";
-"Select All" = "सबका चयन करें";
+"SLIDES" = "स्लाइड्स";
+"STORAGE" = "स्टोरेज";
+
+"Save" = "सेव करें";
+"Save Camera" = "कैमरा सेव करें";
+"Save Changes" = "परिवर्तन सेव करें";
+"Save Custom Film" = "कस्टम फिल्म सेव करें";
+"Save Frame" = "फ्रेम सेव करें";
+"Save Recipe" = "रेसिपी सेव करें";
+
+"Saved to Photos" = "फोटो में सेव किया गया";
+
+"Seamless Carousel" = "Seamless Carousel";
+
+"Search rolls and frames" = "रोल और फ्रेम खोजें";
+
+"Select" = "चुनें";
+"Select All" = "सब चुनें";
 "Select Camera" = "कैमरा चुनें";
-"Select Lab" = "लैब का चयन करें";
-"Select Photos" = "फ़ोटो चुनें";
-"Select at least 2 photos" = "कम से कम 2 फ़ोटो चुनें";
-"Set developed date" = "विकसित तिथि निर्धारित करें";
+"Select Lab" = "लैब चुनें";
+"Select Photos" = "फोटो चुनें";
+"Select at least 2 photos" = "कम से कम 2 फोटो चुनें";
+
+"Set developed date" = "डेवलपमेंट तारीख सेट करें";
+
 "Settings" = "सेटिंग्स";
-"Share" = "शेयर करना";
-"Shot Info" = "शॉट की जानकारी";
-"Shutter Speed" = "शटर गति";
+
+"Share" = "शेयर";
+
+"Shot Info" = "शॉट जानकारी";
+
+"Shutter Speed" = "शटर स्पीड";
+
 "Sign Out" = "साइन आउट";
+
 "Sign in to Google Drive" = "Google Drive में साइन इन करें";
-"Skip" = "छोडना";
-"Start Date" = "आरंभ करने की तिथि";
-"Start documenting your analog\\nphotography journey" = "अपनी एनालॉगफ़ोटोग्राफ़ी यात्रा का दस्तावेज़ीकरण प्रारंभ करें";
-"Start your analog journey" = "अपनी एनालॉग यात्रा शुरू करें";
-"Stops" = "बंद हो जाता है";
-"Storage" = "भंडारण";
+
+"Skip" = "स्किप";
+
+"Start Date" = "स्टार्ट डेट";
+
+"Start documenting your analog photography journey" = "अपनी analog photography journey डॉक्यूमेंट करना शुरू करें";
+
+"Start your analog journey" = "अपनी analog journey शुरू करें";
+
+"Stops" = "स्टॉप्स";
+
+"Storage" = "स्टोरेज";
+
 "Tap to add cover" = "कवर जोड़ने के लिए टैप करें";
 "Tap to change" = "बदलने के लिए टैप करें";
-"Temperature" = "तापमान";
-"The onboarding screen will show again next time you open the app." = "अगली बार जब आप ऐप खोलेंगे तो ऑनबोर्डिंग स्क्रीन फिर से दिखाई देगी।";
-"This will clear temporary files and URL cache. Cover images will be kept." = "इससे अस्थायी फ़ाइलें और URL कैश साफ़ हो जाएगा. कवर चित्र रखे जायेंगे.";
-"Time" = "समय";
-"Time of day" = "अपना समय";
-"Try a different search term" = "कोई भिन्न खोज शब्द आज़माएँ";
-"Type" = "प्रकार";
-"Upload film photos to your Drive" = "अपनी ड्राइव पर फ़िल्म फ़ोटो अपलोड करें";
-"Upload to Drive" = "ड्राइव पर अपलोड करें";
-"Use Current Location" = "वर्तमान स्थान का उपयोग करें";
-"Used for highlights and buttons across the app" = "पूरे ऐप में हाइलाइट्स और बटन के लिए उपयोग किया जाता है";
-"Version" = "संस्करण";
-"View Full Screen" = "पूर्ण स्क्रीन देखें";
-"When reminders are delivered" = "जब अनुस्मारक वितरित किए जाते हैं";
-"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "आपको Google Drive से साइन आउट कर दिया जाएगा. पहले से अपलोड की गई तस्वीरें ड्राइव पर रहेंगी।";
+
+"Temperature" = "टेम्परेचर";
+
+"The onboarding screen will show again next time you open the app." = "अगली बार ऐप खोलने पर onboarding स्क्रीन फिर से दिखेगी।";
+
+"This will clear temporary files and URL cache. Cover images will be kept." = "इससे temporary files और URL cache साफ होगा, लेकिन cover images सुरक्षित रहेंगी।";
+
+"Time" = "टाइम";
+"Time of day" = "दिन का समय";
+
+"Try a different search term" = "कोई दूसरा सर्च टर्म आज़माएँ";
+
+"Type" = "टाइप";
+
+"Upload film photos to your Drive" = "फिल्म फोटो Google Drive पर अपलोड करें";
+"Upload to Drive" = "Drive पर अपलोड करें";
+
+"Use Current Location" = "Current Location इस्तेमाल करें";
+
+"Used for highlights and buttons across the app" = "ऐप में highlights और buttons के लिए इस्तेमाल होता है";
+
+"Version" = "वर्ज़न";
+
+"View Full Screen" = "फुल स्क्रीन देखें";
+
+"When reminders are delivered" = "जब रिमाइंडर भेजे जाते हैं";
+
+"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "आप Google Drive से sign out हो जाएंगे। पहले से अपलोड फोटो Drive पर रहेंगी।";

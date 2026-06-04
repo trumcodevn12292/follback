@@ -1,165 +1,255 @@
 /* FilmVault UI strings (ru) */
+
 "+ Add Camera" = "+ Добавить камеру";
-"ABOUT" = "О";
-"APERTURE" = "АПЕРТУРА";
-"APPEARANCE" = "ПОЯВЛЕНИЕ";
+
+"ABOUT" = "О приложении";
+"APERTURE" = "Диафрагма";
+"APPEARANCE" = "Внешний вид";
 "Accent Color" = "Акцентный цвет";
+
 "Add Camera" = "Добавить камеру";
-"Add your cameras and lenses to track which gear you use with each roll" = "Добавьте свои камеры и объективы, чтобы отслеживать, какое оборудование вы используете при каждом рулоне.";
-"Add your own film stock" = "Добавьте свою собственную пленку";
+"Add your cameras and lenses to track which gear you use with each roll" = "Добавьте камеры и объективы, чтобы отслеживать используемую технику для каждого ролика";
+"Add your own film stock" = "Добавьте свою плёнку";
+
 "Aperture" = "Диафрагма";
 "Archive" = "Архив";
-"BASIC SETTINGS" = "БАЗОВЫЕ НАСТРОЙКИ";
+
+"BASIC SETTINGS" = "ОСНОВНЫЕ НАСТРОЙКИ";
 "Basic Info" = "Основная информация";
-"Browse Camera Database" = "Просмотр базы данных камер";
-"Browse the full camera database" = "Просмотрите полную базу данных камер";
+
+"Browse Camera Database" = "Просмотр базы камер";
+"Browse the full camera database" = "Просмотреть полную базу камер";
+
 "CAMERAS" = "КАМЕРЫ";
 "CONTACT SHEET" = "КОНТАКТНЫЙ ЛИСТ";
-"COVER PHOTO" = "ФОТО НА ОБЛОЖКЕ";
+"COVER PHOTO" = "ФОТО ОБЛОЖКИ";
 "CREATE POST" = "СОЗДАТЬ ПОСТ";
+
 "Camera" = "Камера";
-"Camera Database" = "База данных камер";
-"Camera Details" = "Детали камеры";
-"Camera access needed" = "Нужен доступ к камере";
+"Camera Database" = "База камер";
+"Camera Details" = "Информация о камере";
+"Camera access needed" = "Требуется доступ к камере";
 "Cameras" = "Камеры";
+
 "Cancel" = "Отмена";
+
 "Change Camera" = "Сменить камеру";
-"Change Film" = "Сменить фильм";
-"Change Film Stock" = "Сменить кинопленку";
-"Change Lab" = "Изменить лабораторию";
-"Choose Film" = "Выбрать фильм";
-"Choose from 930+ cameras" = "Выбирайте из более чем 930 камер";
-"Clear" = "Прозрачный";
+"Change Film" = "Сменить плёнку";
+"Change Film Stock" = "Сменить тип плёнки";
+"Change Lab" = "Сменить лабораторию";
+
+"Choose Film" = "Выбрать плёнку";
+"Choose from 930+ cameras" = "Выберите из более чем 930 камер";
+
+"Clear" = "Очистить";
 "Clear Cache" = "Очистить кэш";
 "Clear Recipe" = "Очистить рецепт";
 "Cleared" = "Очищено";
-"Close" = "Закрывать";
-"Confirm" = "Подтверждать";
+
+"Close" = "Закрыть";
+"Confirm" = "Подтвердить";
 "Confirm Location" = "Подтвердить местоположение";
+
 "Contact Sheet" = "Контактный лист";
 "Copied!" = "Скопировано!";
-"Copy Drive Link" = "Скопировать ссылку на Диск";
-"Copyright" = "Авторское право";
-"Create Custom Film" = "Создать собственный фильм";
-"Create Post" = "Создать сообщение";
-"Custom Film" = "Пользовательский фильм";
+"Copy Drive Link" = "Скопировать ссылку Google Drive";
+
+"Copyright" = "Авторские права";
+
+"Create Custom Film" = "Создать плёнку";
+"Create Post" = "Создать пост";
+
+"Custom Film" = "Плёнка пользователя";
+
 "DATA" = "ДАННЫЕ";
-"DEVELOPING LAB" = "РАЗРАБОТКА ЛАБОРАТОРИИ";
-"DEVELOPMENT" = "РАЗРАБОТКА";
-"Darkroom" = "Темная комната";
+"DEVELOPING LAB" = "ФОТОЛАБОРАТОРИЯ";
+"DEVELOPMENT" = "ПРОЯВКА";
+
+"Darkroom" = "Фотолаборатория";
+
 "Delete" = "Удалить";
-"Delete Roll" = "Удалить рулон";
+"Delete Roll" = "Удалить ролик";
+
 "Details" = "Подробности";
-"Developing Lab" = "Развивающаяся лаборатория";
-"Development Recipe" = "Рецепт развития";
-"Done" = "Сделанный";
-"EV Compensation" = "EV-компенсация";
+"Developing Lab" = "Фотолаборатория";
+"Development Recipe" = "Рецепт проявки";
+"Done" = "Готово";
+
+"EV Compensation" = "Компенсация экспозиции";
+
 "Edit Camera" = "Редактировать камеру";
 "Edit Date" = "Редактировать дату";
-"Edit Details" = "Редактировать детали";
+"Edit Details" = "Редактировать данные";
+
 "Enable Reminders" = "Включить напоминания";
-"Enable camera access for FilmVault in Settings to use the light meter." = "Включите доступ к камере для FilmVault в настройках, чтобы использовать экспонометр.";
-"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "Включите уведомления для FilmVault в настройках iOS, чтобы получать напоминания о роликах.";
-"Export Data" = "Экспортировать данные";
-"Exposure" = "Контакт";
-"Exposures" = "Воздействия";
-"FILM NAME" = "НАЗВАНИЕ ФИЛЬМА";
-"FILM STOCK" = "КИНОФОТО";
-"FILM TYPE" = "ТИП ФИЛЬМА";
-"FILMVAULT" = "ФИЛЬМВАУЛТ";
-"Find" = "Находить";
+
+"Enable camera access for FilmVault in Settings to use the light meter." = "Разрешите доступ к камере в настройках FilmVault для использования экспонометра.";
+"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "Включите уведомления в настройках iOS для получения напоминаний о роликах.";
+
+"Export Data" = "Экспорт данных";
+
+"Exposure" = "Экспозиция";
+"Exposures" = "Кадры";
+
+"FILM NAME" = "НАЗВАНИЕ ПЛЁНКИ";
+"FILM STOCK" = "ТИП ПЛЁНКИ";
+"FILM TYPE" = "ТИП ПЛЁНКИ";
+
+"FILMVAULT" = "FilmVault";
+
+"Find" = "Найти";
 "Flash" = "Вспышка";
 "Format" = "Формат";
-"GENERAL" = "ОБЩИЙ";
-"GOOGLE DRIVE" = "ГУГЛ ДИСК";
-"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "Получайте уведомления о роликах, которые вы еще снимаете, и о готовых роликах, ожидающих обработки.";
-"ISO" = "ИСО";
+
+"GENERAL" = "ОБЩЕЕ";
+"GOOGLE DRIVE" = "Google Drive";
+
+"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "Получайте уведомления о текущих и завершённых плёнках, ожидающих проявки.";
+
+"ISO" = "ISO";
 "Import" = "Импорт";
-"Import Data" = "Импортировать данные";
-"Import Photos" = "Импортировать фотографии";
-"Import complete" = "Импорт завершен";
-"Import photos from your camera roll to fill this film roll" = "Импортируйте фотографии из фотопленки, чтобы заполнить эту пленку.";
+"Import Data" = "Импорт данных";
+"Import Photos" = "Импорт фотографий";
+"Import complete" = "Импорт завершён";
+
+"Import photos from your camera roll to fill this film roll" = "Импортируйте фотографии из галереи, чтобы заполнить плёнку";
+
 "LANGUAGE" = "ЯЗЫК";
-"LIGHT METER" = "ЛЮКСМЕТР";
-"LOCATION" = "РАСПОЛОЖЕНИЕ";
-"Light Meter" = "Люксметр";
-"Location" = "Расположение";
-"Log your developer, dilution, temperature, time and push/pull." = "Зарегистрируйте свой проявитель, разбавление, температуру, время и push/pull.";
-"MY CUSTOM FILMS" = "МОИ ТАМОЖЕННЫЕ ФИЛЬМЫ";
-"Mark Active" = "Отметить как активный";
-"Mark Developed" = "Отметить разработанный";
-"NOTES" = "ПРИМЕЧАНИЯ";
+"LIGHT METER" = "ЭКСПОНОМЕТР";
+"LOCATION" = "МЕСТОПОЛОЖЕНИЕ";
+
+"Light Meter" = "Экспонометр";
+"Location" = "Местоположение";
+
+"Log your developer, dilution, temperature, time and push/pull." = "Записывайте проявитель, разведение, температуру, время и push/pull.";
+
+"MY CUSTOM FILMS" = "МОИ ПЛЁНКИ";
+
+"Mark Active" = "Отметить активным";
+"Mark Developed" = "Отметить проявленным";
+
+"NOTES" = "ЗАМЕТКИ";
+
 "New Camera" = "Новая камера";
-"New Roll" = "Новый Ролл";
-"Next" = "Следующий";
+"New Roll" = "Новая плёнка";
+
+"Next" = "Далее";
+
 "No Camera" = "Нет камеры";
 "No Selection" = "Нет выбора";
-"No cameras yet" = "Камеры пока нет";
-"No cameras yet. Add cameras from the Cameras tab." = "Камеры пока нет. Добавьте камеры на вкладке Камеры.";
+"No cameras yet" = "Камер пока нет";
+"No cameras yet. Add cameras from the Cameras tab." = "Камер пока нет. Добавьте их во вкладке «Камеры».";
+
 "No photo" = "Нет фото";
-"No photos yet" = "Фото пока нет";
-"No results found" = "Результаты не найдены";
-"No rolls yet" = "Рулонов пока нет";
-"Notes" = "Примечания";
-"OK" = "ХОРОШО";
+"No photos yet" = "Фотографий пока нет";
+"No results found" = "Ничего не найдено";
+"No rolls yet" = "Плёнок пока нет";
+
+"Notes" = "Заметки";
+
+"OK" = "ОК";
 "Open Settings" = "Открыть настройки";
+
 "PHOTOS" = "ФОТО";
-"Paste a Google Drive folder or file link to download and import photos." = "Вставьте папку Google Диска или ссылку на файл, чтобы загрузить и импортировать фотографии.";
+
+"Paste a Google Drive folder or file link to download and import photos." = "Вставьте ссылку Google Drive для загрузки и импорта фотографий.";
+
 "Photo" = "Фото";
-"Photo Import" = "Импорт фотографий";
-"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "Фотографии остаются связанными с вашей библиотекой фотографий, поэтому после переустановки все будет сохранено в резервной копии. Импорт слияний с существующими данными.";
-"Photos will be stitched into a seamless carousel" = "Фотографии будут объединены в бесшовную карусель.";
-"Push/Pull" = "Толкай/Тянь";
+"Photo Import" = "Импорт фото";
+
+"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "Фото остаются связаны с медиатекой, резервная копия сохраняет данные после переустановки. Импорт объединяет данные.";
+
+"Photos will be stitched into a seamless carousel" = "Фото будут объединены в плавную карусель";
+
+"Push/Pull" = "Push/Pull";
+
 "REMINDERS" = "НАПОМИНАНИЯ";
-"Reset" = "Перезагрузить";
-"Reset Onboarding" = "Сбросить регистрацию";
-"Restore from a backup file" = "Восстановление из файла резервной копии";
-"Rolls" = "Роллы";
+
+"Reset" = "Сбросить";
+"Reset Onboarding" = "Сбросить онбординг";
+
+"Restore from a backup file" = "Восстановить из резервной копии";
+
+"Rolls" = "Плёнки";
+
 "SETTINGS" = "НАСТРОЙКИ";
 "SLIDES" = "СЛАЙДЫ";
 "STORAGE" = "ХРАНИЛИЩЕ";
-"Save" = "Сохранять";
+
+"Save" = "Сохранить";
 "Save Camera" = "Сохранить камеру";
 "Save Changes" = "Сохранить изменения";
-"Save Custom Film" = "Сохранить индивидуальный фильм";
+"Save Custom Film" = "Сохранить плёнку";
 "Save Frame" = "Сохранить кадр";
 "Save Recipe" = "Сохранить рецепт";
-"Saved to Photos" = "Сохранено в фотографиях";
-"Seamless Carousel" = "Бесшовная карусель";
-"Search rolls and frames" = "Поиск рулонов и рамок";
-"Select" = "Выбирать";
-"Select All" = "Выбрать все";
-"Select Camera" = "Выберите камеру";
-"Select Lab" = "Выберите лабораторию";
-"Select Photos" = "Выберите фотографии";
-"Select at least 2 photos" = "Выберите минимум 2 фотографии";
-"Set developed date" = "Установить дату разработки";
+
+"Saved to Photos" = "Сохранено в Фото";
+
+"Seamless Carousel" = "Плавная карусель";
+
+"Search rolls and frames" = "Поиск плёнок и кадров";
+
+"Select" = "Выбрать";
+"Select All" = "Выбрать всё";
+"Select Camera" = "Выбрать камеру";
+"Select Lab" = "Выбрать лабораторию";
+"Select Photos" = "Выбрать фотографии";
+"Select at least 2 photos" = "Выберите минимум 2 фото";
+
+"Set developed date" = "Установить дату проявки";
+
 "Settings" = "Настройки";
-"Share" = "Делиться";
-"Shot Info" = "Информация о выстреле";
-"Shutter Speed" = "Скорость затвора";
-"Sign Out" = "Выход";
-"Sign in to Google Drive" = "Войдите в Google Диск";
-"Skip" = "Пропускать";
+
+"Share" = "Поделиться";
+
+"Shot Info" = "Информация о съёмке";
+
+"Shutter Speed" = "Выдержка";
+
+"Sign Out" = "Выйти";
+
+"Sign in to Google Drive" = "Войти в Google Drive";
+
+"Skip" = "Пропустить";
+
 "Start Date" = "Дата начала";
-"Start documenting your analog\\nphotography journey" = "Начните документировать свое путешествие в области аналоговой фотографии.";
-"Start your analog journey" = "Начните свое аналоговое путешествие";
-"Stops" = "Остановки";
+
+"Start documenting your analog photography journey" = "Начните документировать свой путь в аналоговой фотографии";
+
+"Start your analog journey" = "Начните свой путь в аналоговой фотографии";
+
+"Stops" = "Стопы";
+
 "Storage" = "Хранилище";
+
 "Tap to add cover" = "Нажмите, чтобы добавить обложку";
 "Tap to change" = "Нажмите, чтобы изменить";
+
 "Temperature" = "Температура";
-"The onboarding screen will show again next time you open the app." = "Экран регистрации появится снова, когда вы откроете приложение в следующий раз.";
-"This will clear temporary files and URL cache. Cover images will be kept." = "Это очистит временные файлы и кэш URL-адресов. Изображения обложки будут сохранены.";
+
+"The onboarding screen will show again next time you open the app." = "Экран онбординга снова появится при следующем запуске приложения.";
+
+"This will clear temporary files and URL cache. Cover images will be kept." = "Будут удалены временные файлы и кэш URL. Обложки сохранятся.";
+
 "Time" = "Время";
 "Time of day" = "Время суток";
-"Try a different search term" = "Попробуйте другой поисковый запрос";
+
+"Try a different search term" = "Попробуйте другой запрос";
+
 "Type" = "Тип";
-"Upload film photos to your Drive" = "Загрузите фотографии из фильмов на свой Диск.";
-"Upload to Drive" = "Загрузить на Диск";
+
+"Upload film photos to your Drive" = "Загрузить фотографии плёнки в Google Drive";
+
+"Upload to Drive" = "Загрузить в Drive";
+
 "Use Current Location" = "Использовать текущее местоположение";
-"Used for highlights and buttons across the app" = "Используется для выделения и кнопок в приложении.";
+
+"Used for highlights and buttons across the app" = "Используется для подсветок и кнопок в приложении";
+
 "Version" = "Версия";
-"View Full Screen" = "Посмотреть в полноэкранном режиме";
-"When reminders are delivered" = "Когда напоминания доставляются";
-"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Вы выйдете из Google Диска. Уже загруженные фотографии останутся на Диске.";
+
+"View Full Screen" = "Полный экран";
+
+"When reminders are delivered" = "Когда приходят напоминания";
+
+"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Вы выйдете из Google Drive. Уже загруженные фото останутся на диске.";

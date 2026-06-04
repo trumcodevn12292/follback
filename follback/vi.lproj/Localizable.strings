@@ -1,165 +1,253 @@
 /* FilmVault UI strings (vi) */
+
 "+ Add Camera" = "+ Thêm máy ảnh";
-"ABOUT" = "VỀ";
-"APERTURE" = "KHÍ ĐỘ";
-"APPEARANCE" = "VẺ BỀ NGOÀI";
+
+"ABOUT" = "Giới thiệu";
+"APERTURE" = "Khẩu độ";
+"APPEARANCE" = "Giao diện";
 "Accent Color" = "Màu nhấn";
+
 "Add Camera" = "Thêm máy ảnh";
-"Add your cameras and lenses to track which gear you use with each roll" = "Thêm máy ảnh và ống kính của bạn để theo dõi thiết bị bạn sử dụng với mỗi lần cuộn";
-"Add your own film stock" = "Thêm kho phim của riêng bạn";
+"Add your cameras and lenses to track which gear you use with each roll" = "Thêm máy ảnh và ống kính để theo dõi thiết bị bạn dùng cho từng cuộn phim";
+"Add your own film stock" = "Thêm loại phim của bạn";
+
 "Aperture" = "Khẩu độ";
 "Archive" = "Lưu trữ";
+
 "BASIC SETTINGS" = "CÀI ĐẶT CƠ BẢN";
 "Basic Info" = "Thông tin cơ bản";
+
 "Browse Camera Database" = "Duyệt cơ sở dữ liệu máy ảnh";
-"Browse the full camera database" = "Duyệt cơ sở dữ liệu máy ảnh đầy đủ";
+"Browse the full camera database" = "Xem toàn bộ cơ sở dữ liệu máy ảnh";
+
 "CAMERAS" = "MÁY ẢNH";
-"CONTACT SHEET" = "BẢNG LIÊN HỆ";
-"COVER PHOTO" = "ẢNH BÌA";
-"CREATE POST" = "TẠO BÀI ĐĂNG";
+"CONTACT SHEET" = "CONTACT SHEET";
+"COVER PHOTO" = "Ảnh bìa";
+"CREATE POST" = "Tạo bài đăng";
+
 "Camera" = "Máy ảnh";
 "Camera Database" = "Cơ sở dữ liệu máy ảnh";
 "Camera Details" = "Chi tiết máy ảnh";
-"Camera access needed" = "Cần có quyền truy cập vào máy ảnh";
+"Camera access needed" = "Cần quyền truy cập máy ảnh";
 "Cameras" = "Máy ảnh";
-"Cancel" = "Hủy bỏ";
-"Change Camera" = "Thay đổi máy ảnh";
-"Change Film" = "Thay đổi phim";
-"Change Film Stock" = "Thay đổi kho phim";
-"Change Lab" = "Phòng thí nghiệm thay đổi";
+
+"Cancel" = "Hủy";
+
+"Change Camera" = "Đổi máy ảnh";
+"Change Film" = "Đổi phim";
+"Change Film Stock" = "Đổi loại phim";
+"Change Lab" = "Đổi lab";
+
 "Choose Film" = "Chọn phim";
 "Choose from 930+ cameras" = "Chọn từ hơn 930 máy ảnh";
-"Clear" = "Thông thoáng";
-"Clear Cache" = "Xóa bộ nhớ đệm";
+
+"Clear" = "Xóa";
+"Clear Cache" = "Xóa cache";
 "Clear Recipe" = "Xóa công thức";
 "Cleared" = "Đã xóa";
+
 "Close" = "Đóng";
 "Confirm" = "Xác nhận";
 "Confirm Location" = "Xác nhận vị trí";
-"Contact Sheet" = "Bảng liên hệ";
+
+"Contact Sheet" = "Contact Sheet";
 "Copied!" = "Đã sao chép!";
-"Copy Drive Link" = "Sao chép liên kết ổ đĩa";
+"Copy Drive Link" = "Sao chép link Google Drive";
+
 "Copyright" = "Bản quyền";
-"Create Custom Film" = "Tạo phim tùy chỉnh";
+
+"Create Custom Film" = "Tạo film tùy chỉnh";
 "Create Post" = "Tạo bài đăng";
-"Custom Film" = "Phim tùy chỉnh";
+
+"Custom Film" = "Film tùy chỉnh";
+
 "DATA" = "DỮ LIỆU";
-"DEVELOPING LAB" = "PHÒNG THÍ NGHIỆM PHÁT TRIỂN";
-"DEVELOPMENT" = "PHÁT TRIỂN";
+"DEVELOPING LAB" = "LAB PHÁT TRIỂN";
+"DEVELOPMENT" = "QUÁ TRÌNH PHÁT TRIỂN";
+
 "Darkroom" = "Phòng tối";
-"Delete" = "Xóa bỏ";
-"Delete Roll" = "Xóa cuộn";
+
+"Delete" = "Xóa";
+"Delete Roll" = "Xóa cuộn phim";
+
 "Details" = "Chi tiết";
-"Developing Lab" = "Phòng thí nghiệm phát triển";
-"Development Recipe" = "Công thức phát triển";
+"Developing Lab" = "Lab phát triển";
+"Development Recipe" = "Công thức tráng phim";
 "Done" = "Xong";
-"EV Compensation" = "Bồi thường EV";
-"Edit Camera" = "Chỉnh sửa máy ảnh";
-"Edit Date" = "Chỉnh sửa ngày";
-"Edit Details" = "Chỉnh sửa chi tiết";
-"Enable Reminders" = "Bật lời nhắc";
-"Enable camera access for FilmVault in Settings to use the light meter." = "Cho phép truy cập máy ảnh cho FilmVault trong Cài đặt để sử dụng đồng hồ đo ánh sáng.";
-"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "Bật thông báo cho FilmVault trong Cài đặt iOS để nhận lời nhắc cuộn.";
+
+"EV Compensation" = "Bù EV";
+
+"Edit Camera" = "Sửa máy ảnh";
+"Edit Date" = "Sửa ngày";
+"Edit Details" = "Sửa chi tiết";
+
+"Enable Reminders" = "Bật nhắc nhở";
+
+"Enable camera access for FilmVault in Settings to use the light meter." = "Bật quyền truy cập camera trong Cài đặt để sử dụng đo sáng.";
+"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "Bật thông báo trong Cài đặt iOS để nhận nhắc nhở cuộn phim.";
+
 "Export Data" = "Xuất dữ liệu";
-"Exposure" = "Phơi bày";
-"Exposures" = "Phơi nhiễm";
+
+"Exposure" = "Phơi sáng";
+"Exposures" = "Khung hình";
+
 "FILM NAME" = "TÊN PHIM";
-"FILM STOCK" = "KHO PHIM";
+"FILM STOCK" = "LOẠI PHIM";
 "FILM TYPE" = "LOẠI PHIM";
-"FILMVAULT" = "PHIMVAULT";
-"Find" = "Tìm thấy";
-"Flash" = "đèn flash";
+"FILMVAULT" = "FILMVAULT";
+
+"Find" = "Tìm";
+"Flash" = "Flash";
 "Format" = "Định dạng";
-"GENERAL" = "TỔNG QUAN";
-"GOOGLE DRIVE" = "GOOGLE Drive";
-"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "Nhận thông báo về các cuộn bạn vẫn đang quay và các cuộn đã hoàn thành đang chờ được phát triển.";
+
+"GENERAL" = "CHUNG";
+"GOOGLE DRIVE" = "GOOGLE DRIVE";
+
+"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "Nhận thông báo về các cuộn đang chụp và cuộn đã chụp xong đang chờ tráng.";
+
 "ISO" = "ISO";
-"Import" = "Nhập khẩu";
+"Import" = "Nhập";
 "Import Data" = "Nhập dữ liệu";
 "Import Photos" = "Nhập ảnh";
-"Import complete" = "Nhập hoàn tất";
-"Import photos from your camera roll to fill this film roll" = "Nhập ảnh từ thư viện ảnh của bạn để lấp đầy cuộn phim này";
+"Import complete" = "Nhập xong";
+
+"Import photos from your camera roll to fill this film roll" = "Nhập ảnh từ thư viện để thêm vào cuộn phim";
+
 "LANGUAGE" = "NGÔN NGỮ";
-"LIGHT METER" = "ĐỒNG HỒ ÁNH SÁNG";
+"LIGHT METER" = "ĐO SÁNG";
 "LOCATION" = "VỊ TRÍ";
-"Light Meter" = "Máy đo ánh sáng";
+
+"Light Meter" = "Đo sáng";
 "Location" = "Vị trí";
-"Log your developer, dilution, temperature, time and push/pull." = "Ghi lại nhà phát triển, độ pha loãng, nhiệt độ, thời gian và đẩy/kéo.";
-"MY CUSTOM FILMS" = "PHIM TÙY CHỈNH CỦA TÔI";
-"Mark Active" = "Đánh dấu hoạt động";
-"Mark Developed" = "Đánh dấu phát triển";
-"NOTES" = "LƯU Ý";
+
+"Log your developer, dilution, temperature, time and push/pull." = "Ghi lại developer, độ pha loãng, nhiệt độ, thời gian và push/pull.";
+
+"MY CUSTOM FILMS" = "FILM TÙY CHỈNH";
+
+"Mark Active" = "Đánh dấu đang dùng";
+"Mark Developed" = "Đánh dấu đã tráng";
+
+"NOTES" = "GHI CHÚ";
+
 "New Camera" = "Máy ảnh mới";
 "New Roll" = "Cuộn mới";
-"Next" = "Kế tiếp";
+
+"Next" = "Tiếp";
+
 "No Camera" = "Không có máy ảnh";
-"No Selection" = "Không có lựa chọn";
+"No Selection" = "Chưa chọn";
 "No cameras yet" = "Chưa có máy ảnh";
-"No cameras yet. Add cameras from the Cameras tab." = "Chưa có máy ảnh. Thêm camera từ tab Camera.";
+"No cameras yet. Add cameras from the Cameras tab." = "Chưa có máy ảnh. Thêm trong tab Cameras.";
+
 "No photo" = "Không có ảnh";
-"No photos yet" = "Chưa có ảnh nào";
-"No results found" = "Không tìm thấy kết quả nào";
-"No rolls yet" = "Chưa có cuộn nào";
+"No photos yet" = "Chưa có ảnh";
+"No results found" = "Không tìm thấy kết quả";
+"No rolls yet" = "Chưa có cuộn phim";
+
 "Notes" = "Ghi chú";
-"OK" = "ĐƯỢC RỒI";
+
+"OK" = "OK";
 "Open Settings" = "Mở Cài đặt";
-"PHOTOS" = "HÌNH ẢNH";
-"Paste a Google Drive folder or file link to download and import photos." = "Dán liên kết tệp hoặc thư mục Google Drive để tải xuống và nhập ảnh.";
+
+"PHOTOS" = "ẢNH";
+
+"Paste a Google Drive folder or file link to download and import photos." = "Dán link Google Drive để tải và nhập ảnh.";
+
 "Photo" = "Ảnh";
 "Photo Import" = "Nhập ảnh";
-"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "Ảnh vẫn được liên kết với Thư viện ảnh của bạn nên bản sao lưu sẽ giữ mọi thứ sau khi cài đặt lại. Nhập kết hợp vào dữ liệu hiện có.";
-"Photos will be stitched into a seamless carousel" = "Hình ảnh sẽ được ghép vào một băng chuyền liền mạch";
-"Push/Pull" = "Đẩy/Kéo";
+
+"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "Ảnh vẫn liên kết với thư viện, backup sẽ giữ dữ liệu sau khi cài lại. Import sẽ gộp vào dữ liệu hiện có.";
+
+"Photos will be stitched into a seamless carousel" = "Ảnh sẽ được ghép thành carousel mượt";
+
+"Push/Pull" = "Push/Pull";
+
 "REMINDERS" = "NHẮC NHỞ";
-"Reset" = "Cài lại";
-"Reset Onboarding" = "Đặt lại quá trình giới thiệu";
-"Restore from a backup file" = "Khôi phục từ tập tin sao lưu";
-"Rolls" = "Bánh cuốn";
+
+"Reset" = "Đặt lại";
+"Reset Onboarding" = "Reset onboarding";
+
+"Restore from a backup file" = "Khôi phục từ file backup";
+
+"Rolls" = "Cuộn phim";
+
 "SETTINGS" = "CÀI ĐẶT";
-"SLIDES" = "TRƯỢT";
-"STORAGE" = "KHO";
-"Save" = "Cứu";
+"SLIDES" = "SLIDES";
+"STORAGE" = "BỘ NHỚ";
+
+"Save" = "Lưu";
 "Save Camera" = "Lưu máy ảnh";
 "Save Changes" = "Lưu thay đổi";
-"Save Custom Film" = "Lưu phim tùy chỉnh";
+"Save Custom Film" = "Lưu film tùy chỉnh";
 "Save Frame" = "Lưu khung";
 "Save Recipe" = "Lưu công thức";
+
 "Saved to Photos" = "Đã lưu vào Ảnh";
-"Seamless Carousel" = "Băng chuyền liền mạch";
-"Search rolls and frames" = "Tìm kiếm cuộn và khung";
-"Select" = "Lựa chọn";
+
+"Seamless Carousel" = "Carousel mượt";
+
+"Search rolls and frames" = "Tìm cuộn và khung";
+
+"Select" = "Chọn";
 "Select All" = "Chọn tất cả";
 "Select Camera" = "Chọn máy ảnh";
-"Select Lab" = "Chọn phòng thí nghiệm";
+"Select Lab" = "Chọn lab";
 "Select Photos" = "Chọn ảnh";
 "Select at least 2 photos" = "Chọn ít nhất 2 ảnh";
-"Set developed date" = "Đặt ngày phát triển";
+
+"Set developed date" = "Đặt ngày tráng";
+
 "Settings" = "Cài đặt";
+
 "Share" = "Chia sẻ";
-"Shot Info" = "Thông tin bắn";
+
+"Shot Info" = "Thông tin chụp";
+
 "Shutter Speed" = "Tốc độ màn trập";
+
 "Sign Out" = "Đăng xuất";
-"Sign in to Google Drive" = "Đăng nhập vào Google Drive";
-"Skip" = "Nhảy";
+
+"Sign in to Google Drive" = "Đăng nhập Google Drive";
+
+"Skip" = "Bỏ qua";
+
 "Start Date" = "Ngày bắt đầu";
-"Start documenting your analog\\nphotography journey" = "Bắt đầu ghi lại hành trình chụp ảnh analog\\ncủa bạn";
-"Start your analog journey" = "Bắt đầu hành trình tương tự của bạn";
-"Stops" = "Điểm dừng";
-"Storage" = "Kho";
-"Tap to add cover" = "Nhấn để thêm bìa";
-"Tap to change" = "Nhấn để thay đổi";
+
+"Start documenting your analog photography journey" = "Bắt đầu ghi lại hành trình analog photography của bạn";
+
+"Start your analog journey" = "Bắt đầu hành trình analog";
+
+"Stops" = "Stops";
+
+"Storage" = "Bộ nhớ";
+
+"Tap to add cover" = "Chạm để thêm ảnh bìa";
+"Tap to change" = "Chạm để thay đổi";
+
 "Temperature" = "Nhiệt độ";
-"The onboarding screen will show again next time you open the app." = "Màn hình giới thiệu sẽ hiển thị lại vào lần tiếp theo bạn mở ứng dụng.";
-"This will clear temporary files and URL cache. Cover images will be kept." = "Điều này sẽ xóa các tập tin tạm thời và bộ đệm URL. Ảnh bìa sẽ được giữ lại.";
+
+"The onboarding screen will show again next time you open the app." = "Màn onboarding sẽ hiện lại khi bạn mở app lần sau.";
+
+"This will clear temporary files and URL cache. Cover images will be kept." = "Xóa cache và file tạm, ảnh bìa vẫn được giữ.";
+
 "Time" = "Thời gian";
-"Time of day" = "Thời gian trong ngày";
-"Try a different search term" = "Hãy thử một cụm từ tìm kiếm khác";
-"Type" = "Kiểu";
-"Upload film photos to your Drive" = "Tải ảnh phim lên Drive của bạn";
-"Upload to Drive" = "Tải lên Drive";
-"Use Current Location" = "Sử dụng vị trí hiện tại";
-"Used for highlights and buttons across the app" = "Được sử dụng để làm nổi bật và các nút trên ứng dụng";
+"Time of day" = "Thời điểm trong ngày";
+
+"Try a different search term" = "Thử từ khóa khác";
+
+"Type" = "Loại";
+
+"Upload film photos to your Drive" = "Upload ảnh film lên Google Drive";
+"Upload to Drive" = "Upload lên Drive";
+
+"Use Current Location" = "Dùng vị trí hiện tại";
+
+"Used for highlights and buttons across the app" = "Dùng cho highlight và nút trong app";
+
 "Version" = "Phiên bản";
+
 "View Full Screen" = "Xem toàn màn hình";
-"When reminders are delivered" = "Khi lời nhắc được gửi";
-"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Bạn sẽ đăng xuất khỏi Google Drive. Ảnh đã tải lên sẽ vẫn còn trên Drive.";
+
+"When reminders are delivered" = "Khi nhắc nhở được gửi";
+
+"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Bạn sẽ đăng xuất Google Drive. Ảnh đã upload vẫn còn trên Drive.";

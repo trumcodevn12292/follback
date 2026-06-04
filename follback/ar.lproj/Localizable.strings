@@ -1,165 +1,252 @@
-/* FilmVault UI strings (ar) */
-"+ Add Camera" = "+ إضافة كاميرا";
+
+"+ Add Camera" = "إضافة كاميرا";
+
 "ABOUT" = "عن";
-"APERTURE" = "فتحة";
-"APPEARANCE" = "مظهر";
+"APERTURE" = "فتحة العدسة";
+"APPEARANCE" = "المظهر";
 "Accent Color" = "لون مميز";
-"Add Camera" = "أضف الكاميرا";
-"Add your cameras and lenses to track which gear you use with each roll" = "أضف الكاميرات والعدسات الخاصة بك لتتبع المعدات التي تستخدمها مع كل لفة";
-"Add your own film stock" = "أضف مخزون الفيلم الخاص بك";
-"Aperture" = "فتحة";
-"Archive" = "أرشيف";
+
+"Add Camera" = "إضافة كاميرا";
+"Add your cameras and lenses to track which gear you use with each roll" = "أضف الكاميرات والعدسات لتتبع المعدات المستخدمة مع كل فيلم";
+"Add your own film stock" = "أضف نوع فيلم خاص بك";
+
+"Aperture" = "فتحة العدسة";
+"Archive" = "الأرشيف";
+
 "BASIC SETTINGS" = "الإعدادات الأساسية";
 "Basic Info" = "معلومات أساسية";
-"Browse Camera Database" = "تصفح قاعدة بيانات الكاميرا";
-"Browse the full camera database" = "تصفح قاعدة بيانات الكاميرا الكاملة";
+
+"Browse Camera Database" = "تصفح قاعدة بيانات الكاميرات";
+"Browse the full camera database" = "تصفح قاعدة بيانات الكاميرات بالكامل";
+
 "CAMERAS" = "الكاميرات";
 "CONTACT SHEET" = "ورقة الاتصال";
 "COVER PHOTO" = "صورة الغلاف";
-"CREATE POST" = "إنشاء مشاركة";
-"Camera" = "آلة تصوير";
-"Camera Database" = "قاعدة بيانات الكاميرا";
+"CREATE POST" = "إنشاء منشور";
+
+"Camera" = "كاميرا";
+"Camera Database" = "قاعدة بيانات الكاميرات";
 "Camera Details" = "تفاصيل الكاميرا";
-"Camera access needed" = "الوصول إلى الكاميرا مطلوب";
+"Camera access needed" = "مطلوب الوصول إلى الكاميرا";
 "Cameras" = "الكاميرات";
-"Cancel" = "يلغي";
+
+"Cancel" = "إلغاء";
+
 "Change Camera" = "تغيير الكاميرا";
 "Change Film" = "تغيير الفيلم";
-"Change Film Stock" = "تغيير مخزون الفيلم";
-"Change Lab" = "مختبر التغيير";
+"Change Film Stock" = "تغيير نوع الفيلم";
+"Change Lab" = "تغيير المختبر";
+
 "Choose Film" = "اختر فيلم";
 "Choose from 930+ cameras" = "اختر من بين أكثر من 930 كاميرا";
-"Clear" = "واضح";
+
+"Clear" = "مسح";
 "Clear Cache" = "مسح ذاكرة التخزين المؤقت";
-"Clear Recipe" = "وصفة واضحة";
-"Cleared" = "مسح";
-"Close" = "يغلق";
-"Confirm" = "يتأكد";
+"Clear Recipe" = "مسح الإعدادات";
+"Cleared" = "تم المسح";
+
+"Close" = "إغلاق";
+"Confirm" = "تأكيد";
 "Confirm Location" = "تأكيد الموقع";
+
 "Contact Sheet" = "ورقة الاتصال";
-"Copied!" = "منسوخ!";
-"Copy Drive Link" = "انسخ رابط محرك الأقراص";
-"Copyright" = "حقوق الطبع والنشر";
+"Copied!" = "تم النسخ!";
+"Copy Drive Link" = "نسخ رابط Google Drive";
+
+"Copyright" = "حقوق النشر";
+
 "Create Custom Film" = "إنشاء فيلم مخصص";
-"Create Post" = "إنشاء مشاركة";
+"Create Post" = "إنشاء منشور";
+
 "Custom Film" = "فيلم مخصص";
-"DATA" = "بيانات";
-"DEVELOPING LAB" = "مختبر التطوير";
-"DEVELOPMENT" = "تطوير";
-"Darkroom" = "غرفة مظلمة";
-"Delete" = "يمسح";
-"Delete Roll" = "حذف رول";
-"Details" = "تفاصيل";
-"Developing Lab" = "مختبر التطوير";
-"Development Recipe" = "وصفة التنمية";
-"Done" = "منتهي";
-"EV Compensation" = "تعويض المركبات الكهربائية";
-"Edit Camera" = "تحرير الكاميرا";
-"Edit Date" = "تحرير التاريخ";
-"Edit Details" = "تحرير التفاصيل";
-"Enable Reminders" = "تمكين التذكيرات";
-"Enable camera access for FilmVault in Settings to use the light meter." = "قم بتمكين الوصول إلى الكاميرا لـ FilmVault في الإعدادات لاستخدام مقياس الضوء.";
-"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "قم بتمكين إشعارات FilmVault في إعدادات iOS لتلقي تذكيرات القوائم.";
+
+"DATA" = "البيانات";
+"DEVELOPING LAB" = "مختبر التحميض";
+"DEVELOPMENT" = "التحميض";
+
+"Darkroom" = "غرفة التحميض";
+"Delete" = "حذف";
+"Delete Roll" = "حذف الفيلم";
+
+"Details" = "التفاصيل";
+"Developing Lab" = "مختبر التحميض";
+"Development Recipe" = "وصفة التحميض";
+"Done" = "تم";
+
+"EV Compensation" = "تعويض التعريض";
+
+"Edit Camera" = "تعديل الكاميرا";
+"Edit Date" = "تعديل التاريخ";
+"Edit Details" = "تعديل التفاصيل";
+
+"Enable Reminders" = "تفعيل التذكيرات";
+
+"Enable camera access for FilmVault in Settings to use the light meter." = "فعّل الوصول إلى الكاميرا في الإعدادات لاستخدام مقياس الضوء.";
+"Enable notifications for FilmVault in iOS Settings to receive roll reminders." = "فعّل الإشعارات في إعدادات iOS لتلقي تذكيرات الأفلام.";
+
 "Export Data" = "تصدير البيانات";
-"Exposure" = "التعرض";
-"Exposures" = "التعرض";
+
+"Exposure" = "التعريض";
+"Exposures" = "التعريضات";
+
 "FILM NAME" = "اسم الفيلم";
-"FILM STOCK" = "مخزون الفيلم";
+"FILM STOCK" = "نوع الفيلم";
 "FILM TYPE" = "نوع الفيلم";
-"FILMVAULT" = "فيلمفولت";
-"Find" = "يجد";
+
+"FILMVAULT" = "FilmVault";
+
+"Find" = "بحث";
 "Flash" = "فلاش";
-"Format" = "شكل";
+"Format" = "التنسيق";
+
 "GENERAL" = "عام";
-"GOOGLE DRIVE" = "محرك جوجل";
-"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "احصل على إشعارات بشأن اللفات التي لا تزال تقوم بتصويرها واللفائف النهائية التي تنتظر التطوير.";
-"ISO" = "ايزو";
-"Import" = "يستورد";
+"GOOGLE DRIVE" = "Google Drive";
+
+"Get notified about rolls you're still shooting and finished rolls waiting to be developed." = "احصل على إشعارات حول الأفلام التي لا تزال تصورها والأفلام الجاهزة للتحميض.";
+
+"ISO" = "ISO";
+"Import" = "استيراد";
 "Import Data" = "استيراد البيانات";
 "Import Photos" = "استيراد الصور";
 "Import complete" = "اكتمل الاستيراد";
-"Import photos from your camera roll to fill this film roll" = "قم باستيراد الصور من لفة الكاميرا الخاصة بك لملء لفة الفيلم هذه";
-"LANGUAGE" = "لغة";
+
+"Import photos from your camera roll to fill this film roll" = "استورد الصور من ألبوم الكاميرا لملء هذا الفيلم";
+
+"LANGUAGE" = "اللغة";
 "LIGHT METER" = "مقياس الضوء";
-"LOCATION" = "موقع";
+"LOCATION" = "الموقع";
+
 "Light Meter" = "مقياس الضوء";
-"Location" = "موقع";
-"Log your developer, dilution, temperature, time and push/pull." = "قم بتسجيل المطور والتخفيف ودرجة الحرارة والوقت والدفع/السحب.";
+"Location" = "الموقع";
+
+"Log your developer, dilution, temperature, time and push/pull." = "سجّل المطور والتخفيف ودرجة الحرارة والوقت وpush/pull.";
+
 "MY CUSTOM FILMS" = "أفلامي المخصصة";
-"Mark Active" = "وضع علامة نشط";
-"Mark Developed" = "تم تطوير مارك";
-"NOTES" = "ملحوظات";
+
+"Mark Active" = "تعيين نشط";
+"Mark Developed" = "تعيين كمُطوّر";
+
+"NOTES" = "ملاحظات";
+
 "New Camera" = "كاميرا جديدة";
-"New Roll" = "رول جديد";
+"New Roll" = "فيلم جديد";
+
 "Next" = "التالي";
-"No Camera" = "لا كاميرا";
+
+"No Camera" = "لا توجد كاميرا";
 "No Selection" = "لا يوجد اختيار";
 "No cameras yet" = "لا توجد كاميرات بعد";
-"No cameras yet. Add cameras from the Cameras tab." = "لا توجد كاميرات بعد. أضف كاميرات من علامة التبويب \"الكاميرات\".";
+"No cameras yet. Add cameras from the Cameras tab." = "لا توجد كاميرات بعد. أضف كاميرات من تبويب الكاميرات.";
+
 "No photo" = "لا توجد صورة";
 "No photos yet" = "لا توجد صور بعد";
 "No results found" = "لم يتم العثور على نتائج";
-"No rolls yet" = "لا لفات بعد";
-"Notes" = "ملحوظات";
-"OK" = "نعم";
-"Open Settings" = "افتح الإعدادات";
+"No rolls yet" = "لا توجد أفلام بعد";
+
+"Notes" = "ملاحظات";
+
+"OK" = "حسناً";
+"Open Settings" = "فتح الإعدادات";
+
 "PHOTOS" = "الصور";
-"Paste a Google Drive folder or file link to download and import photos." = "الصق مجلد Google Drive أو رابط الملف لتنزيل الصور واستيرادها.";
+
+"Paste a Google Drive folder or file link to download and import photos." = "الصق رابط مجلد أو ملف Google Drive لتنزيل الصور واستيرادها.";
+
 "Photo" = "صورة";
 "Photo Import" = "استيراد الصور";
-"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "تظل الصور مرتبطة بمكتبة الصور الخاصة بك، لذا فإن النسخة الاحتياطية تحافظ على كل شيء بعد إعادة التثبيت. استيراد عمليات الدمج في البيانات الموجودة.";
-"Photos will be stitched into a seamless carousel" = "سيتم خياطة الصور في دائري سلس";
-"Push/Pull" = "دفع/سحب";
-"REMINDERS" = "تذكيرات";
-"Reset" = "إعادة ضبط";
-"Reset Onboarding" = "إعادة تعيين الإعداد";
-"Restore from a backup file" = "استعادة من ملف النسخ الاحتياطي";
-"Rolls" = "لفات";
-"SETTINGS" = "إعدادات";
+
+"Photos stay linked to your Photo Library, so a backup keeps everything after reinstalling. Importing merges into existing data." = "تبقى الصور مرتبطة بمكتبة الصور، لذلك يضمن النسخ الاحتياطي عدم فقدان البيانات بعد إعادة التثبيت. يتم دمج الاستيراد مع البيانات الحالية.";
+
+"Photos will be stitched into a seamless carousel" = "سيتم دمج الصور في عرض متتابع سلس";
+
+"Push/Pull" = "Push/Pull";
+
+"REMINDERS" = "التذكيرات";
+
+"Reset" = "إعادة تعيين";
+"Reset Onboarding" = "إعادة تعيين الإعداد الأولي";
+
+"Restore from a backup file" = "استعادة من ملف نسخة احتياطية";
+
+"Rolls" = "الأفلام";
+
+"SETTINGS" = "الإعدادات";
 "SLIDES" = "شرائح";
-"STORAGE" = "تخزين";
-"Save" = "يحفظ";
+"STORAGE" = "التخزين";
+
+"Save" = "حفظ";
 "Save Camera" = "حفظ الكاميرا";
 "Save Changes" = "حفظ التغييرات";
-"Save Custom Film" = "حفظ الفيلم المخصص";
+"Save Custom Film" = "حفظ فيلم مخصص";
 "Save Frame" = "حفظ الإطار";
 "Save Recipe" = "حفظ الوصفة";
+
 "Saved to Photos" = "تم الحفظ في الصور";
-"Seamless Carousel" = "دائري سلس";
-"Search rolls and frames" = "لفات البحث والإطارات";
-"Select" = "يختار";
-"Select All" = "حدد الكل";
-"Select Camera" = "حدد الكاميرا";
-"Select Lab" = "حدد معملًا";
-"Select Photos" = "حدد الصور";
-"Select at least 2 photos" = "حدد صورتين على الأقل";
-"Set developed date" = "تحديد تاريخ التطوير";
-"Settings" = "إعدادات";
-"Share" = "يشارك";
-"Shot Info" = "معلومات النار";
-"Shutter Speed" = "سرعة مصراع الكاميرا";
+
+"Seamless Carousel" = "عرض سلس";
+
+"Search rolls and frames" = "ابحث في الأفلام والإطارات";
+
+"Select" = "اختيار";
+"Select All" = "اختيار الكل";
+"Select Camera" = "اختيار الكاميرا";
+"Select Lab" = "اختيار المختبر";
+"Select Photos" = "اختيار الصور";
+"Select at least 2 photos" = "اختر صورتين على الأقل";
+
+"Set developed date" = "تحديد تاريخ التحميض";
+
+"Settings" = "الإعدادات";
+
+"Share" = "مشاركة";
+
+"Shot Info" = "معلومات التصوير";
+
+"Shutter Speed" = "سرعة الغالق";
+
 "Sign Out" = "تسجيل الخروج";
-"Sign in to Google Drive" = "قم بتسجيل الدخول إلى جوجل درايف";
-"Skip" = "يتخطى";
+
+"Sign in to Google Drive" = "تسجيل الدخول إلى Google Drive";
+
+"Skip" = "تخطي";
+
 "Start Date" = "تاريخ البدء";
-"Start documenting your analog\\nphotography journey" = "ابدأ بتوثيق رحلة التصوير الفوتوغرافي\\nالتناظرية الخاصة بك";
-"Start your analog journey" = "ابدأ رحلتك التناظرية";
-"Stops" = "توقف";
-"Storage" = "تخزين";
-"Tap to add cover" = "انقر لإضافة غطاء";
-"Tap to change" = "انقر للتغيير";
-"Temperature" = "درجة حرارة";
-"The onboarding screen will show again next time you open the app." = "ستظهر شاشة الإعداد مرة أخرى في المرة التالية التي تفتح فيها التطبيق.";
-"This will clear temporary files and URL cache. Cover images will be kept." = "سيؤدي هذا إلى مسح الملفات المؤقتة وذاكرة التخزين المؤقت لعنوان URL. سيتم الاحتفاظ بصور الغلاف.";
-"Time" = "وقت";
-"Time of day" = "الوقت من اليوم";
-"Try a different search term" = "حاول استخدام مصطلح بحث مختلف";
-"Type" = "يكتب";
-"Upload film photos to your Drive" = "تحميل صور الفيلم إلى Drive الخاص بك";
-"Upload to Drive" = "تحميل إلى Drive";
-"Use Current Location" = "استخدم الموقع الحالي";
-"Used for highlights and buttons across the app" = "يستخدم للإبرازات والأزرار عبر التطبيق";
-"Version" = "إصدار";
-"View Full Screen" = "عرض ملء الشاشة";
-"When reminders are delivered" = "عندما يتم تسليم التذكيرات";
-"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "سيتم تسجيل خروجك من Google Drive. ستظل الصور التي تم تحميلها بالفعل على Drive.";
+
+"Start documenting your analog photography journey" = "ابدأ توثيق رحلتك في التصوير التناظري";
+
+"Start your analog journey" = "ابدأ رحلتك في التصوير التناظري";
+
+"Stops" = "وقفات";
+
+"Storage" = "التخزين";
+
+"Tap to add cover" = "اضغط لإضافة غلاف";
+"Tap to change" = "اضغط للتغيير";
+
+"Temperature" = "درجة الحرارة";
+
+"The onboarding screen will show again next time you open the app." = "ستظهر شاشة البداية مرة أخرى عند فتح التطبيق القادم.";
+
+"This will clear temporary files and URL cache. Cover images will be kept." = "سيتم مسح الملفات المؤقتة وذاكرة التخزين المؤقت مع الاحتفاظ بصور الغلاف.";
+
+"Time" = "الوقت";
+"Time of day" = "وقت اليوم";
+
+"Try a different search term" = "جرّب مصطلح بحث آخر";
+
+"Type" = "النوع";
+
+"Upload film photos to your Drive" = "رفع صور الفيلم إلى Google Drive";
+"Upload to Drive" = "رفع إلى Google Drive";
+
+"Use Current Location" = "استخدام الموقع الحالي";
+
+"Used for highlights and buttons across the app" = "يستخدم للأزرار والعناصر المميزة في التطبيق";
+
+"Version" = "الإصدار";
+
+"View Full Screen" = "عرض بملء الشاشة";
+
+"When reminders are delivered" = "وقت إرسال التذكيرات";
+
+"You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "سيتم تسجيل خروجك من Google Drive، وستبقى الصور المرفوعة مسبقاً محفوظة.";
