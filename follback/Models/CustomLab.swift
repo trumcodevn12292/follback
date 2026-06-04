@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import Combine
 
 /// A lab the user adds by hand (name, optional description, optional avatar image).
 /// Stored in UserDefaults via `CustomLabStore` (same approach as `CustomFilm`),
