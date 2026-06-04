@@ -252,3 +252,41 @@
 "When reminders are delivered" = "リマインダー配信時";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Google Driveからサインアウトされます。アップロード済みの写真はDriveに残ります。";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "現像液";
+"DILUTION" = "希釈";
+"TEMPERATURE & TIME" = "温度と時間";
+"PUSH / PULL" = "増感 / 減感";
+"AGITATION" = "撹拌";
+"DEVELOPED" = "現像済み";
+"Date" = "日付";
+"RECIPE NOTES" = "レシピメモ";
+"Shooting nudge" = "撮影リマインド";
+"After a roll stays in progress" = "ロールが撮影途中のままのとき";
+"Develop reminder" = "現像リマインド";
+"After a roll is finished" = "ロールを撮り終えたあと";
+"days" = "日";
+"Box speed" = "標準感度";
+"Push" = "増感";
+"Pull" = "減感";
+"stop" = "段";
+"stops" = "段";
+"e.g. Kodak D-76" = "例：Kodak D-76";
+"e.g. 1+1" = "例：1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "例：最初30秒、その後30秒ごとに3回反転";
+"Still shooting %@?" = "%@ はまだ撮影中ですか？";
+"This roll has been in progress for a while. %d/%d frames so far." = "このロールはしばらく撮影途中のままです。現在 %d/%d 枚。";
+"Time to develop %@" = "%@ を現像する時間です";
+"You finished this roll. Drop it off at the lab so you don't forget." = "このロールを撮り終えました。忘れないうちにラボへ出しましょう。";
+"Developed %@" = "現像日 %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "フィルム判";
+"Photos" = "枚数";
+"Add" = "追加";
+"Shooting" = "撮影中";
+"Shot" = "撮影済み";
+"Archived" = "アーカイブ済み";
+"Add Location" = "場所を追加";
+"%d photos" = "%d 枚";

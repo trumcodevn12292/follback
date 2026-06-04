@@ -251,3 +251,41 @@
 "When reminders are delivered" = "Cuándo se entregan los recordatorios";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Se cerrará sesión en Google Drive. Las fotos ya subidas permanecerán en Drive.";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "REVELADOR";
+"DILUTION" = "DILUCIÓN";
+"TEMPERATURE & TIME" = "TEMPERATURA Y TIEMPO";
+"PUSH / PULL" = "PUSH / PULL";
+"AGITATION" = "AGITACIÓN";
+"DEVELOPED" = "REVELADO";
+"Date" = "Fecha";
+"RECIPE NOTES" = "NOTAS DE LA RECETA";
+"Shooting nudge" = "Aviso de disparo";
+"After a roll stays in progress" = "Cuando un rollo sigue en progreso";
+"Develop reminder" = "Aviso de revelado";
+"After a roll is finished" = "Cuando un rollo se termina";
+"days" = "días";
+"Box speed" = "ISO nominal";
+"Push" = "Push";
+"Pull" = "Pull";
+"stop" = "paso";
+"stops" = "pasos";
+"e.g. Kodak D-76" = "ej. Kodak D-76";
+"e.g. 1+1" = "ej. 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "ej. 30s al inicio, luego 3 inversiones / 30s";
+"Still shooting %@?" = "¿Sigues disparando %@?";
+"This roll has been in progress for a while. %d/%d frames so far." = "Este rollo lleva un tiempo en progreso. %d/%d fotogramas hasta ahora.";
+"Time to develop %@" = "Hora de revelar %@";
+"You finished this roll. Drop it off at the lab so you don't forget." = "Terminaste este rollo. Llévalo al laboratorio para no olvidarlo.";
+"Developed %@" = "Revelado %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Formato";
+"Photos" = "Fotos";
+"Add" = "Añadir";
+"Shooting" = "Disparando";
+"Shot" = "Disparado";
+"Archived" = "Archivado";
+"Add Location" = "Añadir ubicación";
+"%d photos" = "%d fotos";

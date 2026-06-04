@@ -164,3 +164,41 @@
 "View Full Screen" = "全屏查看";
 "When reminders are delivered" = "提醒发送时间";
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "你将退出 Google 云端硬盘，已上传照片将保留。";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "显影液";
+"DILUTION" = "稀释比例";
+"TEMPERATURE & TIME" = "温度与时间";
+"PUSH / PULL" = "增感 / 减感";
+"AGITATION" = "搅动";
+"DEVELOPED" = "已冲洗";
+"Date" = "日期";
+"RECIPE NOTES" = "配方备注";
+"Shooting nudge" = "拍摄提醒";
+"After a roll stays in progress" = "当某卷胶卷长时间未拍完";
+"Develop reminder" = "冲洗提醒";
+"After a roll is finished" = "当某卷胶卷拍完后";
+"days" = "天";
+"Box speed" = "标准感光度";
+"Push" = "增感";
+"Pull" = "减感";
+"stop" = "档";
+"stops" = "档";
+"e.g. Kodak D-76" = "例如 Kodak D-76";
+"e.g. 1+1" = "例如 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "例如 起始30秒，之后每30秒翻转3次";
+"Still shooting %@?" = "还在拍 %@ 吗？";
+"This roll has been in progress for a while. %d/%d frames so far." = "这卷胶卷已经拍了一段时间了。目前 %d/%d 张。";
+"Time to develop %@" = "该冲洗 %@ 了";
+"You finished this roll. Drop it off at the lab so you don't forget." = "你已经拍完这卷了。记得拿去冲洗，别忘了。";
+"Developed %@" = "冲洗于 %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "画幅";
+"Photos" = "照片";
+"Add" = "添加";
+"Shooting" = "拍摄中";
+"Shot" = "已拍完";
+"Archived" = "已归档";
+"Add Location" = "添加地点";
+"%d photos" = "%d 张照片";

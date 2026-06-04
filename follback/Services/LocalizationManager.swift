@@ -2,6 +2,7 @@ import Foundation
 import Combine
 import SwiftUI
 import ObjectiveC
+import WidgetKit
 
 // MARK: - Supported languages
 
@@ -54,11 +55,13 @@ final class LocalizationManager: ObservableObject {
     static let shared = LocalizationManager()
 
     static let key = "appLanguage"
+    static let appGroup = "group.com.williamcachamwri.FilmVault"
 
     @Published var language: AppLanguage {
         didSet {
             UserDefaults.standard.set(language.rawValue, forKey: Self.key)
             Bundle.setAppLanguage(language.rawValue)
+            Self.shareWithWidget(language.rawValue)
         }
     }
 
@@ -68,6 +71,14 @@ final class LocalizationManager: ObservableObject {
             ?? LocalizationManager.systemDefault()
         self.language = resolved
         Bundle.setAppLanguage(resolved.rawValue)
+        Self.shareWithWidget(resolved.rawValue)
+    }
+
+    /// Mirror the chosen language into the shared App Group so the widget
+    /// extension (a separate process/bundle) can localize itself too.
+    private static func shareWithWidget(_ code: String) {
+        UserDefaults(suiteName: appGroup)?.set(code, forKey: key)
+        WidgetCenter.shared.reloadAllTimelines()
     }
 
     private static func systemDefault() -> AppLanguage {

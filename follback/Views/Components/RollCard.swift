@@ -49,7 +49,7 @@ struct RollCard: View {
                 Spacer()
 
                 if roll.filledFrames > 0 {
-                    Text("\(roll.filledFrames) photos")
+                    Text(L("%d photos", roll.filledFrames))
                         .font(.system(size: 13, weight: .medium))
                         .foregroundColor(Color.filmSecondary)
                 }

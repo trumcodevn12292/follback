@@ -97,8 +97,8 @@ final class ReminderManager: ObservableObject {
                 let fireDate = normalizedFireDate(from: base, hour: hour, now: now, calendar: calendar)
                 addRequest(
                     id: "\(idPrefix)stale.\(roll.id.uuidString)",
-                    title: "Still shooting \(roll.filmName)?",
-                    body: "This roll has been in progress for a while. \(roll.filledFrames)/\(roll.capacity) frames so far.",
+                    title: L("Still shooting %@?", roll.filmName),
+                    body: L("This roll has been in progress for a while. %d/%d frames so far.", roll.filledFrames, roll.capacity),
                     fireDate: fireDate,
                     calendar: calendar
                 )
@@ -108,8 +108,8 @@ final class ReminderManager: ObservableObject {
                 let fireDate = normalizedFireDate(from: base, hour: hour, now: now, calendar: calendar)
                 addRequest(
                     id: "\(idPrefix)develop.\(roll.id.uuidString)",
-                    title: "Time to develop \(roll.filmName)",
-                    body: "You finished this roll. Drop it off at the lab so you don't forget.",
+                    title: L("Time to develop %@", roll.filmName),
+                    body: L("You finished this roll. Drop it off at the lab so you don't forget."),
                     fireDate: fireDate,
                     calendar: calendar
                 )

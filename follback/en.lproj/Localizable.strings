@@ -163,3 +163,41 @@
 "View Full Screen" = "View Full Screen";
 "When reminders are delivered" = "When reminders are delivered";
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "You will be signed out of Google Drive. Photos already uploaded will remain on Drive.";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "DEVELOPER";
+"DILUTION" = "DILUTION";
+"TEMPERATURE & TIME" = "TEMPERATURE & TIME";
+"PUSH / PULL" = "PUSH / PULL";
+"AGITATION" = "AGITATION";
+"DEVELOPED" = "DEVELOPED";
+"Date" = "Date";
+"RECIPE NOTES" = "RECIPE NOTES";
+"Shooting nudge" = "Shooting nudge";
+"After a roll stays in progress" = "After a roll stays in progress";
+"Develop reminder" = "Develop reminder";
+"After a roll is finished" = "After a roll is finished";
+"days" = "days";
+"Box speed" = "Box speed";
+"Push" = "Push";
+"Pull" = "Pull";
+"stop" = "stop";
+"stops" = "stops";
+"e.g. Kodak D-76" = "e.g. Kodak D-76";
+"e.g. 1+1" = "e.g. 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "e.g. 30s initial, then 3 inversions / 30s";
+"Still shooting %@?" = "Still shooting %@?";
+"This roll has been in progress for a while. %d/%d frames so far." = "This roll has been in progress for a while. %d/%d frames so far.";
+"Time to develop %@" = "Time to develop %@";
+"You finished this roll. Drop it off at the lab so you don't forget." = "You finished this roll. Drop it off at the lab so you don't forget.";
+"Developed %@" = "Developed %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Film format";
+"Photos" = "Photos";
+"Add" = "Add";
+"Shooting" = "Shooting";
+"Shot" = "Shot";
+"Archived" = "Archived";
+"Add Location" = "Add Location";
+"%d photos" = "%d photos";

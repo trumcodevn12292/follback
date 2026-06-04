@@ -250,3 +250,41 @@
 "When reminders are delivered" = "وقت إرسال التذكيرات";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "سيتم تسجيل خروجك من Google Drive، وستبقى الصور المرفوعة مسبقاً محفوظة.";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "المُحمِّض";
+"DILUTION" = "التخفيف";
+"TEMPERATURE & TIME" = "الحرارة والوقت";
+"PUSH / PULL" = "Push / Pull";
+"AGITATION" = "التحريك";
+"DEVELOPED" = "تم التحميض";
+"Date" = "التاريخ";
+"RECIPE NOTES" = "ملاحظات الوصفة";
+"Shooting nudge" = "تنبيه التصوير";
+"After a roll stays in progress" = "عندما تبقى البكرة قيد التصوير مدة طويلة";
+"Develop reminder" = "تنبيه التحميض";
+"After a roll is finished" = "بعد الانتهاء من البكرة";
+"days" = "يوم";
+"Box speed" = "السرعة الاسمية";
+"Push" = "Push";
+"Pull" = "Pull";
+"stop" = "ستوب";
+"stops" = "ستوب";
+"e.g. Kodak D-76" = "مثال: Kodak D-76";
+"e.g. 1+1" = "مثال: 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "مثال: 30 ثانية في البداية، ثم 3 قلبات / 30 ثانية";
+"Still shooting %@?" = "هل ما زلت تصوّر %@؟";
+"This roll has been in progress for a while. %d/%d frames so far." = "هذه البكرة قيد التصوير منذ فترة. %d/%d لقطة حتى الآن.";
+"Time to develop %@" = "حان وقت تحميض %@";
+"You finished this roll. Drop it off at the lab so you don't forget." = "لقد أنهيت هذه البكرة. سلّمها إلى المعمل حتى لا تنساها.";
+"Developed %@" = "حُمّضت %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "مقاس الفيلم";
+"Photos" = "الصور";
+"Add" = "إضافة";
+"Shooting" = "قيد التصوير";
+"Shot" = "تم التصوير";
+"Archived" = "مؤرشف";
+"Add Location" = "إضافة موقع";
+"%d photos" = "%d صورة";

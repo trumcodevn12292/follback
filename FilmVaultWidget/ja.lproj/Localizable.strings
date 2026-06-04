@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "本";
+"photos" = "枚";
+"%d photos" = "%d 枚";
+"%d rolls" = "%d 本";
+"%d rolls • %d photos" = "%d 本 • %d 枚";
+"%d of %d frames" = "%d / %d 枚";

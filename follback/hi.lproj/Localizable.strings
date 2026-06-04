@@ -251,3 +251,41 @@
 "When reminders are delivered" = "जब रिमाइंडर भेजे जाते हैं";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "आप Google Drive से sign out हो जाएंगे। पहले से अपलोड फोटो Drive पर रहेंगी।";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "डेवलपर";
+"DILUTION" = "तनुकरण";
+"TEMPERATURE & TIME" = "तापमान और समय";
+"PUSH / PULL" = "पुश / पुल";
+"AGITATION" = "एजिटेशन";
+"DEVELOPED" = "डेवलप किया";
+"Date" = "तारीख";
+"RECIPE NOTES" = "रेसिपी नोट्स";
+"Shooting nudge" = "शूटिंग रिमाइंडर";
+"After a roll stays in progress" = "जब रोल लंबे समय तक अधूरा रहे";
+"Develop reminder" = "डेवलप रिमाइंडर";
+"After a roll is finished" = "जब रोल पूरा हो जाए";
+"days" = "दिन";
+"Box speed" = "बॉक्स स्पीड";
+"Push" = "पुश";
+"Pull" = "पुल";
+"stop" = "स्टॉप";
+"stops" = "स्टॉप";
+"e.g. Kodak D-76" = "उदा. Kodak D-76";
+"e.g. 1+1" = "उदा. 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "उदा. पहले 30s, फिर 3 बार उलटें / 30s";
+"Still shooting %@?" = "क्या आप अब भी %@ शूट कर रहे हैं?";
+"This roll has been in progress for a while. %d/%d frames so far." = "यह रोल कुछ समय से चल रहा है। अब तक %d/%d फ़्रेम।";
+"Time to develop %@" = "%@ को डेवलप करने का समय";
+"You finished this roll. Drop it off at the lab so you don't forget." = "आपने यह रोल पूरा कर लिया। इसे लैब में दे आएं ताकि भूल न जाएं।";
+"Developed %@" = "डेवलप किया %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "फ़िल्म फ़ॉर्मेट";
+"Photos" = "फ़ोटो";
+"Add" = "जोड़ें";
+"Shooting" = "शूटिंग";
+"Shot" = "शॉट";
+"Archived" = "संग्रहित";
+"Add Location" = "स्थान जोड़ें";
+"%d photos" = "%d फ़ोटो";

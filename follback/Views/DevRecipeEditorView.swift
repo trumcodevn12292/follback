@@ -259,7 +259,7 @@ struct DevRecipeEditorView: View {
 
     private func section<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title)
+            Text(LocalizedStringKey(title))
                 .font(.system(size: 12, weight: .bold))
                 .foregroundColor(Color.filmTertiary)
                 .kerning(0.8)
@@ -296,9 +296,10 @@ struct DevRecipeEditorView: View {
     }
 
     private func pushPullLabel(_ value: Float) -> String {
-        if value == 0 { return "Box speed" }
+        if value == 0 { return L("Box speed") }
         let sign = value > 0 ? "+" : ""
-        return "\(sign)\(Int(value)) stop\(abs(value) == 1 ? "" : "s")"
+        let unit = abs(value) == 1 ? L("stop") : L("stops")
+        return "\(sign)\(Int(value)) \(unit)"
     }
 
     private func load() {

@@ -418,7 +418,7 @@ struct RollDetailView: View {
                     Button {
                         showCameraPicker = true
                     } label: {
-                        infoChipView(label: "Camera", value: roll.camera?.name ?? "Add")
+                        infoChipView(label: "Camera", value: roll.camera?.name ?? L("Add"))
                     }
                     .buttonStyle(.plain)
 
@@ -519,13 +519,13 @@ struct RollDetailView: View {
                         }
                         if roll.pushPull != 0 {
                             devLine(icon: "arrow.up.arrow.down",
-                                    text: "\(roll.pushPull > 0 ? "Push" : "Pull") \(String(format: "%+d", Int(roll.pushPull))) stop\(abs(roll.pushPull) == 1 ? "" : "s")")
+                                    text: "\(roll.pushPull > 0 ? L("Push") : L("Pull")) \(String(format: "%+d", Int(roll.pushPull))) \(abs(roll.pushPull) == 1 ? L("stop") : L("stops"))")
                         }
                         if let agit = roll.devAgitation, !agit.isEmpty {
                             devLine(icon: "hand.draw", text: agit)
                         }
                         if let date = roll.developedDate {
-                            devLine(icon: "calendar", text: "Developed \(date.formatted(date: .abbreviated, time: .omitted))")
+                            devLine(icon: "calendar", text: L("Developed %@", date.formatted(date: .abbreviated, time: .omitted)))
                         }
                         if let notes = roll.devNotes, !notes.isEmpty {
                             devLine(icon: "text.alignleft", text: notes)
@@ -610,7 +610,7 @@ struct RollDetailView: View {
 
     private func infoChipView(label: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(Color.filmTertiary)
             Text(value)
@@ -667,7 +667,7 @@ struct RollDetailView: View {
             Circle()
                 .fill(statusColor)
                 .frame(width: 6, height: 6)
-            Text(roll.rollStatus.displayName)
+            Text(L(roll.rollStatus.displayName))
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .foregroundColor(statusColor)
         }
@@ -1687,7 +1687,7 @@ struct FullScreenPhotoView: View {
                     infoChip(icon: "timer", value: sh)
                 }
                 if f.flashUsed {
-                    infoChip(icon: "bolt.fill", value: "Flash")
+                    infoChip(icon: "bolt.fill", value: L("Flash"))
                 }
             }
             if let loc = f.locationName, !loc.isEmpty {
@@ -2020,7 +2020,7 @@ struct EditRollDetailsView: View {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: 14))
                                     .foregroundColor(Color.filmAccent)
-                                Text((locationName ?? "").isEmpty ? "Add Location" : (locationName ?? ""))
+                                Text((locationName ?? "").isEmpty ? L("Add Location") : (locationName ?? ""))
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor((locationName ?? "").isEmpty ? Color.filmTertiary : Color.filmText)
                                     .lineLimit(1)
@@ -2179,7 +2179,7 @@ struct EditRollDetailsView: View {
 
     private func settingsRow<Content: View>(_ label: String, value: String, @ViewBuilder trailing: () -> Content) -> some View {
         HStack {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color.filmText)
             Spacer()

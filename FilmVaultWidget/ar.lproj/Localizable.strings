@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "بكرات";
+"photos" = "صور";
+"%d photos" = "%d صورة";
+"%d rolls" = "%d بكرة";
+"%d rolls • %d photos" = "%d بكرة • %d صورة";
+"%d of %d frames" = "%d من %d لقطة";

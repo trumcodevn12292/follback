@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "плёнок";
+"photos" = "фото";
+"%d photos" = "%d фото";
+"%d rolls" = "%d плёнок";
+"%d rolls • %d photos" = "%d плёнок • %d фото";
+"%d of %d frames" = "%d из %d кадров";
