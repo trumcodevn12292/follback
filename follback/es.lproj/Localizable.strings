@@ -323,3 +323,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "Se importaron %d rollos, %d cámaras, %d películas personalizadas, %d labs.";
 "Import failed: %@" = "Error al importar: %@";
 "Delete Lab" = "Eliminar lab";
+"Film" = "Película";
+"Search film stocks..." = "Buscar películas…";
+"e.g. My Kodak Portra 400" = "p. ej. Mi Kodak Portra 400";
+"%d EXPOSURES" = "%d EXPOSICIONES";

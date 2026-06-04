@@ -322,3 +322,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "تم استيراد %d بكرة، %d كاميرا، %d فيلم مخصص، %d معمل.";
 "Import failed: %@" = "فشل الاستيراد: %@";
 "Delete Lab" = "حذف المعمل";
+"Film" = "الفيلم";
+"Search film stocks..." = "ابحث عن الأفلام…";
+"e.g. My Kodak Portra 400" = "مثال: Kodak Portra 400 الخاص بي";
+"%d EXPOSURES" = "%d لقطة";

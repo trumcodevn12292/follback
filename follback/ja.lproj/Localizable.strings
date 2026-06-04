@@ -324,3 +324,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "%d 本、%d 台のカメラ、%d 件のカスタムフィルム、%d 件のラボをインポートしました。";
 "Import failed: %@" = "インポートに失敗しました：%@";
 "Delete Lab" = "ラボを削除";
+"Film" = "フィルム";
+"Search film stocks..." = "フィルムを検索…";
+"e.g. My Kodak Portra 400" = "例：マイ Kodak Portra 400";
+"%d EXPOSURES" = "%d 枚";

@@ -325,3 +325,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "Импортировано: %d плёнок, %d камер, %d своих плёнок, %d лабораторий.";
 "Import failed: %@" = "Ошибка импорта: %@";
 "Delete Lab" = "Удалить лабораторию";
+"Film" = "Плёнка";
+"Search film stocks..." = "Поиск плёнки…";
+"e.g. My Kodak Portra 400" = "напр. Мой Kodak Portra 400";
+"%d EXPOSURES" = "%d КАДРОВ";

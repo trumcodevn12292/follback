@@ -323,3 +323,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "%d रोल, %d कैमरे, %d कस्टम फ़िल्म, %d लैब आयात किए।";
 "Import failed: %@" = "आयात विफल: %@";
 "Delete Lab" = "लैब हटाएं";
+"Film" = "फिल्म";
+"Search film stocks..." = "फिल्म खोजें…";
+"e.g. My Kodak Portra 400" = "उदा. मेरा Kodak Portra 400";
+"%d EXPOSURES" = "%d एक्सपोज़र";

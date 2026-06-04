@@ -58,6 +58,7 @@ struct AddRollView: View {
     // opening it on top of two stacked covers tore down the wizard. A push
     // keeps the picker only one modal level deep.
     @State private var showCustomFilmForm = false
+    @State private var showAddLabSheet = false
 
     private var filteredStocks: [(brand: String, stocks: [FilmStock])] {
         if searchText.isEmpty {
@@ -158,7 +159,7 @@ struct AddRollView: View {
 
             Spacer()
 
-            Text(stepTitle)
+            Text(LocalizedStringKey(stepTitle))
                 .font(.system(size: 17, weight: .bold))
                 .foregroundColor(Color.filmText)
 
@@ -803,7 +804,7 @@ struct AddRollView: View {
 
     private func settingsRow(label: String, value: String) -> some View {
         HStack {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color.filmText)
             Spacer()
@@ -864,6 +865,25 @@ struct AddRollView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    Button {
+                        showAddLabSheet = true
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(Color.filmAccent)
+                            Text("Add Lab")
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.plain)
+                    Divider().background(Color.filmBorder.opacity(0.2))
+                        .padding(.horizontal, 16)
+
                     if !customLabStore.labs.isEmpty {
                         Section {
                             ForEach(customLabStore.labs) { lab in
@@ -957,6 +977,20 @@ struct AddRollView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Button("Cancel") { activeCover = nil }
                         .foregroundColor(Color.filmAccent)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showAddLabSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .foregroundColor(Color.filmAccent)
+                    }
+                }
+            }
+            .sheet(isPresented: $showAddLabSheet) {
+                LabEditSheet { newLab in
+                    selectedLabName = newLab.name
+                    activeCover = nil
                 }
             }
         }
