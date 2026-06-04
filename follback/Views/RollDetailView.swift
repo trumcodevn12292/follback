@@ -265,7 +265,8 @@ struct RollDetailView: View {
 
     private var formattedShootingDate: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM/yy"
+        formatter.locale = appLocale()
+        formatter.setLocalizedDateFormatFromTemplate("ddMMyy")
         return formatter.string(from: roll.startDate)
     }
 
@@ -525,7 +526,7 @@ struct RollDetailView: View {
                             devLine(icon: "hand.draw", text: agit)
                         }
                         if let date = roll.developedDate {
-                            devLine(icon: "calendar", text: L("Developed %@", date.formatted(date: .abbreviated, time: .omitted)))
+                            devLine(icon: "calendar", text: L("Developed %@", date.formatted(Date.FormatStyle(date: .abbreviated, time: .omitted).locale(appLocale()))))
                         }
                         if let notes = roll.devNotes, !notes.isEmpty {
                             devLine(icon: "text.alignleft", text: notes)
@@ -2509,7 +2510,7 @@ struct ContactSheetView: View {
                             .foregroundColor(Color(hex: "#6A5E4E"))
                     }
 
-                    Text(roll.startDate.formatted(.dateTime.month(.wide).day().year()).uppercased())
+                    Text(roll.startDate.formatted(.dateTime.month(.wide).day().year().locale(appLocale())).uppercased())
                         .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
                         .foregroundColor(Color(hex: "#9A8E7E"))
 

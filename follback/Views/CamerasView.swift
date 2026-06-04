@@ -144,7 +144,7 @@ struct CamerasView: View {
                             .foregroundColor(Color.filmSecondary)
                     }
                 }
-                Text("\(rollCount) roll\(rollCount == 1 ? "" : "s")")
+                Text(rollCount == 1 ? L("%d roll", rollCount) : L("%d rolls", rollCount))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(Color.filmAccent)
             }
@@ -265,11 +265,11 @@ struct AddCameraSheet: View {
 
     private func textFieldRow(label: String, text: Binding<String>, placeholder: String) -> some View {
         HStack {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color.filmText)
             Spacer()
-            TextField(placeholder, text: text)
+            TextField(LocalizedStringKey(placeholder), text: text)
                 .font(.system(size: 15))
                 .foregroundColor(Color.filmSecondary)
                 .multilineTextAlignment(.trailing)
@@ -387,11 +387,11 @@ struct EditCameraSheet: View {
 
     private func textFieldRow(label: String, text: Binding<String>, placeholder: String) -> some View {
         HStack {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color.filmText)
             Spacer()
-            TextField(placeholder, text: text)
+            TextField(LocalizedStringKey(placeholder), text: text)
                 .font(.system(size: 15))
                 .foregroundColor(Color.filmSecondary)
                 .multilineTextAlignment(.trailing)

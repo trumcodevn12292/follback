@@ -289,3 +289,18 @@
 "Archived" = "Đã lưu trữ";
 "Add Location" = "Thêm địa điểm";
 "%d photos" = "%d ảnh";
+
+/* Added: filters & camera tab */
+"All" = "Tất cả";
+"Active" = "Đang chụp";
+"Completed" = "Đã xong";
+"Camera Name" = "Tên máy ảnh";
+"Brand" = "Hãng";
+"Lens" = "Ống kính";
+"e.g. AE-1 Program" = "vd. AE-1 Program";
+"e.g. Canon" = "vd. Canon";
+"e.g. 50mm f/1.4 (optional)" = "vd. 50mm f/1.4 (không bắt buộc)";
+"Camera name" = "Tên máy ảnh";
+"Lens (optional)" = "Ống kính (không bắt buộc)";
+"%d roll" = "%d cuộn";
+"%d rolls" = "%d cuộn";

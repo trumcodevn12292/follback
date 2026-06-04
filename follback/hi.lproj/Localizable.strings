@@ -289,3 +289,18 @@
 "Archived" = "संग्रहित";
 "Add Location" = "स्थान जोड़ें";
 "%d photos" = "%d फ़ोटो";
+
+/* Added: filters & camera tab */
+"All" = "सभी";
+"Active" = "सक्रिय";
+"Completed" = "पूर्ण";
+"Camera Name" = "कैमरा नाम";
+"Brand" = "ब्रांड";
+"Lens" = "लेंस";
+"e.g. AE-1 Program" = "उदा. AE-1 Program";
+"e.g. Canon" = "उदा. Canon";
+"e.g. 50mm f/1.4 (optional)" = "उदा. 50mm f/1.4 (वैकल्पिक)";
+"Camera name" = "कैमरा नाम";
+"Lens (optional)" = "लेंस (वैकल्पिक)";
+"%d roll" = "%d रोल";
+"%d rolls" = "%d रोल";

@@ -291,3 +291,18 @@
 "Archived" = "В архиве";
 "Add Location" = "Добавить место";
 "%d photos" = "%d фото";
+
+/* Added: filters & camera tab */
+"All" = "Все";
+"Active" = "Активные";
+"Completed" = "Завершённые";
+"Camera Name" = "Название камеры";
+"Brand" = "Бренд";
+"Lens" = "Объектив";
+"e.g. AE-1 Program" = "напр. AE-1 Program";
+"e.g. Canon" = "напр. Canon";
+"e.g. 50mm f/1.4 (optional)" = "напр. 50mm f/1.4 (необязательно)";
+"Camera name" = "Название камеры";
+"Lens (optional)" = "Объектив (необязательно)";
+"%d roll" = "%d плёнка";
+"%d rolls" = "%d плёнок";

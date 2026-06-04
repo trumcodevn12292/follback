@@ -290,3 +290,18 @@
 "Archived" = "アーカイブ済み";
 "Add Location" = "場所を追加";
 "%d photos" = "%d 枚";
+
+/* Added: filters & camera tab */
+"All" = "すべて";
+"Active" = "進行中";
+"Completed" = "完了";
+"Camera Name" = "カメラ名";
+"Brand" = "ブランド";
+"Lens" = "レンズ";
+"e.g. AE-1 Program" = "例：AE-1 Program";
+"e.g. Canon" = "例：Canon";
+"e.g. 50mm f/1.4 (optional)" = "例：50mm f/1.4（任意）";
+"Camera name" = "カメラ名";
+"Lens (optional)" = "レンズ（任意）";
+"%d roll" = "%d 本";
+"%d rolls" = "%d 本";
