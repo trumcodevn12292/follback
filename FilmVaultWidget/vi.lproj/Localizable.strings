@@ -5,3 +5,12 @@
 "%d rolls" = "%d cuộn";
 "%d rolls • %d photos" = "%d cuộn • %d ảnh";
 "%d of %d frames" = "%d / %d kiểu";
+
+
+/* Live Activity */
+"Now Shooting" = "Đang chụp";
+"%d left" = "Còn %d";
+"Shooting" = "Đang chụp";
+"Shot" = "Đã chụp xong";
+"Developed" = "Đã tráng";
+"Archived" = "Đã lưu trữ";

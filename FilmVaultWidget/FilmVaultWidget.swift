@@ -8,12 +8,12 @@ import AppIntents
 /// Localizes widget strings using the language the user picked in-app, shared
 /// via the App Group (the widget runs in its own process/bundle so it can't use
 /// the app's runtime bundle swizzle).
-private func widgetLanguageCode() -> String {
+func widgetLanguageCode() -> String {
     UserDefaults(suiteName: "group.com.williamcachamwri.FilmVault")?
         .string(forKey: "appLanguage") ?? "en"
 }
 
-private func WL(_ key: String) -> String {
+func WL(_ key: String) -> String {
     let code = widgetLanguageCode()
     if let path = Bundle.main.path(forResource: code, ofType: "lproj"),
        let bundle = Bundle(path: path) {
@@ -22,7 +22,7 @@ private func WL(_ key: String) -> String {
     return NSLocalizedString(key, comment: "")
 }
 
-private func WL(_ key: String, _ args: CVarArg...) -> String {
+func WL(_ key: String, _ args: CVarArg...) -> String {
     String(format: WL(key), arguments: args)
 }
 

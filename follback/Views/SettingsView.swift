@@ -23,6 +23,7 @@ struct SettingsView: View {
     @AppStorage(ReminderDefaults.staleDaysKey) private var staleDays = ReminderDefaults.defaultStaleDays
     @AppStorage(ReminderDefaults.developDaysKey) private var developDays = ReminderDefaults.defaultDevelopDays
     @AppStorage(ReminderDefaults.hourKey) private var reminderHour = ReminderDefaults.defaultHour
+    @AppStorage(LiveActivityManager.enabledKey) private var liveActivityEnabled = true
     @State private var showNotifPermissionAlert = false
 
     private var photoImportMode: Binding<PhotoImportMode> {
@@ -64,6 +65,7 @@ struct SettingsView: View {
                     languageCard
                     storageCard
                     remindersCard
+                    liveActivityCard
                     googleDriveCard
                     dataCard
                     generalCard
@@ -396,6 +398,40 @@ struct SettingsView: View {
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.1), value: appeared)
+    }
+
+    // MARK: - Live Activity Card
+    private var liveActivityCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("LOCK SCREEN")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Toggle(isOn: $liveActivityEnabled) {
+                    Text("Live Activity")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+                }
+                .tint(Color.filmAccent)
+                .onChange(of: liveActivityEnabled) { _, newValue in
+                    LiveActivityManager.shared.setFeatureEnabled(newValue, rolls: rolls)
+                }
+
+                Text("Show the roll you're currently shooting on the Lock Screen and Dynamic Island.")
+                    .font(.system(size: 13))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.07), value: appeared)
     }
 
     // MARK: - Appearance Card

@@ -36,6 +36,28 @@ struct WidgetDataService {
             defaults.set(encoded, forKey: "widgetData")
         }
 
+        // Snapshot used by App Intents / Siri Shortcuts (works without launching
+        // the app). Includes every roll plus which one is currently shooting.
+        let activeRoll = rolls
+            .filter { ($0.rollStatus == .inProgress) }
+            .sorted { $0.updatedAt > $1.updatedAt }
+            .first
+        let allItems = rolls
+            .sorted { $0.startDate > $1.startDate }
+            .map { roll in
+                IntentRollItem(
+                    id: roll.id.uuidString,
+                    filmName: roll.filmName,
+                    photoCount: (roll.frames ?? []).filter { $0.photoAssetID != nil }.count,
+                    capacity: roll.capacity,
+                    status: roll.status
+                )
+            }
+        let intentData = IntentSnapshot(activeRollID: activeRoll?.id.uuidString, allRolls: allItems)
+        if let encoded = try? JSONEncoder().encode(intentData) {
+            defaults.set(encoded, forKey: "intentData")
+        }
+
         WidgetCenter.shared.reloadAllTimelines()
 
         // Cache cover images for widget
@@ -98,4 +120,19 @@ struct WidgetRollData: Codable {
     let capacity: Int
     let status: String
     let coverImageFile: String?
+}
+
+// MARK: - App Intents snapshot
+
+struct IntentSnapshot: Codable {
+    let activeRollID: String?
+    let allRolls: [IntentRollItem]
+}
+
+struct IntentRollItem: Codable {
+    let id: String
+    let filmName: String
+    let photoCount: Int
+    let capacity: Int
+    let status: String
 }

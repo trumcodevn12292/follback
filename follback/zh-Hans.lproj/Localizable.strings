@@ -240,3 +240,29 @@
 "Search film stocks..." = "搜索胶卷…";
 "e.g. My Kodak Portra 400" = "例如：我的 Kodak Portra 400";
 "%d EXPOSURES" = "%d 张";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "锁屏";
+"Live Activity" = "实时活动";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "在锁屏和灵动岛上显示你正在拍摄的胶卷。";
+"No roll in progress right now." = "目前没有正在拍摄的胶卷。";
+"You've shot %d of %d frames on %@, %d left." = "%3$@ 已拍摄 %1$d/%2$d 张，还剩 %4$d 张。";
+"%d frames left on %@." = "%2$@ 还剩 %1$d 张。";
+"Opening %@." = "正在打开 %@。";
+"Tracking %@ on your Lock Screen." = "正在锁屏上跟踪 %@。";
+"Stopped Lock Screen tracking." = "已停止锁屏跟踪。";
+"Current Roll Status" = "当前胶卷状态";
+"Frames Left" = "剩余张数";
+"Open Current Roll" = "打开当前胶卷";
+"Show Roll on Lock Screen" = "在锁屏上显示胶卷";
+"Stop Lock Screen Tracking" = "停止锁屏跟踪";
+"New Film Roll" = "新建胶卷";
+"Check how many frames you've shot on the roll you're currently shooting." = "查看你在当前胶卷上已拍摄了多少张。";
+"Ask how many frames are left on a film roll." = "询问一卷胶卷还剩多少张。";
+"Open the roll you're currently shooting in FilmVault." = "在 FilmVault 中打开你正在拍摄的胶卷。";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "将你正在拍摄的胶卷以实时活动的形式显示在锁屏上。";
+"Remove the current roll Live Activity from the Lock Screen." = "从锁屏移除当前胶卷的实时活动。";
+"Start logging a new film roll in FilmVault." = "在 FilmVault 中开始记录新胶卷。";
+"Roll" = "胶卷";
+"How many frames left on ${roll}" = "${roll} 还剩多少张";

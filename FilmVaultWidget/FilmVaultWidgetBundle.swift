@@ -5,5 +5,6 @@ import SwiftUI
 struct FilmVaultWidgetBundle: WidgetBundle {
     var body: some Widget {
         FilmVaultWidget()
+        RollLiveActivity()
     }
 }

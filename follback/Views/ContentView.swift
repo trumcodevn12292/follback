@@ -58,6 +58,11 @@ struct ContentView: View {
                     tabAppeared = true
                 }
                 updateWidgetData()
+                consumePendingIntent()
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                updateWidgetData()
+                consumePendingIntent()
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionNewRoll)) { _ in
                 selectedTab = 0
@@ -108,6 +113,31 @@ struct ContentView: View {
         WidgetDataService.updateWidget(rolls: rolls)
         updateQuickActions(rolls: rolls)
         ReminderManager.shared.reschedule(rolls: rolls)
+        LiveActivityManager.shared.sync(rolls: rolls)
+    }
+
+    /// Handle actions queued by App Intents / Siri while the app was not active.
+    private func consumePendingIntent() {
+        let defaults = UserDefaults(suiteName: "group.com.williamcachamwri.FilmVault")
+        guard let action = defaults?.string(forKey: "pendingIntentAction") else { return }
+        let rollID = defaults?.string(forKey: "pendingIntentRollID")
+        defaults?.removeObject(forKey: "pendingIntentAction")
+        defaults?.removeObject(forKey: "pendingIntentRollID")
+
+        switch action {
+        case "openRoll":
+            if let rollID, UUID(uuidString: rollID) != nil {
+                selectedTab = 0
+                WidgetDeepLink.shared.pendingRollID = rollID
+            }
+        case "newRoll":
+            selectedTab = 0
+            showNewRoll = true
+        case "startTracking":
+            updateWidgetData()
+        default:
+            break
+        }
     }
 
     private func updateQuickActions(rolls: [Roll]) {

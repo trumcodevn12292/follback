@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "在${applicationName}中查看我的胶卷";
+"What's my ${applicationName} roll status" = "我的${applicationName}胶卷状态";
+"How is my film roll in ${applicationName}" = "我的胶卷在${applicationName}中怎么样";
+"How many frames left in ${applicationName}" = "${applicationName}还剩多少张";
+"Frames left in ${applicationName}" = "${applicationName}剩余张数";
+"Open my roll in ${applicationName}" = "在${applicationName}中打开我的胶卷";
+"Open current roll in ${applicationName}" = "在${applicationName}中打开当前胶卷";
+"Track my roll in ${applicationName}" = "在${applicationName}中跟踪我的胶卷";
+"Show my roll on the Lock Screen with ${applicationName}" = "用${applicationName}在锁屏上显示我的胶卷";
+"Start a new roll in ${applicationName}" = "在${applicationName}中开始新胶卷";
+"New film roll in ${applicationName}" = "${applicationName}中的新胶卷";

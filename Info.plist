@@ -29,6 +29,10 @@
 	<string>FilmVault needs access to your photo library to attach images to film frames.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>FilmVault uses the camera to capture photos directly into your film rolls.</string>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
+	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
+	<true/>
 
 </dict>
 </plist>

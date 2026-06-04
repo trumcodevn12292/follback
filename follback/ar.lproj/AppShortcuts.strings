@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "تحقق من الفيلم في ${applicationName}";
+"What's my ${applicationName} roll status" = "ما حالة الفيلم في ${applicationName}";
+"How is my film roll in ${applicationName}" = "كيف حال فيلمي في ${applicationName}";
+"How many frames left in ${applicationName}" = "كم لقطة تبقّت في ${applicationName}";
+"Frames left in ${applicationName}" = "اللقطات المتبقية في ${applicationName}";
+"Open my roll in ${applicationName}" = "افتح الفيلم في ${applicationName}";
+"Open current roll in ${applicationName}" = "افتح الفيلم الحالي في ${applicationName}";
+"Track my roll in ${applicationName}" = "تتبّع الفيلم في ${applicationName}";
+"Show my roll on the Lock Screen with ${applicationName}" = "أظهر الفيلم على شاشة القفل باستخدام ${applicationName}";
+"Start a new roll in ${applicationName}" = "ابدأ فيلمًا جديدًا في ${applicationName}";
+"New film roll in ${applicationName}" = "فيلم جديد في ${applicationName}";

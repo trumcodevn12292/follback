@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "Проверить мою плёнку в ${applicationName}";
+"What's my ${applicationName} roll status" = "Статус моей плёнки в ${applicationName}";
+"How is my film roll in ${applicationName}" = "Как моя плёнка в ${applicationName}";
+"How many frames left in ${applicationName}" = "Сколько кадров осталось в ${applicationName}";
+"Frames left in ${applicationName}" = "Осталось кадров в ${applicationName}";
+"Open my roll in ${applicationName}" = "Открыть мою плёнку в ${applicationName}";
+"Open current roll in ${applicationName}" = "Открыть текущую плёнку в ${applicationName}";
+"Track my roll in ${applicationName}" = "Отслеживать мою плёнку в ${applicationName}";
+"Show my roll on the Lock Screen with ${applicationName}" = "Показать мою плёнку на экране блокировки с ${applicationName}";
+"Start a new roll in ${applicationName}" = "Начать новую плёнку в ${applicationName}";
+"New film roll in ${applicationName}" = "Новая плёнка в ${applicationName}";

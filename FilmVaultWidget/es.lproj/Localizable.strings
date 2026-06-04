@@ -5,3 +5,12 @@
 "%d rolls" = "%d rollos";
 "%d rolls • %d photos" = "%d rollos • %d fotos";
 "%d of %d frames" = "%d de %d fotogramas";
+
+
+/* Live Activity */
+"Now Shooting" = "Disparando";
+"%d left" = "Quedan %d";
+"Shooting" = "Disparando";
+"Shot" = "Disparado";
+"Developed" = "Revelado";
+"Archived" = "Archivado";
