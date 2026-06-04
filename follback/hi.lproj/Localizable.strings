@@ -279,3 +279,13 @@
 "Time to develop %@" = "%@ को डेवलप करने का समय";
 "You finished this roll. Drop it off at the lab so you don't forget." = "आपने यह रोल पूरा कर लिया। इसे लैब में दे आएं ताकि भूल न जाएं।";
 "Developed %@" = "डेवलप किया %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "फ़िल्म फ़ॉर्मेट";
+"Photos" = "फ़ोटो";
+"Add" = "जोड़ें";
+"Shooting" = "शूटिंग";
+"Shot" = "शॉट";
+"Archived" = "संग्रहित";
+"Add Location" = "स्थान जोड़ें";
+"%d photos" = "%d फ़ोटो";

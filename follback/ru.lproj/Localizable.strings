@@ -281,3 +281,13 @@
 "Time to develop %@" = "Пора проявить %@";
 "You finished this roll. Drop it off at the lab so you don't forget." = "Вы отсняли эту плёнку. Отнесите её в лабораторию, чтобы не забыть.";
 "Developed %@" = "Проявлено %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Формат плёнки";
+"Photos" = "Фото";
+"Add" = "Добавить";
+"Shooting" = "Снимается";
+"Shot" = "Отснято";
+"Archived" = "В архиве";
+"Add Location" = "Добавить место";
+"%d photos" = "%d фото";

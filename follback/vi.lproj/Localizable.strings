@@ -279,3 +279,13 @@
 "Time to develop %@" = "Đến lúc tráng %@";
 "You finished this roll. Drop it off at the lab so you don't forget." = "Bạn đã chụp xong cuộn này. Mang đi tráng kẻo quên nhé.";
 "Developed %@" = "Đã tráng %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Định dạng phim";
+"Photos" = "Ảnh";
+"Add" = "Thêm";
+"Shooting" = "Đang chụp";
+"Shot" = "Đã chụp xong";
+"Archived" = "Đã lưu trữ";
+"Add Location" = "Thêm địa điểm";
+"%d photos" = "%d ảnh";

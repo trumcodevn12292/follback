@@ -191,3 +191,13 @@
 "Time to develop %@" = "Time to develop %@";
 "You finished this roll. Drop it off at the lab so you don't forget." = "You finished this roll. Drop it off at the lab so you don't forget.";
 "Developed %@" = "Developed %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Film format";
+"Photos" = "Photos";
+"Add" = "Add";
+"Shooting" = "Shooting";
+"Shot" = "Shot";
+"Archived" = "Archived";
+"Add Location" = "Add Location";
+"%d photos" = "%d photos";

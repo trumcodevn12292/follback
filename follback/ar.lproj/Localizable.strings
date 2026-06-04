@@ -278,3 +278,13 @@
 "Time to develop %@" = "حان وقت تحميض %@";
 "You finished this roll. Drop it off at the lab so you don't forget." = "لقد أنهيت هذه البكرة. سلّمها إلى المعمل حتى لا تنساها.";
 "Developed %@" = "حُمّضت %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "مقاس الفيلم";
+"Photos" = "الصور";
+"Add" = "إضافة";
+"Shooting" = "قيد التصوير";
+"Shot" = "تم التصوير";
+"Archived" = "مؤرشف";
+"Add Location" = "إضافة موقع";
+"%d photos" = "%d صورة";

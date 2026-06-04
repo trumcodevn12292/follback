@@ -192,3 +192,13 @@
 "Time to develop %@" = "该冲洗 %@ 了";
 "You finished this roll. Drop it off at the lab so you don't forget." = "你已经拍完这卷了。记得拿去冲洗，别忘了。";
 "Developed %@" = "冲洗于 %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "画幅";
+"Photos" = "照片";
+"Add" = "添加";
+"Shooting" = "拍摄中";
+"Shot" = "已拍完";
+"Archived" = "已归档";
+"Add Location" = "添加地点";
+"%d photos" = "%d 张照片";

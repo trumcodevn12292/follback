@@ -280,3 +280,13 @@
 "Time to develop %@" = "%@ を現像する時間です";
 "You finished this roll. Drop it off at the lab so you don't forget." = "このロールを撮り終えました。忘れないうちにラボへ出しましょう。";
 "Developed %@" = "現像日 %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "フィルム判";
+"Photos" = "枚数";
+"Add" = "追加";
+"Shooting" = "撮影中";
+"Shot" = "撮影済み";
+"Archived" = "アーカイブ済み";
+"Add Location" = "場所を追加";
+"%d photos" = "%d 枚";

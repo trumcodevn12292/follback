@@ -418,7 +418,7 @@ struct RollDetailView: View {
                     Button {
                         showCameraPicker = true
                     } label: {
-                        infoChipView(label: "Camera", value: roll.camera?.name ?? "Add")
+                        infoChipView(label: "Camera", value: roll.camera?.name ?? L("Add"))
                     }
                     .buttonStyle(.plain)
 
@@ -610,7 +610,7 @@ struct RollDetailView: View {
 
     private func infoChipView(label: String, value: String) -> some View {
         VStack(spacing: 4) {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(Color.filmTertiary)
             Text(value)
@@ -667,7 +667,7 @@ struct RollDetailView: View {
             Circle()
                 .fill(statusColor)
                 .frame(width: 6, height: 6)
-            Text(roll.rollStatus.displayName)
+            Text(L(roll.rollStatus.displayName))
                 .font(.system(size: 11, weight: .semibold, design: .rounded))
                 .foregroundColor(statusColor)
         }
@@ -1687,7 +1687,7 @@ struct FullScreenPhotoView: View {
                     infoChip(icon: "timer", value: sh)
                 }
                 if f.flashUsed {
-                    infoChip(icon: "bolt.fill", value: "Flash")
+                    infoChip(icon: "bolt.fill", value: L("Flash"))
                 }
             }
             if let loc = f.locationName, !loc.isEmpty {
@@ -2020,7 +2020,7 @@ struct EditRollDetailsView: View {
                                 Image(systemName: "location.fill")
                                     .font(.system(size: 14))
                                     .foregroundColor(Color.filmAccent)
-                                Text((locationName ?? "").isEmpty ? "Add Location" : (locationName ?? ""))
+                                Text((locationName ?? "").isEmpty ? L("Add Location") : (locationName ?? ""))
                                     .font(.system(size: 16, weight: .medium))
                                     .foregroundColor((locationName ?? "").isEmpty ? Color.filmTertiary : Color.filmText)
                                     .lineLimit(1)
@@ -2179,7 +2179,7 @@ struct EditRollDetailsView: View {
 
     private func settingsRow<Content: View>(_ label: String, value: String, @ViewBuilder trailing: () -> Content) -> some View {
         HStack {
-            Text(label)
+            Text(LocalizedStringKey(label))
                 .font(.system(size: 16, weight: .medium))
                 .foregroundColor(Color.filmText)
             Spacer()

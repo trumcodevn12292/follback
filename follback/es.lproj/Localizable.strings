@@ -279,3 +279,13 @@
 "Time to develop %@" = "Hora de revelar %@";
 "You finished this roll. Drop it off at the lab so you don't forget." = "Terminaste este rollo. Llévalo al laboratorio para no olvidarlo.";
 "Developed %@" = "Revelado %@";
+
+/* Added: Roll Detail info & status */
+"Film format" = "Formato";
+"Photos" = "Fotos";
+"Add" = "Añadir";
+"Shooting" = "Disparando";
+"Shot" = "Disparado";
+"Archived" = "Archivado";
+"Add Location" = "Añadir ubicación";
+"%d photos" = "%d fotos";
