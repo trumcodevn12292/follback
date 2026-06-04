@@ -21,10 +21,29 @@ struct RollsView: View {
     @State private var navPath = NavigationPath()
     @ObservedObject private var deepLink = WidgetDeepLink.shared
 
+    // A roll can belong to several filter tabs at once:
+    // - Active: still shooting (not full) and not archived — includes empty rolls.
+    // - Developed: has at least one shot frame and not archived.
+    // - Completed: all frames shot and not archived.
+    // - Archived: archived only.
+    private func roll(_ roll: Roll, matches filter: RollStatus) -> Bool {
+        if roll.rollStatus == .archived { return filter == .archived }
+        switch filter {
+        case .inProgress: return roll.filledFrames < roll.capacity
+        case .completed:  return roll.filledFrames >= roll.capacity
+        case .developed:  return roll.filledFrames >= 1
+        case .archived:   return false
+        }
+    }
+
+    private func count(for filter: RollStatus) -> Int {
+        rolls.filter { roll($0, matches: filter) }.count
+    }
+
     private var filteredRolls: [Roll] {
         var result = rolls
         if let filter = selectedFilter {
-            result = result.filter { $0.rollStatus == filter }
+            result = result.filter { roll($0, matches: filter) }
         }
         if !searchText.isEmpty {
             let query = searchText.lowercased()
@@ -297,10 +316,10 @@ struct RollsView: View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
                 filterPill(nil, label: "All", count: rolls.count)
-                filterPill(.inProgress, label: "Active", count: rolls.filter { $0.rollStatus == .inProgress }.count)
-                filterPill(.completed, label: "Completed", count: rolls.filter { $0.rollStatus == .completed }.count)
-                filterPill(.developed, label: "Developed", count: rolls.filter { $0.rollStatus == .developed }.count)
-                filterPill(.archived, label: "Archived", count: rolls.filter { $0.rollStatus == .archived }.count)
+                filterPill(.inProgress, label: "Active", count: count(for: .inProgress))
+                filterPill(.completed, label: "Completed", count: count(for: .completed))
+                filterPill(.developed, label: "Developed", count: count(for: .developed))
+                filterPill(.archived, label: "Archived", count: count(for: .archived))
             }
             .padding(.horizontal, 20)
         }
