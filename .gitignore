@@ -8,3 +8,4 @@ xcuserdata/
 build/
 DerivedData/
 SourcePackages/
+.DS_Store
