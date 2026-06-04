@@ -27,24 +27,26 @@ struct RollLiveActivity: Widget {
 
         return DynamicIsland {
             DynamicIslandExpandedRegion(.leading) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Label {
+                HStack(alignment: .center, spacing: 8) {
+                    liveActivityFilmIcon(context.attributes.filmName, size: 28)
+                    VStack(alignment: .leading, spacing: 1) {
                         Text(context.attributes.filmName)
                             .font(.system(size: 14, weight: .semibold))
-                            .lineLimit(1)
-                    } icon: {
-                        liveActivityFilmIcon(context.attributes.filmName, size: 20)
-                    }
-                    if let cam = context.attributes.cameraName, !cam.isEmpty {
-                        Text(cam)
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let cam = context.attributes.cameraName, !cam.isEmpty {
+                            Text(cam)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
                 }
+                .padding(.leading, 4)
             }
             DynamicIslandExpandedRegion(.trailing) {
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 1) {
                     Text("\(shot)/\(cap)")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .monospacedDigit()
@@ -52,7 +54,9 @@ struct RollLiveActivity: Widget {
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
+                .padding(.trailing, 4)
             }
             DynamicIslandExpandedRegion(.bottom) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -70,6 +74,8 @@ struct RollLiveActivity: Widget {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                 }
+                .padding(.horizontal, 4)
+                .padding(.top, 2)
                 .environment(\.layoutDirection, widgetLayoutDirection())
             }
         } compactLeading: {
