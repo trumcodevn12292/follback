@@ -1121,22 +1121,106 @@ struct InsightsView: View {
         .sorted { $0.rollCount != $1.rollCount ? $0.rollCount > $1.rollCount : $0.photos > $1.photos }
     }
 
+    // MARK: Streak & achievements
+
+    private var totalRolls: Int { rolls.count }
+    private var totalPhotos: Int { rolls.reduce(0) { $0 + $1.filledFrames } }
+    private var distinctFilms: Int { Set(rolls.map { $0.filmName }.filter { !$0.isEmpty }).count }
+
+    /// All dates that count as "shooting activity": when a roll was started and
+    /// when each photo was captured.
+    private var activityDates: [Date] {
+        var dates: [Date] = rolls.map { $0.startDate }
+        for roll in rolls {
+            for frame in roll.frames ?? [] where frame.photoAssetID != nil {
+                dates.append(frame.capturedAt ?? frame.createdAt)
+            }
+        }
+        return dates
+    }
+
+    /// Number of consecutive weeks (ending at the current or previous week)
+    /// that contain at least one shooting activity.
+    private var streakWeeks: Int {
+        let cal = Calendar.current
+        let weeks = Set(activityDates.compactMap {
+            cal.dateInterval(of: .weekOfYear, for: $0)?.start
+        })
+        guard !weeks.isEmpty,
+              let thisWeek = cal.dateInterval(of: .weekOfYear, for: Date())?.start
+        else { return 0 }
+
+        var anchor = thisWeek
+        if !weeks.contains(anchor) {
+            guard let prev = cal.date(byAdding: .weekOfYear, value: -1, to: thisWeek),
+                  weeks.contains(prev) else { return 0 }
+            anchor = prev
+        }
+        var streak = 0
+        var cursor: Date? = anchor
+        while let c = cursor, weeks.contains(c) {
+            streak += 1
+            cursor = cal.date(byAdding: .weekOfYear, value: -1, to: c)
+        }
+        return streak
+    }
+
+    private struct Achievement: Identifiable {
+        let id = UUID()
+        let icon: String
+        let title: String
+        let unlocked: Bool
+    }
+
+    private var achievements: [Achievement] {
+        var list: [Achievement] = []
+        for goal in [1, 10, 25, 50, 100] {
+            list.append(Achievement(icon: "film",
+                                    title: L("%d rolls", goal),
+                                    unlocked: totalRolls >= goal))
+        }
+        for goal in [100, 500, 1000, 5000] {
+            list.append(Achievement(icon: "photo.on.rectangle",
+                                    title: L("%d photos", goal),
+                                    unlocked: totalPhotos >= goal))
+        }
+        for goal in [5, 15, 30] {
+            list.append(Achievement(icon: "sparkles",
+                                    title: L("%d films", goal),
+                                    unlocked: distinctFilms >= goal))
+        }
+        // Show all unlocked first, then the next few locked goals.
+        let unlocked = list.filter { $0.unlocked }
+        let locked = list.filter { !$0.unlocked }
+        return unlocked + locked
+    }
+
     var body: some View {
         ScrollView(showsIndicators: false) {
             VStack(spacing: 24) {
                 totalCard
                     .modifier(EntranceEffect(appeared: appeared, index: 0))
 
+                if totalRolls > 0 {
+                    statTiles
+                        .modifier(EntranceEffect(appeared: appeared, index: 1))
+
+                    section(title: L("Achievements")) {
+                        achievementsGrid
+                    }
+                    .modifier(EntranceEffect(appeared: appeared, index: 2))
+                }
+
                 if !filmStats.isEmpty {
                     section(title: L("Most-shot films")) {
                         VStack(spacing: 10) {
                             ForEach(Array(filmStats.prefix(5).enumerated()), id: \.element.id) { idx, stat in
                                 filmRow(stat)
-                                    .modifier(EntranceEffect(appeared: appeared, index: 2 + idx))
+                                    .modifier(EntranceEffect(appeared: appeared, index: 4 + idx))
                             }
                         }
                     }
-                    .modifier(EntranceEffect(appeared: appeared, index: 1))
+                    .modifier(EntranceEffect(appeared: appeared, index: 3))
                 }
 
                 if !cameraStats.isEmpty {
@@ -1144,11 +1228,11 @@ struct InsightsView: View {
                         VStack(spacing: 10) {
                             ForEach(Array(cameraStats.prefix(5).enumerated()), id: \.element.id) { idx, stat in
                                 cameraRow(stat)
-                                    .modifier(EntranceEffect(appeared: appeared, index: 8 + idx))
+                                    .modifier(EntranceEffect(appeared: appeared, index: 11 + idx))
                             }
                         }
                     }
-                    .modifier(EntranceEffect(appeared: appeared, index: 7))
+                    .modifier(EntranceEffect(appeared: appeared, index: 10))
                 }
             }
             .padding(.horizontal, 16)
@@ -1236,6 +1320,83 @@ struct InsightsView: View {
             .opacity(barProgress)
         }
         .frame(height: 14)
+    }
+
+    // MARK: Stat tiles
+
+    private var statTiles: some View {
+        HStack(spacing: 12) {
+            statTile(value: "\(totalRolls)", label: L("Rolls"), icon: "film")
+            statTile(value: "\(totalPhotos)", label: L("Photos"), icon: "photo.on.rectangle")
+            statTile(
+                value: "\(streakWeeks)",
+                label: streakWeeks == 1 ? L("week streak") : L("weeks streak"),
+                icon: "flame.fill",
+                highlight: streakWeeks > 0
+            )
+        }
+    }
+
+    private func statTile(value: String, label: String, icon: String, highlight: Bool = false) -> some View {
+        VStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(highlight ? Color.filmAccent : Color.filmSecondary)
+            Text(value)
+                .font(.system(size: 24, weight: .heavy))
+                .foregroundColor(Color.filmText)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+            Text(label)
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(Color.filmTertiary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 16)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.filmSurface)
+        )
+    }
+
+    // MARK: Achievements
+
+    private var achievementsGrid: some View {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 12)], spacing: 12) {
+            ForEach(achievements) { badge in
+                VStack(spacing: 8) {
+                    Image(systemName: badge.icon)
+                        .font(.system(size: 22, weight: .semibold))
+                        .symbolVariant(badge.unlocked ? .fill : .none)
+                        .foregroundColor(badge.unlocked ? Color.filmAccent : Color.filmTertiary.opacity(0.5))
+                        .frame(height: 26)
+                    Text(badge.title)
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(badge.unlocked ? Color.filmText : Color.filmTertiary)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.8)
+                    if badge.unlocked {
+                        Image(systemName: "checkmark.seal.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color.filmAccent)
+                    } else {
+                        Image(systemName: "lock.fill")
+                            .font(.system(size: 11))
+                            .foregroundColor(Color.filmTertiary.opacity(0.5))
+                    }
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.filmSurface)
+                        .opacity(badge.unlocked ? 1 : 0.55)
+                )
+            }
+        }
     }
 
     // MARK: Sections

@@ -18,6 +18,7 @@ struct AddRollView: View {
     @State private var selectedCamera: Camera?
     @State private var selectedCameraModelName: String?
     @State private var capacity = 36
+    @State private var isHalfFrame = false
     @State private var iso = 400
     @State private var format: FilmFormat = .mm35
     @State private var evCompensation: Float = 0
@@ -630,6 +631,25 @@ struct AddRollView: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
 
+                    if format == .mm35 {
+                        settingsDivider
+
+                        Toggle(isOn: $isHalfFrame) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Half-frame")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmText)
+                                Text(L("%d shots", capacity * 2))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmTertiary)
+                                    .opacity(isHalfFrame ? 1 : 0)
+                            }
+                        }
+                        .tint(Color.filmAccent)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+
                     if selectedFilmStock == nil && selectedCustomFilm == nil {
                         settingsDivider
 
@@ -886,10 +906,13 @@ struct AddRollView: View {
             cameras.first { $0.name == name || name.contains($0.name) }
         } ?? selectedCamera
 
+        let halfFrame = isHalfFrame && format == .mm35
+        let effectiveCapacity = halfFrame ? capacity * 2 : capacity
+
         let roll = Roll(
             filmName: filmDisplayName,
             camera: matchedCamera,
-            capacity: capacity,
+            capacity: effectiveCapacity,
             iso: iso,
             format: format,
             evCompensation: evCompensation,
@@ -901,6 +924,7 @@ struct AddRollView: View {
             longitude: locationLongitude,
             labName: selectedLabName
         )
+        roll.isHalfFrame = halfFrame
         roll.filmCost = parsedCost(filmCostText)
         roll.devCost = parsedCost(devCostText)
         modelContext.insert(roll)

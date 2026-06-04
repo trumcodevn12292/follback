@@ -399,3 +399,13 @@
 "Most-used cameras" = "أكثر الكاميرات استخدامًا";
 "Purchase price" = "سعر الشراء";
 "Add costs to your rolls and cameras to see your spending." = "أضف التكاليف إلى أفلامك وكاميراتك لعرض إنفاقك.";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "نصف الإطار";
+"Half" = "نصف";
+"%d shots" = "%d لقطة";
+"Achievements" = "الإنجازات";
+"week streak" = "أسبوع متتالٍ";
+"weeks streak" = "أسابيع متتالية";
+"%d films" = "%d أفلام";

@@ -66,6 +66,8 @@ struct RollBackup: Codable {
     // Cost tracking (optional for backward compatibility)
     var filmCost: Double?
     var devCost: Double?
+    // Half-frame (optional for backward compatibility)
+    var isHalfFrame: Bool?
 }
 
 struct FilmVaultBackup: Codable {
@@ -147,7 +149,8 @@ enum BackupService {
                 devNotes: roll.devNotes,
                 developedDate: roll.developedDate,
                 filmCost: roll.filmCost,
-                devCost: roll.devCost
+                devCost: roll.devCost,
+                isHalfFrame: roll.isHalfFrame
             )
         }
 
@@ -253,6 +256,7 @@ enum BackupService {
             roll.developedDate = rb.developedDate
             roll.filmCost = rb.filmCost
             roll.devCost = rb.devCost
+            roll.isHalfFrame = rb.isHalfFrame ?? false
 
             var frames: [Frame] = []
             for fb in rb.frames {

@@ -387,7 +387,12 @@ struct RollDetailView: View {
                             }
                         }
 
-                    infoChipView(label: "Film format", value: roll.filmFormat.displayName)
+                    infoChipView(
+                        label: "Film format",
+                        value: roll.isHalfFrame
+                            ? "\(roll.filmFormat.displayName) · \(L("Half"))"
+                            : roll.filmFormat.displayName
+                    )
 
                     Divider()
                         .frame(height: 40)
@@ -2076,9 +2081,15 @@ struct EditRollDetailsView: View {
 
                             settingsRow("Exposures", value: "\(capacity)") {
                                 Picker("", selection: $capacity) {
-                                    Text("12").tag(12)
-                                    Text("24").tag(24)
-                                    Text("36").tag(36)
+                                    if roll.isHalfFrame {
+                                        Text("24").tag(24)
+                                        Text("48").tag(48)
+                                        Text("72").tag(72)
+                                    } else {
+                                        Text("12").tag(12)
+                                        Text("24").tag(24)
+                                        Text("36").tag(36)
+                                    }
                                 }
                                 .pickerStyle(.menu)
                                 .tint(Color.filmAccent)

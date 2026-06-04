@@ -401,3 +401,13 @@
 "Most-used cameras" = "よく使うカメラ";
 "Purchase price" = "購入価格";
 "Add costs to your rolls and cameras to see your spending." = "フィルムやカメラに費用を入力すると支出が表示されます。";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "ハーフフレーム";
+"Half" = "ハーフ";
+"%d shots" = "%d 枚";
+"Achievements" = "実績";
+"week streak" = "週連続";
+"weeks streak" = "週連続";
+"%d films" = "%d 種類のフィルム";

@@ -30,6 +30,12 @@ class Roll {
     var devNotes: String?           // free-form recipe notes
     var developedDate: Date?        // when it was developed
 
+    // MARK: - Half-frame
+    /// True for half-frame cameras, where a single 35mm exposure holds two
+    /// photos (a 36-exp roll yields 72 shots). `capacity` already stores the
+    /// doubled shot count; this flag is kept for display.
+    var isHalfFrame: Bool = false
+
     // MARK: - Cost tracking
     var filmCost: Double?           // price paid to buy the film
     var devCost: Double?            // price paid to develop / scan the roll
