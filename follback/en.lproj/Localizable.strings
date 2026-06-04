@@ -201,3 +201,18 @@
 "Archived" = "Archived";
 "Add Location" = "Add Location";
 "%d photos" = "%d photos";
+
+/* Added: filters & camera tab */
+"All" = "All";
+"Active" = "Active";
+"Completed" = "Completed";
+"Camera Name" = "Camera Name";
+"Brand" = "Brand";
+"Lens" = "Lens";
+"e.g. AE-1 Program" = "e.g. AE-1 Program";
+"e.g. Canon" = "e.g. Canon";
+"e.g. 50mm f/1.4 (optional)" = "e.g. 50mm f/1.4 (optional)";
+"Camera name" = "Camera name";
+"Lens (optional)" = "Lens (optional)";
+"%d roll" = "%d roll";
+"%d rolls" = "%d rolls";

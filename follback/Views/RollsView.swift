@@ -317,7 +317,7 @@ struct RollsView: View {
             UIImpactFeedbackGenerator(style: .soft).impactOccurred()
         } label: {
             HStack(spacing: 5) {
-                Text(label)
+                Text(LocalizedStringKey(label))
                     .font(.system(size: 13, weight: isActive ? .bold : .medium))
                 if count > 0 {
                     Text("\(count)")

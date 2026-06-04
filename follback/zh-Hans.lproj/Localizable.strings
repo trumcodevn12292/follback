@@ -202,3 +202,18 @@
 "Archived" = "已归档";
 "Add Location" = "添加地点";
 "%d photos" = "%d 张照片";
+
+/* Added: filters & camera tab */
+"All" = "全部";
+"Active" = "进行中";
+"Completed" = "已完成";
+"Camera Name" = "相机名称";
+"Brand" = "品牌";
+"Lens" = "镜头";
+"e.g. AE-1 Program" = "例如 AE-1 Program";
+"e.g. Canon" = "例如 Canon";
+"e.g. 50mm f/1.4 (optional)" = "例如 50mm f/1.4（可选）";
+"Camera name" = "相机名称";
+"Lens (optional)" = "镜头（可选）";
+"%d roll" = "%d 卷";
+"%d rolls" = "%d 卷";

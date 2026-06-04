@@ -109,6 +109,14 @@ func L(_ key: String, _ args: CVarArg...) -> String {
     return String(format: format, arguments: args)
 }
 
+/// Locale matching the in-app selected language, so dates/numbers format in the
+/// chosen language instead of the device locale. Reads UserDefaults directly so
+/// it is safe to call from any context.
+func appLocale() -> Locale {
+    let code = UserDefaults.standard.string(forKey: LocalizationManager.key) ?? "en"
+    return Locale(identifier: code)
+}
+
 // MARK: - Runtime language switching (Bundle swizzling)
 
 private var bundleAssocKey: UInt8 = 0

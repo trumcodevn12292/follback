@@ -288,3 +288,18 @@
 "Archived" = "مؤرشف";
 "Add Location" = "إضافة موقع";
 "%d photos" = "%d صورة";
+
+/* Added: filters & camera tab */
+"All" = "الكل";
+"Active" = "نشطة";
+"Completed" = "مكتملة";
+"Camera Name" = "اسم الكاميرا";
+"Brand" = "العلامة التجارية";
+"Lens" = "العدسة";
+"e.g. AE-1 Program" = "مثال: AE-1 Program";
+"e.g. Canon" = "مثال: Canon";
+"e.g. 50mm f/1.4 (optional)" = "مثال: 50mm f/1.4 (اختياري)";
+"Camera name" = "اسم الكاميرا";
+"Lens (optional)" = "العدسة (اختياري)";
+"%d roll" = "%d بكرة";
+"%d rolls" = "%d بكرة";

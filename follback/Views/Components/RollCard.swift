@@ -168,7 +168,8 @@ struct RollCard: View {
 
     private var rollDateText: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "d MMM yyyy"
+        formatter.locale = appLocale()
+        formatter.setLocalizedDateFormatFromTemplate("dMMMyyyy")
         return formatter.string(from: roll.startDate)
     }
 }
