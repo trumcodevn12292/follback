@@ -13,7 +13,7 @@ struct WidgetDataService {
 
         let recentRolls = rolls
             .sorted { $0.startDate > $1.startDate }
-            .prefix(6)
+            .prefix(10)
             .map { widgetRollData(for: $0) }
 
         // Roll currently being shot (most recently updated in-progress roll),

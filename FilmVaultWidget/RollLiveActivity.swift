@@ -183,8 +183,27 @@ func liveActivityCoverImage(for filmName: String) -> UIImage? {
     let fileURL = containerURL
         .appendingPathComponent("WidgetCovers")
         .appendingPathComponent("cover_\(safeName).jpg")
-    guard let data = try? Data(contentsOf: fileURL) else { return nil }
-    return UIImage(data: data)
+    guard let data = try? Data(contentsOf: fileURL),
+          let image = UIImage(data: data) else { return nil }
+    // Live Activities / Dynamic Island have a much tighter rendering budget than
+    // home-screen widgets, so a full-resolution cover renders blank. Downscale
+    // to a small thumbnail so it always displays.
+    return image.downscaled(toMaxDimension: 120)
+}
+
+private extension UIImage {
+    func downscaled(toMaxDimension maxDimension: CGFloat) -> UIImage {
+        let longest = max(size.width, size.height)
+        guard longest > maxDimension, longest > 0 else { return self }
+        let scale = maxDimension / longest
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
 }
 
 /// Shows the film cover thumbnail when available, falling back to the orange

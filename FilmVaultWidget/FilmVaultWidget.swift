@@ -119,12 +119,14 @@ struct FilmVaultTimelineProvider: TimelineProvider {
 
     func getSnapshot(in context: Context, completion: @escaping (FilmVaultEntry) -> Void) {
         let data = loadWidgetData()
-        completion(FilmVaultEntry(date: Date(), data: data))
+        let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
+        completion(FilmVaultEntry(date: Date(), data: data, recentPage: page))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FilmVaultEntry>) -> Void) {
         let data = loadWidgetData()
-        let entry = FilmVaultEntry(date: Date(), data: data)
+        let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
+        let entry = FilmVaultEntry(date: Date(), data: data, recentPage: page)
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -145,6 +147,7 @@ struct FilmVaultTimelineProvider: TimelineProvider {
 struct FilmVaultEntry: TimelineEntry {
     let date: Date
     let data: FilmVaultWidgetData
+    var recentPage: Int = 0
 }
 
 extension FilmVaultWidgetData {
@@ -500,25 +503,53 @@ struct FilmVaultWidgetEntryView: View {
                 }
             }
 
-            HStack {
+            let pageSize = 2
+            let allRecent = entry.data.recentRolls
+            let totalPages = max(1, (allRecent.count + pageSize - 1) / pageSize)
+            let page = min(max(0, entry.recentPage), totalPages - 1)
+            let start = page * pageSize
+            let pageItems = Array(allRecent[start..<min(start + pageSize, allRecent.count)].enumerated())
+
+            HStack(spacing: 8) {
                 Text(WL("Recent"))
                     .font(.system(size: 11, weight: .bold))
                     .foregroundColor(.white.opacity(0.45))
                     .kerning(0.6)
                 Spacer()
+                if totalPages > 1 {
+                    Text("\(page + 1)/\(totalPages)")
+                        .font(.system(size: 10, weight: .semibold, design: .rounded))
+                        .foregroundColor(.white.opacity(0.4))
+                        .monospacedDigit()
+                    Button(intent: WidgetRecentPrevIntent()) {
+                        Image(systemName: "chevron.up")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(page > 0 ? .orange : .white.opacity(0.18))
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(Color.white.opacity(0.07)))
+                    }
+                    .buttonStyle(.plain)
+                    Button(intent: WidgetRecentNextIntent()) {
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 11, weight: .bold))
+                            .foregroundColor(page < totalPages - 1 ? .orange : .white.opacity(0.18))
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(Color.white.opacity(0.07)))
+                    }
+                    .buttonStyle(.plain)
+                }
             }
             .padding(.top, 12)
             .padding(.bottom, 2)
 
             VStack(spacing: 0) {
-                let items = Array(entry.data.recentRolls.prefix(entry.data.activeRoll == nil ? 4 : 3).enumerated())
-                ForEach(items, id: \.element.id) { index, roll in
+                ForEach(pageItems, id: \.element.id) { index, roll in
                     if let url = URL(string: "filmvault://roll/\(roll.id)") {
                         Link(destination: url) { rollRow(roll) }
                     } else {
                         rollRow(roll)
                     }
-                    if index < items.count - 1 {
+                    if index < pageItems.count - 1 {
                         Divider().background(Color.white.opacity(0.05)).padding(.vertical, 5)
                     }
                 }
@@ -735,6 +766,56 @@ struct RefreshWidgetIntent: AppIntent {
     static var description = IntentDescription("Refreshes the FilmVault widget data.")
 
     func perform() async throws -> some IntentResult {
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+// MARK: - Recent rolls pagination (large widget)
+
+/// Persists which "page" of recent rolls the large widget is showing, shared via
+/// the App Group so the up/down buttons can advance it without launching the app.
+enum WidgetPageStore {
+    static let suiteName = "group.com.williamcachamwri.FilmVault"
+    static let key = "widgetRecentPage"
+    static let pageSize = 2
+
+    static func clampedPage(recentCount: Int) -> Int {
+        let stored = UserDefaults(suiteName: suiteName)?.integer(forKey: key) ?? 0
+        let maxPage = recentCount <= 0 ? 0 : (recentCount - 1) / pageSize
+        return min(max(0, stored), maxPage)
+    }
+
+    static func advance(by delta: Int) {
+        guard let defaults = UserDefaults(suiteName: suiteName) else { return }
+        var count = 0
+        if let jsonData = defaults.data(forKey: "widgetData"),
+           let data = try? JSONDecoder().decode(FilmVaultWidgetData.self, from: jsonData) {
+            count = data.recentRolls.count
+        }
+        let maxPage = count <= 0 ? 0 : (count - 1) / pageSize
+        let current = defaults.integer(forKey: key)
+        defaults.set(min(max(0, current + delta), maxPage), forKey: key)
+    }
+}
+
+struct WidgetRecentNextIntent: AppIntent {
+    static var title: LocalizedStringResource = "Show next rolls"
+    static var description = IntentDescription("Shows the next page of recent rolls in the widget.")
+
+    func perform() async throws -> some IntentResult {
+        WidgetPageStore.advance(by: 1)
+        WidgetCenter.shared.reloadAllTimelines()
+        return .result()
+    }
+}
+
+struct WidgetRecentPrevIntent: AppIntent {
+    static var title: LocalizedStringResource = "Show previous rolls"
+    static var description = IntentDescription("Shows the previous page of recent rolls in the widget.")
+
+    func perform() async throws -> some IntentResult {
+        WidgetPageStore.advance(by: -1)
         WidgetCenter.shared.reloadAllTimelines()
         return .result()
     }
