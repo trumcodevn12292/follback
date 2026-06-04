@@ -369,3 +369,12 @@
 "Pulled" = "पुल किया";
 "Clear all" = "सभी हटाएँ";
 "Show %d rolls" = "%d रोल दिखाएँ";
+
+/* Onboarding */
+"Continue" = "जारी रखें";
+"Get Started" = "शुरू करें";
+"Track Every Roll" = "हर रोल को ट्रैक करें";
+"Relive the Journey" = "सफर को फिर से जिएं";
+"Your analog film journal" = "आपकी एनालॉग फिल्म डायरी";
+"Film stocks, cameras, and locations" = "फिल्म, कैमरे और स्थान";
+"Photos, stats, and contact sheets" = "तस्वीरें, आँकड़े और कॉन्टैक्ट शीट";

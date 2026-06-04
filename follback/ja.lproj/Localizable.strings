@@ -370,3 +370,12 @@
 "Pulled" = "減感";
 "Clear all" = "すべてクリア";
 "Show %d rolls" = "%d 本を表示";
+
+/* Onboarding */
+"Continue" = "続ける";
+"Get Started" = "はじめる";
+"Track Every Roll" = "すべてのフィルムを記録";
+"Relive the Journey" = "旅をもう一度";
+"Your analog film journal" = "あなたのフィルム写真ノート";
+"Film stocks, cameras, and locations" = "フィルム・カメラ・撮影場所";
+"Photos, stats, and contact sheets" = "写真・統計・コンタクトシート";

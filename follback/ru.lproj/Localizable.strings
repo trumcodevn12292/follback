@@ -371,3 +371,12 @@
 "Pulled" = "Pull (понижение)";
 "Clear all" = "Очистить всё";
 "Show %d rolls" = "Показать %d плёнок";
+
+/* Onboarding */
+"Continue" = "Продолжить";
+"Get Started" = "Начать";
+"Track Every Roll" = "Учитывайте каждую плёнку";
+"Relive the Journey" = "Переживите путешествие заново";
+"Your analog film journal" = "Ваш дневник плёночной фотографии";
+"Film stocks, cameras, and locations" = "Плёнки, камеры и места съёмки";
+"Photos, stats, and contact sheets" = "Фотографии, статистика и контактные листы";

@@ -368,3 +368,12 @@
 "Pulled" = "مسحوب (Pull)";
 "Clear all" = "مسح الكل";
 "Show %d rolls" = "عرض %d بكرة";
+
+/* Onboarding */
+"Continue" = "متابعة";
+"Get Started" = "ابدأ الآن";
+"Track Every Roll" = "تتبّع كل فيلم";
+"Relive the Journey" = "عِش الرحلة من جديد";
+"Your analog film journal" = "مفكرتك للتصوير الفيلمي";
+"Film stocks, cameras, and locations" = "أنواع الأفلام والكاميرات والمواقع";
+"Photos, stats, and contact sheets" = "الصور والإحصائيات وأوراق التلامس";

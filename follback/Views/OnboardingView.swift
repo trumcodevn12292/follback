@@ -31,13 +31,13 @@ struct OnboardingView: View {
                         .transition(.opacity)
 
                     VStack(spacing: 12) {
-                        Text(pages[currentPage].title)
+                        Text(L(pages[currentPage].title))
                             .font(.system(size: 32, weight: .bold))
                             .foregroundColor(Color.filmText)
                             .id("title-\(currentPage)")
                             .transition(.opacity)
 
-                        Text(pages[currentPage].subtitle)
+                        Text(L(pages[currentPage].subtitle))
                             .font(.system(size: 16))
                             .foregroundColor(Color.filmSecondary)
                             .multilineTextAlignment(.center)
@@ -78,7 +78,7 @@ struct OnboardingView: View {
                             onComplete()
                         }
                     } label: {
-                        Text(currentPage < pages.count - 1 ? "Continue" : "Get Started")
+                        Text(currentPage < pages.count - 1 ? L("Continue") : L("Get Started"))
                             .font(.system(size: 17, weight: .bold))
                             .foregroundColor(Color.filmBackground)
                             .frame(maxWidth: .infinity)
@@ -95,7 +95,7 @@ struct OnboardingView: View {
                         Button {
                             onComplete()
                         } label: {
-                            Text("Skip")
+                            Text(L("Skip"))
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(Color.filmTertiary)
                         }

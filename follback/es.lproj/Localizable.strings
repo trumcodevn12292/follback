@@ -369,3 +369,12 @@
 "Pulled" = "Reducido (pull)";
 "Clear all" = "Borrar todo";
 "Show %d rolls" = "Ver %d carretes";
+
+/* Onboarding */
+"Continue" = "Continuar";
+"Get Started" = "Empezar";
+"Track Every Roll" = "Registra cada carrete";
+"Relive the Journey" = "Revive el viaje";
+"Your analog film journal" = "Tu diario de fotografía analógica";
+"Film stocks, cameras, and locations" = "Películas, cámaras y lugares";
+"Photos, stats, and contact sheets" = "Fotos, estadísticas y hojas de contacto";
