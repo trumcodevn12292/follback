@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "रोल";
+"photos" = "फ़ोटो";
+"%d photos" = "%d फ़ोटो";
+"%d rolls" = "%d रोल";
+"%d rolls • %d photos" = "%d रोल • %d फ़ोटो";
+"%d of %d frames" = "%d / %d फ़्रेम";

@@ -3,6 +3,29 @@ import SwiftUI
 import UIKit
 import AppIntents
 
+// MARK: - Widget Localization
+
+/// Localizes widget strings using the language the user picked in-app, shared
+/// via the App Group (the widget runs in its own process/bundle so it can't use
+/// the app's runtime bundle swizzle).
+private func widgetLanguageCode() -> String {
+    UserDefaults(suiteName: "group.com.williamcachamwri.FilmVault")?
+        .string(forKey: "appLanguage") ?? "en"
+}
+
+private func WL(_ key: String) -> String {
+    let code = widgetLanguageCode()
+    if let path = Bundle.main.path(forResource: code, ofType: "lproj"),
+       let bundle = Bundle(path: path) {
+        return bundle.localizedString(forKey: key, value: key, table: nil)
+    }
+    return NSLocalizedString(key, comment: "")
+}
+
+private func WL(_ key: String, _ args: CVarArg...) -> String {
+    String(format: WL(key), arguments: args)
+}
+
 // MARK: - Shared Data Model
 
 struct FilmVaultWidgetData: Codable {
@@ -153,7 +176,7 @@ struct FilmVaultWidgetEntryView: View {
                     Text("\(entry.data.totalRolls)")
                         .font(.system(size: 34, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                    Text("rolls")
+                    Text(WL("rolls"))
                         .font(.system(size: 12, weight: .medium))
                         .foregroundColor(.white.opacity(0.5))
                 }
@@ -163,7 +186,7 @@ struct FilmVaultWidgetEntryView: View {
                     Image(systemName: "camera.fill")
                         .font(.system(size: 10))
                         .foregroundColor(.orange)
-                    Text("\(entry.data.totalPhotos) photos")
+                    Text(WL("%d photos", entry.data.totalPhotos))
                         .font(.system(size: 12, weight: .semibold, design: .rounded))
                         .foregroundColor(.orange)
                 }
@@ -208,7 +231,7 @@ struct FilmVaultWidgetEntryView: View {
                     Text("\(entry.data.totalRolls)")
                         .font(.system(size: 36, weight: .bold, design: .rounded))
                         .foregroundColor(.white)
-                    Text("\(entry.data.totalPhotos) photos")
+                    Text(WL("%d photos", entry.data.totalPhotos))
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundColor(.orange)
                 }
@@ -264,8 +287,8 @@ struct FilmVaultWidgetEntryView: View {
                 }
                 .buttonStyle(.plain)
                 HStack(spacing: 12) {
-                    statBadge(value: "\(entry.data.totalRolls)", label: "rolls", color: .white)
-                    statBadge(value: "\(entry.data.totalPhotos)", label: "photos", color: .orange)
+                    statBadge(value: "\(entry.data.totalRolls)", label: WL("rolls"), color: .white)
+                    statBadge(value: "\(entry.data.totalPhotos)", label: WL("photos"), color: .orange)
                 }
             }
 
@@ -329,11 +352,11 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 12, weight: .bold))
             }
             HStack(spacing: 8) {
-                Text("\(entry.data.totalRolls) rolls")
+                Text(WL("%d rolls", entry.data.totalRolls))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                 Text("•")
                     .foregroundColor(.secondary)
-                Text("\(entry.data.totalPhotos) photos")
+                Text(WL("%d photos", entry.data.totalPhotos))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
             }
             if let recent = entry.data.recentRolls.first {
@@ -348,7 +371,7 @@ struct FilmVaultWidgetEntryView: View {
     private var lockScreenInline: some View {
         HStack(spacing: 4) {
             Image(systemName: "camera.fill")
-            Text("\(entry.data.totalRolls) rolls • \(entry.data.totalPhotos) photos")
+            Text(WL("%d rolls • %d photos", entry.data.totalRolls, entry.data.totalPhotos))
         }
         .containerBackground(for: .widget) { Color.clear }
     }
@@ -414,7 +437,7 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
-                Text("\(roll.photoCount) of \(roll.capacity) frames")
+                Text(WL("%d of %d frames", roll.photoCount, roll.capacity))
                     .font(.system(size: 11, weight: .regular))
                     .foregroundColor(.white.opacity(0.4))
             }

@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "卷";
+"photos" = "张";
+"%d photos" = "%d 张";
+"%d rolls" = "%d 卷";
+"%d rolls • %d photos" = "%d 卷 • %d 张";
+"%d of %d frames" = "%d / %d 张";

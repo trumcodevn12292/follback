@@ -611,10 +611,10 @@ struct SettingsView: View {
     private func reminderStepperRow(title: String, subtitle: String, value: Binding<Int>, range: ClosedRange<Int>, unit: String) -> some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(title)
+                Text(LocalizedStringKey(title))
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(Color.filmText)
-                Text(subtitle)
+                Text(LocalizedStringKey(subtitle))
                     .font(.system(size: 13))
                     .foregroundColor(Color.filmTertiary)
             }
@@ -632,7 +632,7 @@ struct SettingsView: View {
                 .buttonStyle(.plain)
                 .disabled(value.wrappedValue <= range.lowerBound)
 
-                Text("\(value.wrappedValue) \(unit)")
+                Text("\(value.wrappedValue) \(L(unit))")
                     .font(.system(size: 14, weight: .semibold, design: .monospaced))
                     .foregroundColor(Color.filmAccent)
                     .frame(minWidth: 64)

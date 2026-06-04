@@ -253,3 +253,31 @@
 "When reminders are delivered" = "Когда приходят напоминания";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Вы выйдете из Google Drive. Уже загруженные фото останутся на диске.";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "ПРОЯВИТЕЛЬ";
+"DILUTION" = "РАЗВЕДЕНИЕ";
+"TEMPERATURE & TIME" = "ТЕМПЕРАТУРА И ВРЕМЯ";
+"PUSH / PULL" = "PUSH / PULL";
+"AGITATION" = "АЖИТАЦИЯ";
+"DEVELOPED" = "ПРОЯВЛЕНО";
+"Date" = "Дата";
+"RECIPE NOTES" = "ЗАМЕТКИ К РЕЦЕПТУ";
+"Shooting nudge" = "Напоминание о съёмке";
+"After a roll stays in progress" = "Когда плёнка долго остаётся незаконченной";
+"Develop reminder" = "Напоминание о проявке";
+"After a roll is finished" = "Когда плёнка отснята";
+"days" = "дн.";
+"Box speed" = "Номинал ISO";
+"Push" = "Push";
+"Pull" = "Pull";
+"stop" = "ступень";
+"stops" = "ступ.";
+"e.g. Kodak D-76" = "напр. Kodak D-76";
+"e.g. 1+1" = "напр. 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "напр. 30 с вначале, затем 3 переворота / 30 с";
+"Still shooting %@?" = "Всё ещё снимаете %@?";
+"This roll has been in progress for a while. %d/%d frames so far." = "Эта плёнка уже давно в работе. Пока %d/%d кадров.";
+"Time to develop %@" = "Пора проявить %@";
+"You finished this roll. Drop it off at the lab so you don't forget." = "Вы отсняли эту плёнку. Отнесите её в лабораторию, чтобы не забыть.";
+"Developed %@" = "Проявлено %@";

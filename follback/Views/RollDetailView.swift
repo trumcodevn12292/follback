@@ -519,13 +519,13 @@ struct RollDetailView: View {
                         }
                         if roll.pushPull != 0 {
                             devLine(icon: "arrow.up.arrow.down",
-                                    text: "\(roll.pushPull > 0 ? "Push" : "Pull") \(String(format: "%+d", Int(roll.pushPull))) stop\(abs(roll.pushPull) == 1 ? "" : "s")")
+                                    text: "\(roll.pushPull > 0 ? L("Push") : L("Pull")) \(String(format: "%+d", Int(roll.pushPull))) \(abs(roll.pushPull) == 1 ? L("stop") : L("stops"))")
                         }
                         if let agit = roll.devAgitation, !agit.isEmpty {
                             devLine(icon: "hand.draw", text: agit)
                         }
                         if let date = roll.developedDate {
-                            devLine(icon: "calendar", text: "Developed \(date.formatted(date: .abbreviated, time: .omitted))")
+                            devLine(icon: "calendar", text: L("Developed %@", date.formatted(date: .abbreviated, time: .omitted)))
                         }
                         if let notes = roll.devNotes, !notes.isEmpty {
                             devLine(icon: "text.alignleft", text: notes)

@@ -1,0 +1,7 @@
+/* FilmVault Widget */
+"rolls" = "rolls";
+"photos" = "photos";
+"%d photos" = "%d photos";
+"%d rolls" = "%d rolls";
+"%d rolls • %d photos" = "%d rolls • %d photos";
+"%d of %d frames" = "%d of %d frames";

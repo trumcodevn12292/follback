@@ -251,3 +251,31 @@
 "When reminders are delivered" = "Khi nhắc nhở được gửi";
 
 "You will be signed out of Google Drive. Photos already uploaded will remain on Drive." = "Bạn sẽ đăng xuất Google Drive. Ảnh đã upload vẫn còn trên Drive.";
+
+/* Added: Reminders & Dev Recipe */
+"DEVELOPER" = "THUỐC TRÁNG";
+"DILUTION" = "TỈ LỆ PHA";
+"TEMPERATURE & TIME" = "NHIỆT ĐỘ & THỜI GIAN";
+"PUSH / PULL" = "PUSH / PULL";
+"AGITATION" = "ĐẢO LẮC";
+"DEVELOPED" = "ĐÃ TRÁNG";
+"Date" = "Ngày";
+"RECIPE NOTES" = "GHI CHÚ CÔNG THỨC";
+"Shooting nudge" = "Nhắc chụp";
+"After a roll stays in progress" = "Khi cuộn phim chụp dở quá lâu";
+"Develop reminder" = "Nhắc tráng phim";
+"After a roll is finished" = "Khi cuộn phim chụp xong";
+"days" = "ngày";
+"Box speed" = "Đúng ISO gốc";
+"Push" = "Push";
+"Pull" = "Pull";
+"stop" = "stop";
+"stops" = "stop";
+"e.g. Kodak D-76" = "vd. Kodak D-76";
+"e.g. 1+1" = "vd. 1+1";
+"e.g. 30s initial, then 3 inversions / 30s" = "vd. 30s đầu, rồi lật 3 lần / 30s";
+"Still shooting %@?" = "Vẫn đang chụp %@?";
+"This roll has been in progress for a while. %d/%d frames so far." = "Cuộn này đã chụp dở một thời gian rồi. Đã chụp %d/%d kiểu.";
+"Time to develop %@" = "Đến lúc tráng %@";
+"You finished this roll. Drop it off at the lab so you don't forget." = "Bạn đã chụp xong cuộn này. Mang đi tráng kẻo quên nhé.";
+"Developed %@" = "Đã tráng %@";
