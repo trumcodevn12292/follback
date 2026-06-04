@@ -5,3 +5,12 @@
 "%d rolls" = "%d плёнок";
 "%d rolls • %d photos" = "%d плёнок • %d фото";
 "%d of %d frames" = "%d из %d кадров";
+
+
+/* Live Activity */
+"Now Shooting" = "Сейчас снимаю";
+"%d left" = "Осталось %d";
+"Shooting" = "Снимается";
+"Shot" = "Отснято";
+"Developed" = "Проявлено";
+"Archived" = "В архиве";

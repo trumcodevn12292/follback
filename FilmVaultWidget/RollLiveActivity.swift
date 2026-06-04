@@ -1,0 +1,161 @@
+import ActivityKit
+import WidgetKit
+import SwiftUI
+
+// MARK: - Live Activity (Lock Screen + Dynamic Island)
+
+/// Live Activity that shows the roll you are currently shooting on the Lock
+/// Screen and in the Dynamic Island. All labels are localized via `WL(...)`
+/// using the language the user picked inside the app (shared through the App
+/// Group), and the layout flips to RTL when Arabic is selected.
+struct RollLiveActivity: Widget {
+    var body: some WidgetConfiguration {
+        ActivityConfiguration(for: FilmVaultRollAttributes.self) { context in
+            LockScreenLiveActivityView(context: context)
+                .environment(\.layoutDirection, widgetLayoutDirection())
+                .widgetURL(URL(string: "filmvault://roll/\(context.attributes.rollID)"))
+        } dynamicIsland: { context in
+            dynamicIsland(context: context)
+        }
+    }
+
+    private func dynamicIsland(context: ActivityViewContext<FilmVaultRollAttributes>) -> DynamicIsland {
+        let shot = context.state.shotFrames
+        let cap = context.attributes.capacity
+        let progress = cap > 0 ? min(1.0, Double(shot) / Double(cap)) : 0
+
+        return DynamicIsland {
+            DynamicIslandExpandedRegion(.leading) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Label {
+                        Text(context.attributes.filmName)
+                            .font(.system(size: 14, weight: .semibold))
+                            .lineLimit(1)
+                    } icon: {
+                        Image(systemName: "film")
+                            .foregroundStyle(.orange)
+                    }
+                    if let cam = context.attributes.cameraName, !cam.isEmpty {
+                        Text(cam)
+                            .font(.system(size: 11))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
+                }
+            }
+            DynamicIslandExpandedRegion(.trailing) {
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("\(shot)/\(cap)")
+                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .monospacedDigit()
+                    Text(WL(context.state.statusKey))
+                        .font(.system(size: 11))
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            DynamicIslandExpandedRegion(.bottom) {
+                VStack(alignment: .leading, spacing: 6) {
+                    ProgressView(value: progress)
+                        .tint(.orange)
+                    HStack {
+                        Text(context.attributes.isoText)
+                        if let pp = context.attributes.pushPullText, !pp.isEmpty {
+                            Text("•")
+                            Text(pp)
+                        }
+                        Spacer()
+                        Text(WL("%d left", max(0, cap - shot)))
+                    }
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+                }
+                .environment(\.layoutDirection, widgetLayoutDirection())
+            }
+        } compactLeading: {
+            Image(systemName: "film")
+                .foregroundStyle(.orange)
+        } compactTrailing: {
+            Text("\(shot)/\(cap)")
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .monospacedDigit()
+        } minimal: {
+            Text("\(shot)")
+                .font(.system(size: 12, weight: .bold, design: .rounded))
+                .monospacedDigit()
+                .foregroundStyle(.orange)
+        }
+        .widgetURL(URL(string: "filmvault://roll/\(context.attributes.rollID)"))
+        .keylineTint(.orange)
+    }
+}
+
+// MARK: - Lock Screen view
+
+private struct LockScreenLiveActivityView: View {
+    let context: ActivityViewContext<FilmVaultRollAttributes>
+
+    private var shot: Int { context.state.shotFrames }
+    private var cap: Int { context.attributes.capacity }
+    private var progress: Double {
+        cap > 0 ? min(1.0, Double(shot) / Double(cap)) : 0
+    }
+
+    var body: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .stroke(Color.orange.opacity(0.2), lineWidth: 5)
+                Circle()
+                    .trim(from: 0, to: progress)
+                    .stroke(Color.orange, style: StrokeStyle(lineWidth: 5, lineCap: .round))
+                    .rotationEffect(.degrees(-90))
+                Image(systemName: "film")
+                    .font(.system(size: 18))
+                    .foregroundStyle(.orange)
+            }
+            .frame(width: 52, height: 52)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text(WL("Now Shooting"))
+                    .font(.system(size: 10, weight: .bold))
+                    .kerning(0.6)
+                    .foregroundStyle(.orange)
+                Text(context.attributes.filmName)
+                    .font(.system(size: 16, weight: .semibold))
+                    .lineLimit(1)
+                HStack(spacing: 6) {
+                    Text(context.attributes.isoText)
+                    if let cam = context.attributes.cameraName, !cam.isEmpty {
+                        Text("•")
+                        Text(cam).lineLimit(1)
+                    }
+                    if let pp = context.attributes.pushPullText, !pp.isEmpty {
+                        Text("•")
+                        Text(pp)
+                    }
+                }
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("\(shot)/\(cap)")
+                    .font(.system(size: 22, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                Text(WL("%d left", max(0, cap - shot)))
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(16)
+        .activityBackgroundTint(Color.black.opacity(0.55))
+        .activitySystemActionForegroundColor(.orange)
+    }
+}
+
+private func widgetLayoutDirection() -> LayoutDirection {
+    widgetLanguageCode() == "ar" ? .rightToLeft : .leftToRight
+}

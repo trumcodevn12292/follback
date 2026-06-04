@@ -239,3 +239,29 @@
 "Search film stocks..." = "Search film stocks...";
 "e.g. My Kodak Portra 400" = "e.g. My Kodak Portra 400";
 "%d EXPOSURES" = "%d EXPOSURES";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "LOCK SCREEN";
+"Live Activity" = "Live Activity";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "Show the roll you're currently shooting on the Lock Screen and Dynamic Island.";
+"No roll in progress right now." = "No roll in progress right now.";
+"You've shot %d of %d frames on %@, %d left." = "You've shot %1$d of %2$d frames on %3$@, %4$d left.";
+"%d frames left on %@." = "%1$d frames left on %2$@.";
+"Opening %@." = "Opening %@.";
+"Tracking %@ on your Lock Screen." = "Tracking %@ on your Lock Screen.";
+"Stopped Lock Screen tracking." = "Stopped Lock Screen tracking.";
+"Current Roll Status" = "Current Roll Status";
+"Frames Left" = "Frames Left";
+"Open Current Roll" = "Open Current Roll";
+"Show Roll on Lock Screen" = "Show Roll on Lock Screen";
+"Stop Lock Screen Tracking" = "Stop Lock Screen Tracking";
+"New Film Roll" = "New Film Roll";
+"Check how many frames you've shot on the roll you're currently shooting." = "Check how many frames you've shot on the roll you're currently shooting.";
+"Ask how many frames are left on a film roll." = "Ask how many frames are left on a film roll.";
+"Open the roll you're currently shooting in FilmVault." = "Open the roll you're currently shooting in FilmVault.";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "Show the roll you're currently shooting as a Live Activity on the Lock Screen.";
+"Remove the current roll Live Activity from the Lock Screen." = "Remove the current roll Live Activity from the Lock Screen.";
+"Start logging a new film roll in FilmVault." = "Start logging a new film roll in FilmVault.";
+"Roll" = "Roll";
+"How many frames left on ${roll}" = "How many frames left on ${roll}";

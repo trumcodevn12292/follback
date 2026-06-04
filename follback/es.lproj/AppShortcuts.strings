@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "Consultar mi carrete en ${applicationName}";
+"What's my ${applicationName} roll status" = "Cuál es el estado de mi carrete en ${applicationName}";
+"How is my film roll in ${applicationName}" = "Cómo va mi carrete en ${applicationName}";
+"How many frames left in ${applicationName}" = "Cuántos fotogramas quedan en ${applicationName}";
+"Frames left in ${applicationName}" = "Fotogramas restantes en ${applicationName}";
+"Open my roll in ${applicationName}" = "Abrir mi carrete en ${applicationName}";
+"Open current roll in ${applicationName}" = "Abrir el carrete actual en ${applicationName}";
+"Track my roll in ${applicationName}" = "Seguir mi carrete en ${applicationName}";
+"Show my roll on the Lock Screen with ${applicationName}" = "Mostrar mi carrete en la pantalla bloqueada con ${applicationName}";
+"Start a new roll in ${applicationName}" = "Empezar un carrete nuevo en ${applicationName}";
+"New film roll in ${applicationName}" = "Nuevo carrete en ${applicationName}";

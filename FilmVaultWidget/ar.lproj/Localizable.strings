@@ -5,3 +5,12 @@
 "%d rolls" = "%d بكرة";
 "%d rolls • %d photos" = "%d بكرة • %d صورة";
 "%d of %d frames" = "%d من %d لقطة";
+
+
+/* Live Activity */
+"Now Shooting" = "قيد التصوير";
+"%d left" = "متبقّى %d";
+"Shooting" = "قيد التصوير";
+"Shot" = "تم التصوير";
+"Developed" = "تم التحميض";
+"Archived" = "مؤرشف";

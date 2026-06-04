@@ -326,3 +326,29 @@
 "Search film stocks..." = "ابحث عن الأفلام…";
 "e.g. My Kodak Portra 400" = "مثال: Kodak Portra 400 الخاص بي";
 "%d EXPOSURES" = "%d لقطة";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "شاشة القفل";
+"Live Activity" = "النشاط المباشر";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "إظهار الفيلم الذي تصوّره حاليًا على شاشة القفل وجزيرة الديناميكية.";
+"No roll in progress right now." = "لا يوجد فيلم قيد التصوير حاليًا.";
+"You've shot %d of %d frames on %@, %d left." = "لقد صوّرت %1$d من %2$d لقطة على %3$@، وتبقّى %4$d.";
+"%d frames left on %@." = "تبقّى %1$d لقطة على %2$@.";
+"Opening %@." = "جارٍ فتح %@.";
+"Tracking %@ on your Lock Screen." = "يتم تتبّع %@ على شاشة القفل.";
+"Stopped Lock Screen tracking." = "تم إيقاف التتبّع على شاشة القفل.";
+"Current Roll Status" = "حالة الفيلم الحالي";
+"Frames Left" = "اللقطات المتبقية";
+"Open Current Roll" = "فتح الفيلم الحالي";
+"Show Roll on Lock Screen" = "إظهار الفيلم على شاشة القفل";
+"Stop Lock Screen Tracking" = "إيقاف التتبّع على شاشة القفل";
+"New Film Roll" = "فيلم جديد";
+"Check how many frames you've shot on the roll you're currently shooting." = "تحقّق من عدد اللقطات التي صوّرتها على الفيلم الحالي.";
+"Ask how many frames are left on a film roll." = "اسأل عن عدد اللقطات المتبقية على الفيلم.";
+"Open the roll you're currently shooting in FilmVault." = "افتح الفيلم الذي تصوّره في FilmVault.";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "إظهار الفيلم الذي تصوّره كنشاط مباشر على شاشة القفل.";
+"Remove the current roll Live Activity from the Lock Screen." = "إزالة النشاط المباشر للفيلم الحالي من شاشة القفل.";
+"Start logging a new film roll in FilmVault." = "ابدأ تسجيل فيلم جديد في FilmVault.";
+"Roll" = "فيلم";
+"How many frames left on ${roll}" = "كم لقطة تبقّت على ${roll}";

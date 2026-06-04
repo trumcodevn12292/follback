@@ -328,3 +328,29 @@
 "Search film stocks..." = "フィルムを検索…";
 "e.g. My Kodak Portra 400" = "例：マイ Kodak Portra 400";
 "%d EXPOSURES" = "%d 枚";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "ロック画面";
+"Live Activity" = "ライブアクティビティ";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "撮影中のフィルムをロック画面とDynamic Islandに表示します。";
+"No roll in progress right now." = "現在撮影中のフィルムはありません。";
+"You've shot %d of %d frames on %@, %d left." = "%3$@ で %2$d 枚中 %1$d 枚撮影、残り %4$d 枚です。";
+"%d frames left on %@." = "%2$@ は残り %1$d 枚です。";
+"Opening %@." = "%@ を開いています。";
+"Tracking %@ on your Lock Screen." = "%@ をロック画面で表示しています。";
+"Stopped Lock Screen tracking." = "ロック画面での表示を停止しました。";
+"Current Roll Status" = "現在のフィルムの状態";
+"Frames Left" = "残り枚数";
+"Open Current Roll" = "現在のフィルムを開く";
+"Show Roll on Lock Screen" = "ロック画面にフィルムを表示";
+"Stop Lock Screen Tracking" = "ロック画面の表示を停止";
+"New Film Roll" = "新しいフィルム";
+"Check how many frames you've shot on the roll you're currently shooting." = "撮影中のフィルムで何枚撮ったかを確認します。";
+"Ask how many frames are left on a film roll." = "フィルムの残り枚数を尋ねます。";
+"Open the roll you're currently shooting in FilmVault." = "撮影中のフィルムを FilmVault で開きます。";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "撮影中のフィルムをライブアクティビティとしてロック画面に表示します。";
+"Remove the current roll Live Activity from the Lock Screen." = "現在のフィルムのライブアクティビティをロック画面から削除します。";
+"Start logging a new film roll in FilmVault." = "FilmVault で新しいフィルムの記録を始めます。";
+"Roll" = "フィルム";
+"How many frames left on ${roll}" = "${roll} の残り枚数";

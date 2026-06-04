@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "Kiểm tra cuộn của tôi trong ${applicationName}";
+"What's my ${applicationName} roll status" = "Trạng thái cuộn ${applicationName} của tôi";
+"How is my film roll in ${applicationName}" = "Cuộn phim của tôi thế nào trong ${applicationName}";
+"How many frames left in ${applicationName}" = "Còn bao nhiêu kiểu trong ${applicationName}";
+"Frames left in ${applicationName}" = "Số kiểu còn lại trong ${applicationName}";
+"Open my roll in ${applicationName}" = "Mở cuộn của tôi trong ${applicationName}";
+"Open current roll in ${applicationName}" = "Mở cuộn hiện tại trong ${applicationName}";
+"Track my roll in ${applicationName}" = "Theo dõi cuộn của tôi trong ${applicationName}";
+"Show my roll on the Lock Screen with ${applicationName}" = "Hiện cuộn của tôi trên Màn hình khóa với ${applicationName}";
+"Start a new roll in ${applicationName}" = "Bắt đầu cuộn mới trong ${applicationName}";
+"New film roll in ${applicationName}" = "Cuộn phim mới trong ${applicationName}";

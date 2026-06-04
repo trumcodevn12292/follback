@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "${applicationName}でフィルムを確認";
+"What's my ${applicationName} roll status" = "${applicationName}のフィルムの状態";
+"How is my film roll in ${applicationName}" = "${applicationName}のフィルムはどんな感じ";
+"How many frames left in ${applicationName}" = "${applicationName}の残り枚数は";
+"Frames left in ${applicationName}" = "${applicationName}の残り枚数";
+"Open my roll in ${applicationName}" = "${applicationName}でフィルムを開く";
+"Open current roll in ${applicationName}" = "${applicationName}で現在のフィルムを開く";
+"Track my roll in ${applicationName}" = "${applicationName}でフィルムを表示";
+"Show my roll on the Lock Screen with ${applicationName}" = "${applicationName}でロック画面にフィルムを表示";
+"Start a new roll in ${applicationName}" = "${applicationName}で新しいフィルムを始める";
+"New film roll in ${applicationName}" = "${applicationName}で新しいフィルム";

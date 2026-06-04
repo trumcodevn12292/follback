@@ -5,3 +5,12 @@
 "%d rolls" = "%d रोल";
 "%d rolls • %d photos" = "%d रोल • %d फ़ोटो";
 "%d of %d frames" = "%d / %d फ़्रेम";
+
+
+/* Live Activity */
+"Now Shooting" = "अभी शूटिंग";
+"%d left" = "%d बाकी";
+"Shooting" = "शूटिंग";
+"Shot" = "शॉट";
+"Developed" = "डेवलप किया";
+"Archived" = "संग्रहित";

@@ -5,3 +5,12 @@
 "%d rolls" = "%d 卷";
 "%d rolls • %d photos" = "%d 卷 • %d 张";
 "%d of %d frames" = "%d / %d 张";
+
+
+/* Live Activity */
+"Now Shooting" = "正在拍摄";
+"%d left" = "还剩 %d";
+"Shooting" = "拍摄中";
+"Shot" = "已拍完";
+"Developed" = "已冲洗";
+"Archived" = "已归档";

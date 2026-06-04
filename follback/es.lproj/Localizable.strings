@@ -327,3 +327,29 @@
 "Search film stocks..." = "Buscar películas…";
 "e.g. My Kodak Portra 400" = "p. ej. Mi Kodak Portra 400";
 "%d EXPOSURES" = "%d EXPOSICIONES";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "PANTALLA BLOQUEADA";
+"Live Activity" = "Actividad en vivo";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "Muestra el carrete que estás disparando en la pantalla bloqueada y la Dynamic Island.";
+"No roll in progress right now." = "Ahora mismo no hay ningún carrete en curso.";
+"You've shot %d of %d frames on %@, %d left." = "Has disparado %1$d de %2$d fotogramas en %3$@, quedan %4$d.";
+"%d frames left on %@." = "Quedan %1$d fotogramas en %2$@.";
+"Opening %@." = "Abriendo %@.";
+"Tracking %@ on your Lock Screen." = "Siguiendo %@ en tu pantalla bloqueada.";
+"Stopped Lock Screen tracking." = "Se detuvo el seguimiento en la pantalla bloqueada.";
+"Current Roll Status" = "Estado del carrete actual";
+"Frames Left" = "Fotogramas restantes";
+"Open Current Roll" = "Abrir carrete actual";
+"Show Roll on Lock Screen" = "Mostrar carrete en pantalla bloqueada";
+"Stop Lock Screen Tracking" = "Detener seguimiento en pantalla bloqueada";
+"New Film Roll" = "Nuevo carrete";
+"Check how many frames you've shot on the roll you're currently shooting." = "Comprueba cuántos fotogramas has disparado en tu carrete actual.";
+"Ask how many frames are left on a film roll." = "Pregunta cuántos fotogramas quedan en un carrete.";
+"Open the roll you're currently shooting in FilmVault." = "Abre en FilmVault el carrete que estás disparando.";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "Muestra el carrete que estás disparando como Actividad en vivo en la pantalla bloqueada.";
+"Remove the current roll Live Activity from the Lock Screen." = "Quita de la pantalla bloqueada la Actividad en vivo del carrete actual.";
+"Start logging a new film roll in FilmVault." = "Empieza a registrar un nuevo carrete en FilmVault.";
+"Roll" = "Carrete";
+"How many frames left on ${roll}" = "Cuántos fotogramas quedan en ${roll}";

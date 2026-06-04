@@ -59,6 +59,13 @@
 			path = FilmVaultWidget;
 			sourceTree = "<group>";
 		};
+		SHARED000000000000000001 /* Shared */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,6 +96,7 @@
 			children = (
 				1F82E6E82FCEFA1300058D29 /* follback */,
 				WIDG00060000000000000001 /* FilmVaultWidget */,
+				SHARED000000000000000001 /* Shared */,
 				1F82E6E72FCEFA1300058D29 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -121,6 +129,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				1F82E6E82FCEFA1300058D29 /* follback */,
+				SHARED000000000000000001 /* Shared */,
 			);
 			name = FilmVault;
 			packageProductDependencies = (
@@ -148,6 +157,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				WIDG00060000000000000001 /* FilmVaultWidget */,
+				SHARED000000000000000001 /* Shared */,
 			);
 			name = FilmVaultWidgetExtension;
 			productName = FilmVaultWidgetExtension;

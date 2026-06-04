@@ -329,3 +329,29 @@
 "Search film stocks..." = "Поиск плёнки…";
 "e.g. My Kodak Portra 400" = "напр. Мой Kodak Portra 400";
 "%d EXPOSURES" = "%d КАДРОВ";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "ЭКРАН БЛОКИРОВКИ";
+"Live Activity" = "Активность в реальном времени";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "Показывать плёнку, которую вы снимаете, на экране блокировки и в Dynamic Island.";
+"No roll in progress right now." = "Сейчас нет плёнки в работе.";
+"You've shot %d of %d frames on %@, %d left." = "На плёнке %3$@ снято %1$d из %2$d кадров, осталось %4$d.";
+"%d frames left on %@." = "На плёнке %2$@ осталось %1$d кадров.";
+"Opening %@." = "Открываю %@.";
+"Tracking %@ on your Lock Screen." = "Отслеживаю %@ на экране блокировки.";
+"Stopped Lock Screen tracking." = "Отслеживание на экране блокировки остановлено.";
+"Current Roll Status" = "Статус текущей плёнки";
+"Frames Left" = "Осталось кадров";
+"Open Current Roll" = "Открыть текущую плёнку";
+"Show Roll on Lock Screen" = "Показать плёнку на экране блокировки";
+"Stop Lock Screen Tracking" = "Остановить отслеживание на экране блокировки";
+"New Film Roll" = "Новая плёнка";
+"Check how many frames you've shot on the roll you're currently shooting." = "Узнайте, сколько кадров вы сняли на текущей плёнке.";
+"Ask how many frames are left on a film roll." = "Спросите, сколько кадров осталось на плёнке.";
+"Open the roll you're currently shooting in FilmVault." = "Откройте плёнку, которую вы снимаете, в FilmVault.";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "Показывать снимаемую плёнку как Live Activity на экране блокировки.";
+"Remove the current roll Live Activity from the Lock Screen." = "Убрать Live Activity текущей плёнки с экрана блокировки.";
+"Start logging a new film roll in FilmVault." = "Начните вести запись новой плёнки в FilmVault.";
+"Roll" = "Плёнка";
+"How many frames left on ${roll}" = "Сколько кадров осталось на ${roll}";

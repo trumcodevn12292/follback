@@ -1,0 +1,12 @@
+/* App Shortcut phrases (Siri) */
+"Check my roll in ${applicationName}" = "${applicationName} में मेरा रोल जांचें";
+"What's my ${applicationName} roll status" = "${applicationName} में मेरे रोल की स्थिति क्या है";
+"How is my film roll in ${applicationName}" = "${applicationName} में मेरा फ़िल्म रोल कैसा है";
+"How many frames left in ${applicationName}" = "${applicationName} में कितने फ्रेम बाकी हैं";
+"Frames left in ${applicationName}" = "${applicationName} में बचे हुए फ्रेम";
+"Open my roll in ${applicationName}" = "${applicationName} में मेरा रोल खोलें";
+"Open current roll in ${applicationName}" = "${applicationName} में मौजूदा रोल खोलें";
+"Track my roll in ${applicationName}" = "${applicationName} में मेरा रोल ट्रैक करें";
+"Show my roll on the Lock Screen with ${applicationName}" = "${applicationName} से मेरा रोल लॉक स्क्रीन पर दिखाएँ";
+"Start a new roll in ${applicationName}" = "${applicationName} में नया रोल शुरू करें";
+"New film roll in ${applicationName}" = "${applicationName} में नया फ़िल्म रोल";

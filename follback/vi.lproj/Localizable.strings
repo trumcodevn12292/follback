@@ -327,3 +327,29 @@
 "Search film stocks..." = "Tìm loại phim...";
 "e.g. My Kodak Portra 400" = "vd. Kodak Portra 400 của tôi";
 "%d EXPOSURES" = "%d KIỂU";
+
+
+/* Live Activity & Siri Shortcuts */
+"LOCK SCREEN" = "MÀN HÌNH KHÓA";
+"Live Activity" = "Hoạt động trực tiếp";
+"Show the roll you're currently shooting on the Lock Screen and Dynamic Island." = "Hiển thị cuộn phim bạn đang chụp trên Màn hình khóa và Dynamic Island.";
+"No roll in progress right now." = "Hiện không có cuộn nào đang chụp.";
+"You've shot %d of %d frames on %@, %d left." = "Bạn đã chụp %1$d/%2$d kiểu trên %3$@, còn %4$d kiểu.";
+"%d frames left on %@." = "Còn %1$d kiểu trên %2$@.";
+"Opening %@." = "Đang mở %@.";
+"Tracking %@ on your Lock Screen." = "Đang theo dõi %@ trên Màn hình khóa.";
+"Stopped Lock Screen tracking." = "Đã dừng theo dõi trên Màn hình khóa.";
+"Current Roll Status" = "Trạng thái cuộn hiện tại";
+"Frames Left" = "Số kiểu còn lại";
+"Open Current Roll" = "Mở cuộn hiện tại";
+"Show Roll on Lock Screen" = "Hiện cuộn trên Màn hình khóa";
+"Stop Lock Screen Tracking" = "Dừng theo dõi trên Màn hình khóa";
+"New Film Roll" = "Cuộn phim mới";
+"Check how many frames you've shot on the roll you're currently shooting." = "Kiểm tra bạn đã chụp bao nhiêu kiểu trên cuộn đang chụp.";
+"Ask how many frames are left on a film roll." = "Hỏi xem còn bao nhiêu kiểu trên một cuộn phim.";
+"Open the roll you're currently shooting in FilmVault." = "Mở cuộn bạn đang chụp trong FilmVault.";
+"Show the roll you're currently shooting as a Live Activity on the Lock Screen." = "Hiển thị cuộn đang chụp dưới dạng Hoạt động trực tiếp trên Màn hình khóa.";
+"Remove the current roll Live Activity from the Lock Screen." = "Gỡ Hoạt động trực tiếp của cuộn hiện tại khỏi Màn hình khóa.";
+"Start logging a new film roll in FilmVault." = "Bắt đầu ghi một cuộn phim mới trong FilmVault.";
+"Roll" = "Cuộn phim";
+"How many frames left on ${roll}" = "Còn bao nhiêu kiểu trên ${roll}";
