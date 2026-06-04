@@ -304,3 +304,22 @@
 "Lens (optional)" = "Ống kính (không bắt buộc)";
 "%d roll" = "%d cuộn";
 "%d rolls" = "%d cuộn";
+"Developed" = "Đã tráng";
+
+/* Added: Labs management */
+"Labs" = "Lab";
+"LABS" = "LAB";
+"No labs yet" = "Chưa có lab nào";
+"Add the labs you use to track where each roll is developed" = "Thêm các lab bạn hay dùng để theo dõi nơi tráng từng cuộn";
+"Add Lab" = "Thêm lab";
+"Edit Lab" = "Sửa lab";
+"Avatar" = "Ảnh đại diện";
+"LAB NAME" = "TÊN LAB";
+"e.g. The Lab Saigon" = "vd. The Lab Saigon";
+"DESCRIPTION" = "MÔ TẢ";
+"e.g. C-41 & B&W, scan included (optional)" = "vd. C-41 & trắng đen, có scan (không bắt buộc)";
+"Save Lab" = "Lưu lab";
+"MY LABS" = "LAB CỦA TÔI";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "Đã nhập %d cuộn, %d máy ảnh, %d film tự tạo, %d lab.";
+"Import failed: %@" = "Nhập thất bại: %@";
+"Delete Lab" = "Xóa lab";

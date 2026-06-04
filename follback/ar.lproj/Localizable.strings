@@ -303,3 +303,22 @@
 "Lens (optional)" = "العدسة (اختياري)";
 "%d roll" = "%d بكرة";
 "%d rolls" = "%d بكرة";
+"Developed" = "تم التحميض";
+
+/* Added: Labs management */
+"Labs" = "المعامل";
+"LABS" = "المعامل";
+"No labs yet" = "لا توجد معامل بعد";
+"Add the labs you use to track where each roll is developed" = "أضف المعامل التي تستخدمها لتتبّع مكان تحميض كل فيلم";
+"Add Lab" = "إضافة معمل";
+"Edit Lab" = "تعديل المعمل";
+"Avatar" = "الصورة";
+"LAB NAME" = "اسم المعمل";
+"e.g. The Lab Saigon" = "مثال: The Lab Saigon";
+"DESCRIPTION" = "الوصف";
+"e.g. C-41 & B&W, scan included (optional)" = "مثال: C-41 وأبيض وأسود، مع المسح (اختياري)";
+"Save Lab" = "حفظ المعمل";
+"MY LABS" = "معاملي";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "تم استيراد %d بكرة، %d كاميرا، %d فيلم مخصص، %d معمل.";
+"Import failed: %@" = "فشل الاستيراد: %@";
+"Delete Lab" = "حذف المعمل";

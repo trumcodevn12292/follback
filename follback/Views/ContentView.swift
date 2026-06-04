@@ -36,12 +36,19 @@ struct ContentView: View {
                     }
                     .tag(1)
 
-                SettingsView()
+                LabsView()
                     .tabItem {
-                        Image(systemName: selectedTab == 2 ? "gearshape.fill" : "gearshape")
-                        Text("Settings")
+                        Image(systemName: selectedTab == 2 ? "flask.fill" : "flask")
+                        Text("Labs")
                     }
                     .tag(2)
+
+                SettingsView()
+                    .tabItem {
+                        Image(systemName: selectedTab == 3 ? "gearshape.fill" : "gearshape")
+                        Text("Settings")
+                    }
+                    .tag(3)
             }
             .tint(Color.filmAccent)
             .opacity(tabAppeared ? 1 : 0)
@@ -57,7 +64,7 @@ struct ContentView: View {
                 showNewRoll = true
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionSettings)) { _ in
-                selectedTab = 2
+                selectedTab = 3
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionRecentRoll)) { _ in
                 selectedTab = 0

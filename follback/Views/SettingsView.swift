@@ -782,13 +782,13 @@ struct SettingsView: View {
                 let data = try Data(contentsOf: url)
                 let backup = try BackupService.decode(data)
                 let summary = BackupService.restore(backup, into: modelContext)
-                backupResultMessage = "Imported \(summary.rollsAdded) rolls, \(summary.camerasAdded) cameras, \(summary.customFilmsAdded) custom films."
+                backupResultMessage = L("Imported %d rolls, %d cameras, %d custom films, %d labs.", summary.rollsAdded, summary.camerasAdded, summary.customFilmsAdded, summary.customLabsAdded)
                 UINotificationFeedbackGenerator().notificationOccurred(.success)
             } catch {
-                backupResultMessage = "Import failed: \(error.localizedDescription)"
+                backupResultMessage = L("Import failed: %@", error.localizedDescription)
             }
         case .failure(let error):
-            backupResultMessage = "Import failed: \(error.localizedDescription)"
+            backupResultMessage = L("Import failed: %@", error.localizedDescription)
         }
         showBackupResult = true
     }

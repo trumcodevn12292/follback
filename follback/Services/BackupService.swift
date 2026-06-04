@@ -71,12 +71,14 @@ struct FilmVaultBackup: Codable {
     var rolls: [RollBackup]
     var cameras: [CameraBackup]
     var customFilms: [CustomFilm]
+    var customLabs: [CustomLab]?
 }
 
 struct BackupImportSummary {
     var rollsAdded: Int
     var camerasAdded: Int
     var customFilmsAdded: Int
+    var customLabsAdded: Int
 }
 
 // MARK: - Service
@@ -164,7 +166,8 @@ enum BackupService {
             exportedAt: Date(),
             rolls: rollBackups,
             cameras: cameraBackups,
-            customFilms: CustomFilmStore.shared.films
+            customFilms: CustomFilmStore.shared.films,
+            customLabs: CustomLabStore.shared.labs
         )
     }
 
@@ -275,13 +278,24 @@ enum BackupService {
         }
         if customFilmsAdded > 0 { store.save() }
 
+        // Custom labs also live in UserDefaults via CustomLabStore.
+        var customLabsAdded = 0
+        let labStore = CustomLabStore.shared
+        let existingLabIDs = Set(labStore.labs.map { $0.id })
+        for lab in (backup.customLabs ?? []) where !existingLabIDs.contains(lab.id) {
+            labStore.labs.append(lab)
+            customLabsAdded += 1
+        }
+        if customLabsAdded > 0 { labStore.save() }
+
         try? context.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
 
         return BackupImportSummary(
             rollsAdded: rollsAdded,
             camerasAdded: camerasAdded,
-            customFilmsAdded: customFilmsAdded
+            customFilmsAdded: customFilmsAdded,
+            customLabsAdded: customLabsAdded
         )
     }
 }

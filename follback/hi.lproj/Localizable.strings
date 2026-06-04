@@ -304,3 +304,22 @@
 "Lens (optional)" = "लेंस (वैकल्पिक)";
 "%d roll" = "%d रोल";
 "%d rolls" = "%d रोल";
+"Developed" = "डेवलप किया";
+
+/* Added: Labs management */
+"Labs" = "लैब";
+"LABS" = "लैब";
+"No labs yet" = "अभी कोई लैब नहीं";
+"Add the labs you use to track where each roll is developed" = "उन लैब को जोड़ें जिन्हें आप उपयोग करते हैं ताकि पता रहे कि हर रोल कहाँ डेवलप हुआ";
+"Add Lab" = "लैब जोड़ें";
+"Edit Lab" = "लैब संपादित करें";
+"Avatar" = "अवतार";
+"LAB NAME" = "लैब नाम";
+"e.g. The Lab Saigon" = "उदा. The Lab Saigon";
+"DESCRIPTION" = "विवरण";
+"e.g. C-41 & B&W, scan included (optional)" = "उदा. C-41 और श्वेत-श्याम, स्कैन सहित (वैकल्पिक)";
+"Save Lab" = "लैब सहेजें";
+"MY LABS" = "मेरी लैब";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "%d रोल, %d कैमरे, %d कस्टम फ़िल्म, %d लैब आयात किए।";
+"Import failed: %@" = "आयात विफल: %@";
+"Delete Lab" = "लैब हटाएं";

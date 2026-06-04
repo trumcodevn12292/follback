@@ -304,3 +304,22 @@
 "Lens (optional)" = "Objetivo (opcional)";
 "%d roll" = "%d rollo";
 "%d rolls" = "%d rollos";
+"Developed" = "Revelado";
+
+/* Added: Labs management */
+"Labs" = "Labs";
+"LABS" = "LABS";
+"No labs yet" = "Aún no hay labs";
+"Add the labs you use to track where each roll is developed" = "Añade los labs que usas para registrar dónde se revela cada rollo";
+"Add Lab" = "Añadir lab";
+"Edit Lab" = "Editar lab";
+"Avatar" = "Avatar";
+"LAB NAME" = "NOMBRE DEL LAB";
+"e.g. The Lab Saigon" = "ej. The Lab Saigon";
+"DESCRIPTION" = "DESCRIPCIÓN";
+"e.g. C-41 & B&W, scan included (optional)" = "ej. C-41 y B/N, escaneo incluido (opcional)";
+"Save Lab" = "Guardar lab";
+"MY LABS" = "MIS LABS";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "Se importaron %d rollos, %d cámaras, %d películas personalizadas, %d labs.";
+"Import failed: %@" = "Error al importar: %@";
+"Delete Lab" = "Eliminar lab";

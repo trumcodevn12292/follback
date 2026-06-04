@@ -22,6 +22,7 @@ struct RollDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Camera.name) private var allCameras: [Camera]
+    @ObservedObject private var customLabStore = CustomLabStore.shared
 
     @State private var viewerFrame: Frame?
     @State private var frameSheetTarget: FrameSheetTarget?
@@ -1153,6 +1154,50 @@ struct RollDetailView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0) {
+                    if !customLabStore.labs.isEmpty {
+                        Section {
+                            ForEach(customLabStore.labs) { lab in
+                                Button {
+                                    roll.labName = lab.name
+                                    try? modelContext.save()
+                                    showLabPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        CustomLabAvatar(lab: lab, size: 36)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            if !lab.labDescription.isEmpty {
+                                                Text(lab.labDescription)
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color.filmTertiary)
+                                                    .lineLimit(2)
+                                            }
+                                        }
+                                        Spacer()
+                                        if roll.labName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text("MY LABS")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
                     ForEach(FilmLab.groupedByCity, id: \.city) { group in
                         Section {
                             ForEach(group.labs) { lab in
@@ -1867,6 +1912,7 @@ struct EditRollDetailsView: View {
     @Bindable var roll: Roll
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @ObservedObject private var customLabStore = CustomLabStore.shared
 
     @State private var filmName: String = ""
     @State private var iso: Int = 400
@@ -2063,7 +2109,9 @@ struct EditRollDetailsView: View {
                         } label: {
                             HStack(spacing: 10) {
                                 if let name = labName, !name.isEmpty {
-                                    if let lab = FilmLab.allLabs.first(where: { $0.name == name }) {
+                                    if let customLab = customLabStore.lab(named: name) {
+                                        CustomLabAvatar(lab: customLab, size: 28)
+                                    } else if let lab = FilmLab.allLabs.first(where: { $0.name == name }) {
                                         labAvatar(lab)
                                     }
                                     Text(name)
@@ -2257,6 +2305,49 @@ struct EditRollDetailsView: View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                    if !customLabStore.labs.isEmpty {
+                        Section {
+                            ForEach(customLabStore.labs) { lab in
+                                Button {
+                                    labName = lab.name
+                                    showLabPicker = false
+                                } label: {
+                                    HStack(spacing: 12) {
+                                        CustomLabAvatar(lab: lab, size: 36)
+                                        VStack(alignment: .leading, spacing: 2) {
+                                            Text(lab.name)
+                                                .font(.system(size: 15, weight: .medium))
+                                                .foregroundColor(Color.filmText)
+                                            if !lab.labDescription.isEmpty {
+                                                Text(lab.labDescription)
+                                                    .font(.system(size: 12))
+                                                    .foregroundColor(Color.filmTertiary)
+                                                    .lineLimit(2)
+                                            }
+                                        }
+                                        Spacer()
+                                        if labName == lab.name {
+                                            Image(systemName: "checkmark")
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 16)
+                                    .padding(.vertical, 10)
+                                }
+                                .buttonStyle(.plain)
+                                Divider().background(Color.filmBorder.opacity(0.2))
+                                    .padding(.horizontal, 16)
+                            }
+                        } header: {
+                            Text("MY LABS")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundColor(Color.filmText)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(Color.filmBackground)
+                        }
+                    }
                     ForEach(FilmLab.groupedByCity, id: \.city) { group in
                         Section {
                             ForEach(group.labs) { lab in

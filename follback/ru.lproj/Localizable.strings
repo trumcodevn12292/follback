@@ -306,3 +306,22 @@
 "Lens (optional)" = "Объектив (необязательно)";
 "%d roll" = "%d плёнка";
 "%d rolls" = "%d плёнок";
+"Developed" = "Проявлено";
+
+/* Added: Labs management */
+"Labs" = "Лаборатории";
+"LABS" = "ЛАБОРАТОРИИ";
+"No labs yet" = "Пока нет лабораторий";
+"Add the labs you use to track where each roll is developed" = "Добавьте лаборатории, чтобы отмечать, где проявлена каждая плёнка";
+"Add Lab" = "Добавить лабораторию";
+"Edit Lab" = "Изменить лабораторию";
+"Avatar" = "Аватар";
+"LAB NAME" = "НАЗВАНИЕ ЛАБОРАТОРИИ";
+"e.g. The Lab Saigon" = "напр. The Lab Saigon";
+"DESCRIPTION" = "ОПИСАНИЕ";
+"e.g. C-41 & B&W, scan included (optional)" = "напр. C-41 и Ч/Б, со сканом (необязательно)";
+"Save Lab" = "Сохранить лабораторию";
+"MY LABS" = "МОИ ЛАБОРАТОРИИ";
+"Imported %d rolls, %d cameras, %d custom films, %d labs." = "Импортировано: %d плёнок, %d камер, %d своих плёнок, %d лабораторий.";
+"Import failed: %@" = "Ошибка импорта: %@";
+"Delete Lab" = "Удалить лабораторию";
