@@ -323,3 +323,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "Đã nhập %d cuộn, %d máy ảnh, %d film tự tạo, %d lab.";
 "Import failed: %@" = "Nhập thất bại: %@";
 "Delete Lab" = "Xóa lab";
+"Film" = "Phim";
+"Search film stocks..." = "Tìm loại phim...";
+"e.g. My Kodak Portra 400" = "vd. Kodak Portra 400 của tôi";
+"%d EXPOSURES" = "%d KIỂU";

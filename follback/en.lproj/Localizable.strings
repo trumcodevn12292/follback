@@ -235,3 +235,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "Imported %d rolls, %d cameras, %d custom films, %d labs.";
 "Import failed: %@" = "Import failed: %@";
 "Delete Lab" = "Delete Lab";
+"Film" = "Film";
+"Search film stocks..." = "Search film stocks...";
+"e.g. My Kodak Portra 400" = "e.g. My Kodak Portra 400";
+"%d EXPOSURES" = "%d EXPOSURES";

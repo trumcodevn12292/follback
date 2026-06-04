@@ -236,3 +236,7 @@
 "Imported %d rolls, %d cameras, %d custom films, %d labs." = "已导入 %d 卷、%d 台相机、%d 个自定义胶片、%d 家冲洗店。";
 "Import failed: %@" = "导入失败：%@";
 "Delete Lab" = "删除冲洗店";
+"Film" = "胶卷";
+"Search film stocks..." = "搜索胶卷…";
+"e.g. My Kodak Portra 400" = "例如：我的 Kodak Portra 400";
+"%d EXPOSURES" = "%d 张";

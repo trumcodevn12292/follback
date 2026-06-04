@@ -2480,6 +2480,11 @@ struct ContactSheetView: View {
         return FilmLab.allLabs.first { $0.name == labName }
     }
 
+    private var matchingCustomLab: CustomLab? {
+        guard let labName = roll.labName else { return nil }
+        return CustomLabStore.shared.lab(named: labName)
+    }
+
     var body: some View {
         ZStack {
             Color(hex: "#0A0908").ignoresSafeArea()
@@ -2655,6 +2660,14 @@ struct ContactSheetView: View {
                             .foregroundColor(Color(hex: "#9A8E7E"))
                             .lineLimit(1)
                     }
+                } else if let custom = matchingCustomLab {
+                    HStack(spacing: 4 * fontSize) {
+                        CustomLabAvatar(lab: custom, size: 14 * fontSize)
+                        Text(custom.name.uppercased())
+                            .font(.system(size: 5 * fontSize, weight: .bold, design: .monospaced))
+                            .foregroundColor(Color(hex: "#9A8E7E"))
+                            .lineLimit(1)
+                    }
                 } else {
                     Text("FILMVAULT")
                         .font(.system(size: 6 * fontSize, weight: .black, design: .monospaced))
@@ -2664,7 +2677,7 @@ struct ContactSheetView: View {
 
                 Spacer()
 
-                Text("\(photoFrames.count) EXPOSURES")
+                Text(L("%d EXPOSURES", photoFrames.count))
                     .font(.system(size: 6 * fontSize, weight: .medium, design: .monospaced))
                     .foregroundColor(Color(hex: "#C8BAA8"))
             }

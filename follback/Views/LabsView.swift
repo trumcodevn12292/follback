@@ -185,8 +185,9 @@ struct CustomLabAvatar: View {
 
 // MARK: - Add / Edit sheet
 
-private struct LabEditSheet: View {
+struct LabEditSheet: View {
     var existing: CustomLab?
+    var onSaved: ((CustomLab) -> Void)? = nil
 
     @ObservedObject private var store = CustomLabStore.shared
     @Environment(\.dismiss) private var dismiss
@@ -197,8 +198,9 @@ private struct LabEditSheet: View {
     @State private var avatarItem: PhotosPickerItem?
     @State private var showPhotoPicker = false
 
-    init(existing: CustomLab? = nil) {
+    init(existing: CustomLab? = nil, onSaved: ((CustomLab) -> Void)? = nil) {
         self.existing = existing
+        self.onSaved = onSaved
         _name = State(initialValue: existing?.name ?? "")
         _labDescription = State(initialValue: existing?.labDescription ?? "")
         _avatarData = State(initialValue: existing?.avatarImageData)
@@ -337,16 +339,21 @@ private struct LabEditSheet: View {
     private func save() {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
+        let saved: CustomLab
         if let existing {
             var updated = existing
             updated.name = trimmed
             updated.labDescription = labDescription
             updated.avatarImageData = avatarData
             store.update(updated)
+            saved = updated
         } else {
-            store.add(CustomLab(name: trimmed, labDescription: labDescription, avatarImageData: avatarData))
+            let lab = CustomLab(name: trimmed, labDescription: labDescription, avatarImageData: avatarData)
+            store.add(lab)
+            saved = lab
         }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+        onSaved?(saved)
         dismiss()
     }
 }
