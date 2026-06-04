@@ -353,3 +353,19 @@
 "Start logging a new film roll in FilmVault." = "FilmVault में नया फ़िल्म रोल लॉग करना शुरू करें।";
 "Roll" = "रोल";
 "How many frames left on ${roll}" = "${roll} पर कितने फ्रेम बाकी हैं";
+
+/* Advanced search & filters */
+"Filter & Sort" = "फ़िल्टर और क्रमबद्ध करें";
+"Sort" = "क्रमबद्ध करें";
+"Newest first" = "नवीनतम पहले";
+"Oldest first" = "सबसे पुराने पहले";
+"Most shot" = "सबसे ज़्यादा शॉट";
+"Least shot" = "सबसे कम शॉट";
+"Name A–Z" = "नाम A–Z";
+"Lab" = "लैब";
+"Year" = "वर्ष";
+"Push / Pull" = "पुश / पुल";
+"Pushed" = "पुश किया";
+"Pulled" = "पुल किया";
+"Clear all" = "सभी हटाएँ";
+"Show %d rolls" = "%d रोल दिखाएँ";

@@ -353,3 +353,19 @@
 "Start logging a new film roll in FilmVault." = "Bắt đầu ghi một cuộn phim mới trong FilmVault.";
 "Roll" = "Cuộn phim";
 "How many frames left on ${roll}" = "Còn bao nhiêu kiểu trên ${roll}";
+
+/* Advanced search & filters */
+"Filter & Sort" = "Lọc & Sắp xếp";
+"Sort" = "Sắp xếp";
+"Newest first" = "Mới nhất trước";
+"Oldest first" = "Cũ nhất trước";
+"Most shot" = "Chụp nhiều nhất";
+"Least shot" = "Chụp ít nhất";
+"Name A–Z" = "Tên A–Z";
+"Lab" = "Lab";
+"Year" = "Năm";
+"Push / Pull" = "Push / Pull";
+"Pushed" = "Đẩy sáng (Push)";
+"Pulled" = "Kéo tối (Pull)";
+"Clear all" = "Xoá tất cả";
+"Show %d rolls" = "Xem %d cuộn";

@@ -14,6 +14,13 @@ struct RollsView: View {
     @State private var isLoading = true
     @State private var showSearch = false
     @State private var searchText = ""
+    @State private var showFilterSheet = false
+    @State private var sortOption: RollSortOption = .newest
+    @State private var filterFilm: String? = nil
+    @State private var filterCamera: String? = nil
+    @State private var filterLab: String? = nil
+    @State private var filterYear: Int? = nil
+    @State private var filterPushPull: PushPullFilter? = nil
     @State private var editingRoll: Roll?
     @State private var filmDetailStock: FilmStock?
     @State private var rollBaseFrames: [UUID: CGRect] = [:]
@@ -40,6 +47,51 @@ struct RollsView: View {
         rolls.filter { roll($0, matches: filter) }.count
     }
 
+    private func cameraLabel(_ camera: Camera?) -> String? {
+        guard let camera else { return nil }
+        let label = "\(camera.brand) \(camera.name)".trimmingCharacters(in: .whitespaces)
+        return label.isEmpty ? nil : label
+    }
+
+    private var distinctFilms: [String] {
+        Array(Set(rolls.map { $0.filmName }.filter { !$0.isEmpty })).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    private var distinctCameras: [String] {
+        Array(Set(rolls.compactMap { cameraLabel($0.camera) })).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    private var distinctLabs: [String] {
+        Array(Set(rolls.compactMap { roll -> String? in
+            let s = (roll.labName ?? "").trimmingCharacters(in: .whitespaces)
+            return s.isEmpty ? nil : s
+        })).sorted { $0.localizedCaseInsensitiveCompare($1) == .orderedAscending }
+    }
+
+    private var distinctYears: [Int] {
+        Array(Set(rolls.map { Calendar.current.component(.year, from: $0.startDate) })).sorted(by: >)
+    }
+
+    var activeAdvancedCount: Int {
+        var n = 0
+        if filterFilm != nil { n += 1 }
+        if filterCamera != nil { n += 1 }
+        if filterLab != nil { n += 1 }
+        if filterYear != nil { n += 1 }
+        if filterPushPull != nil { n += 1 }
+        if sortOption != .newest { n += 1 }
+        return n
+    }
+
+    func clearAdvancedFilters() {
+        filterFilm = nil
+        filterCamera = nil
+        filterLab = nil
+        filterYear = nil
+        filterPushPull = nil
+        sortOption = .newest
+    }
+
     private var filteredRolls: [Roll] {
         var result = rolls
         if let filter = selectedFilter {
@@ -50,9 +102,39 @@ struct RollsView: View {
             result = result.filter {
                 $0.filmName.lowercased().contains(query) ||
                 ($0.camera?.name.lowercased().contains(query) ?? false) ||
+                ($0.camera?.brand.lowercased().contains(query) ?? false) ||
+                ($0.labName?.lowercased().contains(query) ?? false) ||
                 ($0.locationName?.lowercased().contains(query) ?? false) ||
                 ($0.notes.lowercased().contains(query))
             }
+        }
+        if let film = filterFilm {
+            result = result.filter { $0.filmName == film }
+        }
+        if let cam = filterCamera {
+            result = result.filter { cameraLabel($0.camera) == cam }
+        }
+        if let lab = filterLab {
+            result = result.filter { ($0.labName ?? "").trimmingCharacters(in: .whitespaces) == lab }
+        }
+        if let year = filterYear {
+            result = result.filter { Calendar.current.component(.year, from: $0.startDate) == year }
+        }
+        if let pp = filterPushPull {
+            result = result.filter {
+                switch pp {
+                case .pushed: return $0.pushPull > 0
+                case .pulled: return $0.pushPull < 0
+                case .box:    return $0.pushPull == 0
+                }
+            }
+        }
+        switch sortOption {
+        case .newest:    result.sort { $0.startDate > $1.startDate }
+        case .oldest:    result.sort { $0.startDate < $1.startDate }
+        case .mostShot:  result.sort { $0.filledFrames > $1.filledFrames }
+        case .leastShot: result.sort { $0.filledFrames < $1.filledFrames }
+        case .nameAZ:    result.sort { $0.filmName.localizedCaseInsensitiveCompare($1.filmName) == .orderedAscending }
         }
         return result
     }
@@ -69,6 +151,10 @@ struct RollsView: View {
                         }
 
                         filterSection
+
+                        if activeAdvancedCount > 0 {
+                            activeFilterSummary
+                        }
 
                         if rolls.isEmpty && !isLoading {
                             emptyState
@@ -122,6 +208,23 @@ struct RollsView: View {
             }
             .sheet(item: $editingRoll) { roll in
                 EditRollDetailsView(roll: roll)
+            }
+            .sheet(isPresented: $showFilterSheet) {
+                RollFilterSheet(
+                    sortOption: $sortOption,
+                    filterFilm: $filterFilm,
+                    filterCamera: $filterCamera,
+                    filterLab: $filterLab,
+                    filterYear: $filterYear,
+                    filterPushPull: $filterPushPull,
+                    films: distinctFilms,
+                    cameras: distinctCameras,
+                    labs: distinctLabs,
+                    years: distinctYears,
+                    resultCount: filteredRolls.count
+                )
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
             }
             .fullScreenCover(item: $filmDetailStock) { stock in
                 FilmDetailPopup(stock: stock) {
@@ -262,23 +365,50 @@ struct RollsView: View {
 
             Spacer()
 
-            Button {
-                withAnimation(.easeOut(duration: 0.25)) {
-                    showSearch.toggle()
-                    if !showSearch { searchText = "" }
+            HStack(spacing: 10) {
+                Button {
+                    showFilterSheet = true
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    ZStack(alignment: .topTrailing) {
+                        Image(systemName: "line.3.horizontal.decrease")
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(activeAdvancedCount > 0 ? Color.filmAccent : Color.filmText)
+                            .frame(width: 36, height: 36)
+                            .background(
+                                Circle()
+                                    .fill(activeAdvancedCount > 0 ? Color.filmAccent.opacity(0.15) : Color.filmSurface)
+                            )
+                        if activeAdvancedCount > 0 {
+                            Text("\(activeAdvancedCount)")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .foregroundColor(Color.filmBackground)
+                                .frame(minWidth: 16, minHeight: 16)
+                                .background(Circle().fill(Color.filmAccent))
+                                .offset(x: 3, y: -2)
+                        }
+                    }
                 }
-                UIImpactFeedbackGenerator(style: .light).impactOccurred()
-            } label: {
-                Image(systemName: showSearch ? "xmark" : "magnifyingglass")
-                    .font(.system(size: 15, weight: .semibold))
-                    .foregroundColor(Color.filmText)
-                    .frame(width: 36, height: 36)
-                    .background(
-                        Circle()
-                            .fill(showSearch ? Color.filmAccent.opacity(0.15) : Color.filmSurface)
-                    )
+                .buttonStyle(.plain)
+
+                Button {
+                    withAnimation(.easeOut(duration: 0.25)) {
+                        showSearch.toggle()
+                        if !showSearch { searchText = "" }
+                    }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: showSearch ? "xmark" : "magnifyingglass")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(showSearch ? Color.filmAccent.opacity(0.15) : Color.filmSurface)
+                        )
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 20)
@@ -356,6 +486,77 @@ struct RollsView: View {
             )
         }
         .buttonStyle(.plain)
+    }
+
+    // MARK: - Active advanced filters summary
+
+    private var activeFilterSummary: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                if sortOption != .newest {
+                    summaryChip(icon: "arrow.up.arrow.down", text: NSLocalizedString(sortOption.labelKey, comment: "")) {
+                        sortOption = .newest
+                    }
+                }
+                if let film = filterFilm {
+                    summaryChip(icon: "film", text: film) { filterFilm = nil }
+                }
+                if let cam = filterCamera {
+                    summaryChip(icon: "camera", text: cam) { filterCamera = nil }
+                }
+                if let lab = filterLab {
+                    summaryChip(icon: "flask", text: lab) { filterLab = nil }
+                }
+                if let year = filterYear {
+                    summaryChip(icon: "calendar", text: "\(year)") { filterYear = nil }
+                }
+                if let pp = filterPushPull {
+                    summaryChip(icon: "plusminus", text: NSLocalizedString(pp.labelKey, comment: "")) { filterPushPull = nil }
+                }
+
+                Button {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        clearAdvancedFilters()
+                    }
+                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                } label: {
+                    Text("Clear all")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(Color.filmAccent)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 7)
+                }
+                .buttonStyle(.plain)
+            }
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private func summaryChip(icon: String, text: String, onRemove: @escaping () -> Void) -> some View {
+        HStack(spacing: 5) {
+            Image(systemName: icon)
+                .font(.system(size: 10, weight: .semibold))
+            Text(text)
+                .font(.system(size: 12, weight: .medium))
+                .lineLimit(1)
+            Button {
+                withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) { onRemove() }
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.system(size: 9, weight: .bold))
+            }
+            .buttonStyle(.plain)
+        }
+        .foregroundColor(Color.filmText)
+        .padding(.horizontal, 11)
+        .padding(.vertical, 6)
+        .background(
+            Capsule().fill(Color.filmAccent.opacity(0.12))
+        )
+        .overlay(
+            Capsule().stroke(Color.filmAccent.opacity(0.3), lineWidth: 0.5)
+        )
     }
 
     // MARK: - Roll List
@@ -683,5 +884,293 @@ final class RollPhysicsEngine: ObservableObject {
     deinit {
         displayLink?.invalidate()
         if motion.isDeviceMotionActive { motion.stopDeviceMotionUpdates() }
+    }
+}
+
+// MARK: - Advanced search models
+
+enum RollSortOption: String, CaseIterable, Identifiable {
+    case newest
+    case oldest
+    case mostShot
+    case leastShot
+    case nameAZ
+
+    var id: String { rawValue }
+
+    var labelKey: String {
+        switch self {
+        case .newest:    return "Newest first"
+        case .oldest:    return "Oldest first"
+        case .mostShot:  return "Most shot"
+        case .leastShot: return "Least shot"
+        case .nameAZ:    return "Name A–Z"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .newest:    return "arrow.down"
+        case .oldest:    return "arrow.up"
+        case .mostShot:  return "chart.bar.fill"
+        case .leastShot: return "chart.bar"
+        case .nameAZ:    return "textformat.abc"
+        }
+    }
+}
+
+enum PushPullFilter: String, CaseIterable, Identifiable {
+    case pushed
+    case pulled
+    case box
+
+    var id: String { rawValue }
+
+    var labelKey: String {
+        switch self {
+        case .pushed: return "Pushed"
+        case .pulled: return "Pulled"
+        case .box:    return "Box speed"
+        }
+    }
+}
+
+// MARK: - Filter & Sort Sheet
+
+struct RollFilterSheet: View {
+    @Environment(\.dismiss) private var dismiss
+
+    @Binding var sortOption: RollSortOption
+    @Binding var filterFilm: String?
+    @Binding var filterCamera: String?
+    @Binding var filterLab: String?
+    @Binding var filterYear: Int?
+    @Binding var filterPushPull: PushPullFilter?
+
+    let films: [String]
+    let cameras: [String]
+    let labs: [String]
+    let years: [Int]
+    let resultCount: Int
+
+    private var hasActiveFilters: Bool {
+        sortOption != .newest || filterFilm != nil || filterCamera != nil ||
+        filterLab != nil || filterYear != nil || filterPushPull != nil
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 22) {
+                    // SORT
+                    section(title: "Sort") {
+                        VStack(spacing: 8) {
+                            ForEach(RollSortOption.allCases) { option in
+                                Button {
+                                    sortOption = option
+                                    UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                                } label: {
+                                    HStack(spacing: 10) {
+                                        Image(systemName: option.icon)
+                                            .font(.system(size: 13, weight: .semibold))
+                                            .frame(width: 20)
+                                            .foregroundColor(sortOption == option ? Color.filmAccent : Color.filmSecondary)
+                                        Text(LocalizedStringKey(option.labelKey))
+                                            .font(.system(size: 15, weight: sortOption == option ? .semibold : .regular))
+                                            .foregroundColor(Color.filmText)
+                                        Spacer()
+                                        if sortOption == option {
+                                            Image(systemName: "checkmark")
+                                                .font(.system(size: 13, weight: .bold))
+                                                .foregroundColor(Color.filmAccent)
+                                        }
+                                    }
+                                    .padding(.horizontal, 14)
+                                    .padding(.vertical, 11)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                            .fill(sortOption == option ? Color.filmAccent.opacity(0.1) : Color.filmSurface)
+                                    )
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                    }
+
+                    if !films.isEmpty {
+                        section(title: "Film") {
+                            chipFlow(films, selected: filterFilm) { value in
+                                filterFilm = (filterFilm == value) ? nil : value
+                            }
+                        }
+                    }
+
+                    if !cameras.isEmpty {
+                        section(title: "Camera") {
+                            chipFlow(cameras, selected: filterCamera) { value in
+                                filterCamera = (filterCamera == value) ? nil : value
+                            }
+                        }
+                    }
+
+                    if !labs.isEmpty {
+                        section(title: "Lab") {
+                            chipFlow(labs, selected: filterLab) { value in
+                                filterLab = (filterLab == value) ? nil : value
+                            }
+                        }
+                    }
+
+                    if !years.isEmpty {
+                        section(title: "Year") {
+                            chipFlow(years.map { "\($0)" }, selected: filterYear.map { "\($0)" }) { value in
+                                let intVal = Int(value)
+                                filterYear = (filterYear == intVal) ? nil : intVal
+                            }
+                        }
+                    }
+
+                    section(title: "Push / Pull") {
+                        HStack(spacing: 8) {
+                            ForEach(PushPullFilter.allCases) { pp in
+                                chip(
+                                    label: NSLocalizedString(pp.labelKey, comment: ""),
+                                    isSelected: filterPushPull == pp
+                                ) {
+                                    filterPushPull = (filterPushPull == pp) ? nil : pp
+                                }
+                            }
+                        }
+                    }
+                }
+                .padding(20)
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle(Text("Filter & Sort"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button {
+                        sortOption = .newest
+                        filterFilm = nil
+                        filterCamera = nil
+                        filterLab = nil
+                        filterYear = nil
+                        filterPushPull = nil
+                        UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                    } label: {
+                        Text("Reset")
+                            .foregroundColor(hasActiveFilters ? Color.filmAccent : Color.filmTertiary)
+                    }
+                    .disabled(!hasActiveFilters)
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        dismiss()
+                    } label: {
+                        Text("Done").fontWeight(.semibold)
+                    }
+                }
+            }
+            .safeAreaInset(edge: .bottom) {
+                Button {
+                    dismiss()
+                } label: {
+                    Text(L("Show %d rolls", resultCount))
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color.filmBackground)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 15)
+                        .background(Capsule().fill(Color.filmAccent))
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 8)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(LocalizedStringKey(title))
+                .font(.system(size: 12, weight: .bold))
+                .kerning(0.8)
+                .foregroundColor(Color.filmTertiary)
+            content()
+        }
+    }
+
+    private func chipFlow(_ values: [String], selected: String?, onTap: @escaping (String) -> Void) -> some View {
+        FlowLayout(spacing: 8) {
+            ForEach(values, id: \.self) { value in
+                chip(label: value, isSelected: selected == value) {
+                    onTap(value)
+                }
+            }
+        }
+    }
+
+    private func chip(label: String, isSelected: Bool, onTap: @escaping () -> Void) -> some View {
+        Button {
+            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) { onTap() }
+            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+        } label: {
+            Text(label)
+                .font(.system(size: 13, weight: isSelected ? .semibold : .regular))
+                .foregroundColor(isSelected ? Color.filmBackground : Color.filmSecondary)
+                .lineLimit(1)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 8)
+                .background(
+                    Capsule().fill(isSelected ? Color.filmAccent : Color.filmSurface)
+                )
+                .overlay(
+                    Capsule().stroke(isSelected ? Color.clear : Color.filmBorder.opacity(0.5), lineWidth: 0.5)
+                )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - Simple flow layout for filter chips
+
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let maxWidth = proposal.width ?? UIScreen.main.bounds.width - 40
+        var totalHeight: CGFloat = 0
+        var rowWidth: CGFloat = 0
+        var rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if rowWidth + size.width > maxWidth, rowWidth > 0 {
+                totalHeight += rowHeight + spacing
+                rowWidth = 0
+                rowHeight = 0
+            }
+            rowWidth += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
+        totalHeight += rowHeight
+        return CGSize(width: maxWidth, height: totalHeight)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var x = bounds.minX
+        var y = bounds.minY
+        var rowHeight: CGFloat = 0
+        for subview in subviews {
+            let size = subview.sizeThatFits(.unspecified)
+            if x + size.width > bounds.maxX, x > bounds.minX {
+                x = bounds.minX
+                y += rowHeight + spacing
+                rowHeight = 0
+            }
+            subview.place(at: CGPoint(x: x, y: y), proposal: ProposedViewSize(size))
+            x += size.width + spacing
+            rowHeight = max(rowHeight, size.height)
+        }
     }
 }

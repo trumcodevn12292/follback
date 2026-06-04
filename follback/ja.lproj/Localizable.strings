@@ -354,3 +354,19 @@
 "Start logging a new film roll in FilmVault." = "FilmVault で新しいフィルムの記録を始めます。";
 "Roll" = "フィルム";
 "How many frames left on ${roll}" = "${roll} の残り枚数";
+
+/* Advanced search & filters */
+"Filter & Sort" = "フィルタと並び替え";
+"Sort" = "並び替え";
+"Newest first" = "新しい順";
+"Oldest first" = "古い順";
+"Most shot" = "撮影が多い順";
+"Least shot" = "撮影が少ない順";
+"Name A–Z" = "名前 A–Z";
+"Lab" = "ラボ";
+"Year" = "年";
+"Push / Pull" = "増感 / 減感";
+"Pushed" = "増感";
+"Pulled" = "減感";
+"Clear all" = "すべてクリア";
+"Show %d rolls" = "%d 本を表示";

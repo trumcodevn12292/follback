@@ -265,3 +265,19 @@
 "Start logging a new film roll in FilmVault." = "Start logging a new film roll in FilmVault.";
 "Roll" = "Roll";
 "How many frames left on ${roll}" = "How many frames left on ${roll}";
+
+/* Advanced search & filters */
+"Filter & Sort" = "Filter & Sort";
+"Sort" = "Sort";
+"Newest first" = "Newest first";
+"Oldest first" = "Oldest first";
+"Most shot" = "Most shot";
+"Least shot" = "Least shot";
+"Name A–Z" = "Name A–Z";
+"Lab" = "Lab";
+"Year" = "Year";
+"Push / Pull" = "Push / Pull";
+"Pushed" = "Pushed";
+"Pulled" = "Pulled";
+"Clear all" = "Clear all";
+"Show %d rolls" = "Show %d rolls";

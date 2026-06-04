@@ -14,3 +14,7 @@
 "Shot" = "撮影済み";
 "Developed" = "現像済み";
 "Archived" = "アーカイブ済み";
+
+"To Develop" = "現像待ち";
+"Recent" = "最近";
+"No roll in progress right now." = "現在撮影中のフィルムはありません。";
