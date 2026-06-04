@@ -58,15 +58,19 @@ extension EnvironmentValues {
 /// `Color.filmAccent` directly).
 struct ThemedRoot<Content: View>: View {
     @ObservedObject private var manager = ThemeManager.shared
+    @ObservedObject private var l10n = LocalizationManager.shared
     let content: Content
 
     var body: some View {
         content
             .environmentObject(manager)
+            .environmentObject(l10n)
             .environment(\.theme, manager)
+            .environment(\.locale, Locale(identifier: l10n.language.rawValue))
+            .environment(\.layoutDirection, l10n.language.isRTL ? .rightToLeft : .leftToRight)
             .tint(Color.filmAccent)
             .preferredColorScheme(manager.isDarkMode ? .dark : .light)
-            .id(manager.accentHex + (manager.isDarkMode ? "-d" : "-l"))
+            .id(manager.accentHex + (manager.isDarkMode ? "-d" : "-l") + "-" + l10n.language.rawValue)
     }
 }
 

@@ -18,6 +18,7 @@ struct SettingsView: View {
     @ObservedObject private var driveService = GoogleDriveService.shared
     @ObservedObject private var reminderManager = ReminderManager.shared
     @ObservedObject private var themeManager = ThemeManager.shared
+    @ObservedObject private var l10n = LocalizationManager.shared
     @AppStorage(ReminderDefaults.enabledKey) private var remindersEnabled = false
     @AppStorage(ReminderDefaults.staleDaysKey) private var staleDays = ReminderDefaults.defaultStaleDays
     @AppStorage(ReminderDefaults.developDaysKey) private var developDays = ReminderDefaults.defaultDevelopDays
@@ -60,6 +61,7 @@ struct SettingsView: View {
                 VStack(spacing: 24) {
                     headerSection
                     appearanceCard
+                    languageCard
                     storageCard
                     remindersCard
                     googleDriveCard
@@ -463,6 +465,61 @@ struct SettingsView: View {
     private func selectAccent(_ option: AccentOption) {
         guard themeManager.accentHex.lowercased() != option.hex.lowercased() else { return }
         themeManager.accentHex = option.hex
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    // MARK: - Language Card
+    private var languageCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L("LANGUAGE"))
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                ForEach(Array(AppLanguage.allCases.enumerated()), id: \.element.id) { index, lang in
+                    let isSelected = l10n.language == lang
+                    Button {
+                        selectLanguage(lang)
+                    } label: {
+                        HStack(spacing: 12) {
+                            Text(lang.flag)
+                                .font(.system(size: 22))
+                            Text(lang.nativeName)
+                                .font(.system(size: 16, weight: isSelected ? .semibold : .regular))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            if isSelected {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 15, weight: .bold))
+                                    .foregroundColor(Color.filmAccent)
+                            }
+                        }
+                        .padding(.vertical, 13)
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+
+                    if index < AppLanguage.allCases.count - 1 {
+                        Divider().background(Color.filmBorder.opacity(0.3))
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 2)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
+    }
+
+    private func selectLanguage(_ lang: AppLanguage) {
+        guard l10n.language != lang else { return }
+        l10n.language = lang
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
 
