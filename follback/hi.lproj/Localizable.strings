@@ -378,3 +378,17 @@
 "Your analog film journal" = "आपकी एनालॉग फिल्म डायरी";
 "Film stocks, cameras, and locations" = "फिल्म, कैमरे और स्थान";
 "Photos, stats, and contact sheets" = "तस्वीरें, आँकड़े और कॉन्टैक्ट शीट";
+
+/* Cost tracking */
+"COST" = "लागत";
+"SPENDING" = "खर्च";
+"Cost" = "लागत";
+"Film cost" = "फ़िल्म की कीमत";
+"Developing cost" = "डेवलपिंग/स्कैन";
+"Total cost" = "कुल लागत";
+"Track what you spent on film and developing." = "फ़िल्म और डेवलपिंग पर हुए खर्च को दर्ज करें।";
+"Add costs to your rolls to see your spending here." = "अपने रोल में लागत जोड़ें ताकि आपका खर्च यहाँ दिखे।";
+"Currency" = "मुद्रा";
+"Total spent" = "कुल खर्च";
+"This year" = "इस साल";
+"Average per roll" = "प्रति रोल औसत";

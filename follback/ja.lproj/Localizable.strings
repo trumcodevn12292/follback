@@ -379,3 +379,17 @@
 "Your analog film journal" = "あなたのフィルム写真ノート";
 "Film stocks, cameras, and locations" = "フィルム・カメラ・撮影場所";
 "Photos, stats, and contact sheets" = "写真・統計・コンタクトシート";
+
+/* Cost tracking */
+"COST" = "費用";
+"SPENDING" = "支出";
+"Cost" = "費用";
+"Film cost" = "フィルム代";
+"Developing cost" = "現像・スキャン代";
+"Total cost" = "合計費用";
+"Track what you spent on film and developing." = "フィルム代と現像代の出費を記録しましょう。";
+"Add costs to your rolls to see your spending here." = "フィルムに費用を追加すると、ここに支出が表示されます。";
+"Currency" = "通貨";
+"Total spent" = "合計支出";
+"This year" = "今年";
+"Average per roll" = "1本あたり平均";

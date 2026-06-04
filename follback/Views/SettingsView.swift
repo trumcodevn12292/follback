@@ -24,6 +24,7 @@ struct SettingsView: View {
     @AppStorage(ReminderDefaults.developDaysKey) private var developDays = ReminderDefaults.defaultDevelopDays
     @AppStorage(ReminderDefaults.hourKey) private var reminderHour = ReminderDefaults.defaultHour
     @AppStorage(LiveActivityManager.enabledKey) private var liveActivityEnabled = true
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
     @State private var showNotifPermissionAlert = false
 
     private var photoImportMode: Binding<PhotoImportMode> {
@@ -63,6 +64,7 @@ struct SettingsView: View {
                     headerSection
                     appearanceCard
                     languageCard
+                    spendingCard
                     storageCard
                     remindersCard
                     liveActivityCard
@@ -557,6 +559,106 @@ struct SettingsView: View {
         guard l10n.language != lang else { return }
         l10n.language = lang
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
+    // MARK: - Spending Card
+
+    private var rollsWithCost: [Roll] { rolls.filter { $0.hasCost } }
+
+    private var totalSpent: Double {
+        rolls.compactMap { $0.totalCost }.reduce(0, +)
+    }
+
+    private var spentThisYear: Double {
+        let year = Calendar.current.component(.year, from: Date())
+        return rolls
+            .filter { Calendar.current.component(.year, from: $0.startDate) == year }
+            .compactMap { $0.totalCost }
+            .reduce(0, +)
+    }
+
+    private var averagePerRoll: Double {
+        let count = rollsWithCost.count
+        return count == 0 ? 0 : totalSpent / Double(count)
+    }
+
+    private var spendingCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(L("SPENDING"))
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                // Currency picker
+                HStack {
+                    Text(L("Currency"))
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color.filmText)
+                    Spacer()
+                    Menu {
+                        ForEach(Money.commonCodes, id: \.self) { code in
+                            Button {
+                                currencyCode = code
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            } label: {
+                                if code == currencyCode {
+                                    Label(code, systemImage: "checkmark")
+                                } else {
+                                    Text(code)
+                                }
+                            }
+                        }
+                    } label: {
+                        HStack(spacing: 4) {
+                            Text(currencyCode)
+                                .font(.system(size: 15, weight: .semibold))
+                                .foregroundColor(Color.filmAccent)
+                            Image(systemName: "chevron.up.chevron.down")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                    }
+                }
+                .padding(16)
+
+                if rollsWithCost.isEmpty {
+                    Divider().background(Color.filmBorder.opacity(0.3))
+                    Text("Add costs to your rolls to see your spending here.")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(16)
+                } else {
+                    Divider().background(Color.filmBorder.opacity(0.3))
+                    spendingRow(label: L("Total spent"), value: Money.format(totalSpent), emphasized: true)
+                    Divider().background(Color.filmBorder.opacity(0.3))
+                    spendingRow(label: L("This year"), value: Money.format(spentThisYear))
+                    Divider().background(Color.filmBorder.opacity(0.3))
+                    spendingRow(label: L("Average per roll"), value: Money.format(averagePerRoll))
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
+    }
+
+    private func spendingRow(label: String, value: String, emphasized: Bool = false) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 15, weight: emphasized ? .semibold : .regular))
+                .foregroundColor(emphasized ? Color.filmText : Color.filmSecondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 15, weight: emphasized ? .bold : .semibold))
+                .foregroundColor(emphasized ? Color.filmAccent : Color.filmText)
+        }
+        .padding(16)
     }
 
     // MARK: - Reminders Card

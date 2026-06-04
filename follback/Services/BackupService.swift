@@ -62,6 +62,9 @@ struct RollBackup: Codable {
     var devAgitation: String?
     var devNotes: String?
     var developedDate: Date?
+    // Cost tracking (optional for backward compatibility)
+    var filmCost: Double?
+    var devCost: Double?
 }
 
 struct FilmVaultBackup: Codable {
@@ -141,7 +144,9 @@ enum BackupService {
                 devTimeSeconds: roll.devTimeSeconds,
                 devAgitation: roll.devAgitation,
                 devNotes: roll.devNotes,
-                developedDate: roll.developedDate
+                developedDate: roll.developedDate,
+                filmCost: roll.filmCost,
+                devCost: roll.devCost
             )
         }
 
@@ -243,6 +248,8 @@ enum BackupService {
             roll.devAgitation = rb.devAgitation
             roll.devNotes = rb.devNotes
             roll.developedDate = rb.developedDate
+            roll.filmCost = rb.filmCost
+            roll.devCost = rb.devCost
 
             var frames: [Frame] = []
             for fb in rb.frames {

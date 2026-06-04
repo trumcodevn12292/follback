@@ -117,6 +117,51 @@ func appLocale() -> Locale {
     return Locale(identifier: code)
 }
 
+// MARK: - Currency / money formatting
+
+/// Lightweight currency helper for the roll cost-tracking feature. The chosen
+/// currency code is stored app-wide (via `@AppStorage("currencyCode")`) so all
+/// amounts are shown in a single currency and can be summed for totals.
+enum Money {
+    static let currencyKey = "currencyCode"
+
+    /// A reasonable spread of currencies including the app's localized markets.
+    static let commonCodes = [
+        "USD", "EUR", "GBP", "JPY", "VND", "CNY",
+        "KRW", "INR", "RUB", "AUD", "CAD", "THB", "SGD"
+    ]
+
+    static var defaultCode: String {
+        if #available(iOS 16.0, *) {
+            return Locale.current.currency?.identifier ?? "USD"
+        }
+        return Locale.current.currencyCode ?? "USD"
+    }
+
+    static var currencyCode: String {
+        UserDefaults.standard.string(forKey: currencyKey) ?? defaultCode
+    }
+
+    /// Formats an amount as currency using the app's selected language locale so
+    /// grouping/decimal separators match the UI language. Whole numbers drop the
+    /// fractional part for a cleaner look.
+    static func format(_ amount: Double, code: String? = nil) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .currency
+        formatter.locale = appLocale()
+        formatter.currencyCode = code ?? currencyCode
+        formatter.maximumFractionDigits = amount.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+    }
+
+    /// Symbol (e.g. "$", "₫") for the given currency code, for use as a field prefix.
+    static func symbol(for code: String? = nil) -> String {
+        let target = code ?? currencyCode
+        let locale = NSLocale(localeIdentifier: appLocale().identifier)
+        return locale.displayName(forKey: .currencySymbol, value: target) ?? target
+    }
+}
+
 // MARK: - Runtime language switching (Bundle swizzling)
 
 private var bundleAssocKey: UInt8 = 0

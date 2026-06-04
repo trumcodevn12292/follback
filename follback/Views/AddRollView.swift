@@ -31,6 +31,9 @@ struct AddRollView: View {
     @State private var showCustomInput = false
     @State private var activeCover: ActiveCover?
     @State private var selectedLabName: String?
+    @State private var filmCostText = ""
+    @State private var devCostText = ""
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -762,6 +765,22 @@ struct AddRollView: View {
                         .fill(Color.filmSurface)
                 )
 
+                // Cost section
+                Text("Cost")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .padding(.horizontal, 4)
+
+                VStack(spacing: 0) {
+                    costRow(label: "Film cost", text: $filmCostText)
+                    settingsDivider
+                    costRow(label: "Developing cost", text: $devCostText)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                )
+
                 // Notes section
                 Text("Notes")
                     .font(.system(size: 14, weight: .medium))
@@ -822,6 +841,35 @@ struct AddRollView: View {
             .padding(.horizontal, 18)
     }
 
+    private func costRow(label: String, text: Binding<String>) -> some View {
+        HStack {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(Money.symbol(for: currencyCode))
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: 110)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+    }
+
+    /// Parses a user-typed amount, tolerating both "." and "," decimal marks.
+    private func parsedCost(_ text: String) -> Double? {
+        let cleaned = text
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: ",", with: ".")
+        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
+        return value
+    }
+
     // MARK: - Helpers
 
     private var filmDisplayName: String {
@@ -854,6 +902,8 @@ struct AddRollView: View {
             longitude: locationLongitude,
             labName: selectedLabName
         )
+        roll.filmCost = parsedCost(filmCostText)
+        roll.devCost = parsedCost(devCostText)
         modelContext.insert(roll)
         try? modelContext.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)

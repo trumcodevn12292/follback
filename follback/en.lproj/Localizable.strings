@@ -290,3 +290,17 @@
 "Your analog film journal" = "Your analog film journal";
 "Film stocks, cameras, and locations" = "Film stocks, cameras, and locations";
 "Photos, stats, and contact sheets" = "Photos, stats, and contact sheets";
+
+/* Cost tracking */
+"COST" = "COST";
+"SPENDING" = "SPENDING";
+"Cost" = "Cost";
+"Film cost" = "Film cost";
+"Developing cost" = "Developing cost";
+"Total cost" = "Total cost";
+"Track what you spent on film and developing." = "Track what you spent on film and developing.";
+"Add costs to your rolls to see your spending here." = "Add costs to your rolls to see your spending here.";
+"Currency" = "Currency";
+"Total spent" = "Total spent";
+"This year" = "This year";
+"Average per roll" = "Average per roll";

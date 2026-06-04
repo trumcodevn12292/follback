@@ -378,3 +378,17 @@
 "Your analog film journal" = "Nhật ký phim nhựa của bạn";
 "Film stocks, cameras, and locations" = "Loại phim, máy ảnh và địa điểm";
 "Photos, stats, and contact sheets" = "Ảnh, thống kê và bảng contact";
+
+/* Cost tracking */
+"COST" = "CHI PHÍ";
+"SPENDING" = "CHI TIÊU";
+"Cost" = "Chi phí";
+"Film cost" = "Tiền phim";
+"Developing cost" = "Tiền tráng/scan";
+"Total cost" = "Tổng chi phí";
+"Track what you spent on film and developing." = "Ghi lại số tiền bạn chi cho phim và tráng scan.";
+"Add costs to your rolls to see your spending here." = "Thêm chi phí cho các cuộn để xem chi tiêu tại đây.";
+"Currency" = "Tiền tệ";
+"Total spent" = "Tổng đã chi";
+"This year" = "Năm nay";
+"Average per roll" = "Trung bình mỗi cuộn";

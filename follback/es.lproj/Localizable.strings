@@ -378,3 +378,17 @@
 "Your analog film journal" = "Tu diario de fotografía analógica";
 "Film stocks, cameras, and locations" = "Películas, cámaras y lugares";
 "Photos, stats, and contact sheets" = "Fotos, estadísticas y hojas de contacto";
+
+/* Cost tracking */
+"COST" = "COSTE";
+"SPENDING" = "GASTOS";
+"Cost" = "Coste";
+"Film cost" = "Coste del carrete";
+"Developing cost" = "Revelado y escaneo";
+"Total cost" = "Coste total";
+"Track what you spent on film and developing." = "Registra lo que gastas en carretes y revelado.";
+"Add costs to your rolls to see your spending here." = "Añade costes a tus carretes para ver tus gastos aquí.";
+"Currency" = "Moneda";
+"Total spent" = "Total gastado";
+"This year" = "Este año";
+"Average per roll" = "Media por carrete";

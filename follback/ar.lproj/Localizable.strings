@@ -377,3 +377,17 @@
 "Your analog film journal" = "مفكرتك للتصوير الفيلمي";
 "Film stocks, cameras, and locations" = "أنواع الأفلام والكاميرات والمواقع";
 "Photos, stats, and contact sheets" = "الصور والإحصائيات وأوراق التلامس";
+
+/* Cost tracking */
+"COST" = "التكلفة";
+"SPENDING" = "الإنفاق";
+"Cost" = "التكلفة";
+"Film cost" = "سعر الفيلم";
+"Developing cost" = "التحميض والمسح";
+"Total cost" = "إجمالي التكلفة";
+"Track what you spent on film and developing." = "سجّل ما أنفقته على الفيلم والتحميض.";
+"Add costs to your rolls to see your spending here." = "أضف التكاليف إلى أفلامك لعرض إنفاقك هنا.";
+"Currency" = "العملة";
+"Total spent" = "إجمالي الإنفاق";
+"This year" = "هذا العام";
+"Average per roll" = "المتوسط لكل فيلم";

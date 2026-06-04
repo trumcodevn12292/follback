@@ -291,3 +291,17 @@
 "Your analog film journal" = "你的胶片摄影日志";
 "Film stocks, cameras, and locations" = "胶卷、相机与拍摄地点";
 "Photos, stats, and contact sheets" = "照片、统计与印样";
+
+/* Cost tracking */
+"COST" = "费用";
+"SPENDING" = "支出";
+"Cost" = "费用";
+"Film cost" = "胶卷费用";
+"Developing cost" = "冲扫费用";
+"Total cost" = "总费用";
+"Track what you spent on film and developing." = "记录你在购买胶卷和冲扫上的花费。";
+"Add costs to your rolls to see your spending here." = "为胶卷添加费用，即可在此查看你的支出。";
+"Currency" = "货币";
+"Total spent" = "累计支出";
+"This year" = "今年";
+"Average per roll" = "每卷平均";
