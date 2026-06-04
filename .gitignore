@@ -1,1 +1,84 @@
+# =========================
+# macOS system files
+# =========================
 .DS_Store
+.AppleDouble
+.LSOverride
+
+# Thumbnails
+._*
+
+# =========================
+# Xcode
+# =========================
+build/
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.xcuserdatad
+
+# Xcode project user data
+*.xcuserdatad/
+
+# Swift Package Manager (local cache)
+.build/
+SourcePackages/
+Packages/
+Package.resolved
+
+# Archives
+*.xcarchive
+
+# SwiftPM
+.swiftpm/
+
+# =========================
+# CocoaPods (nếu có dùng)
+# =========================
+Pods/
+Podfile.lock
+
+# =========================
+# Carthage (nếu có dùng)
+# =========================
+Carthage/Build/
+
+# =========================
+# fastlane (nếu dùng CI/CD)
+# =========================
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# Runtime files
+# =========================
+*.swp
+*.lock
+*.tmp
+
+# =========================
+# IDEs
+# =========================
+.idea/
+.vscode/
+
+# =========================
+# Environment
+# =========================
+.env
+.env.*
+
+# =========================
+# Misc
+# =========================
+*.orig
+*.rej

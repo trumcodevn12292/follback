@@ -30,6 +30,28 @@ class Roll {
     var devNotes: String?           // free-form recipe notes
     var developedDate: Date?        // when it was developed
 
+    // MARK: - Half-frame
+    /// True for half-frame cameras, where a single 35mm exposure holds two
+    /// photos (a 36-exp roll yields 72 shots). `capacity` already stores the
+    /// doubled shot count; this flag is kept for display.
+    var isHalfFrame: Bool = false
+
+    // MARK: - Cost tracking
+    var filmCost: Double?           // price paid to buy the film
+    var devCost: Double?            // price paid to develop / scan the roll
+
+    /// Total money spent on this roll (film + developing), or nil when nothing
+    /// has been recorded yet.
+    var totalCost: Double? {
+        let values = [filmCost, devCost].compactMap { $0 }
+        return values.isEmpty ? nil : values.reduce(0, +)
+    }
+
+    /// True when any cost field has been filled in.
+    var hasCost: Bool {
+        filmCost != nil || devCost != nil
+    }
+
     /// True when any development recipe field has been filled in.
     var hasDevRecipe: Bool {
         (devDeveloper?.isEmpty == false) ||

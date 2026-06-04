@@ -32,6 +32,7 @@ struct CameraBackup: Codable {
     var notes: String
     var lens: String?
     var addedAt: Date
+    var purchasePrice: Double?
 }
 
 struct RollBackup: Codable {
@@ -62,6 +63,11 @@ struct RollBackup: Codable {
     var devAgitation: String?
     var devNotes: String?
     var developedDate: Date?
+    // Cost tracking (optional for backward compatibility)
+    var filmCost: Double?
+    var devCost: Double?
+    // Half-frame (optional for backward compatibility)
+    var isHalfFrame: Bool?
 }
 
 struct FilmVaultBackup: Codable {
@@ -141,7 +147,10 @@ enum BackupService {
                 devTimeSeconds: roll.devTimeSeconds,
                 devAgitation: roll.devAgitation,
                 devNotes: roll.devNotes,
-                developedDate: roll.developedDate
+                developedDate: roll.developedDate,
+                filmCost: roll.filmCost,
+                devCost: roll.devCost,
+                isHalfFrame: roll.isHalfFrame
             )
         }
 
@@ -156,7 +165,8 @@ enum BackupService {
                 photoAssetID: c.photoAssetID,
                 notes: c.notes,
                 lens: c.lens,
-                addedAt: c.addedAt
+                addedAt: c.addedAt,
+                purchasePrice: c.purchasePrice
             )
         }
 
@@ -211,6 +221,7 @@ enum BackupService {
             camera.notes = cb.notes
             camera.lens = cb.lens
             camera.addedAt = cb.addedAt
+            camera.purchasePrice = cb.purchasePrice
             context.insert(camera)
             camerasByID[cb.id] = camera
             camerasAdded += 1
@@ -243,6 +254,9 @@ enum BackupService {
             roll.devAgitation = rb.devAgitation
             roll.devNotes = rb.devNotes
             roll.developedDate = rb.developedDate
+            roll.filmCost = rb.filmCost
+            roll.devCost = rb.devCost
+            roll.isHalfFrame = rb.isHalfFrame ?? false
 
             var frames: [Frame] = []
             for fb in rb.frames {

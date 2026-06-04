@@ -1,6 +1,7 @@
 import ActivityKit
 import WidgetKit
 import SwiftUI
+import UIKit
 
 // MARK: - Live Activity (Lock Screen + Dynamic Island)
 
@@ -26,25 +27,26 @@ struct RollLiveActivity: Widget {
 
         return DynamicIsland {
             DynamicIslandExpandedRegion(.leading) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Label {
+                HStack(alignment: .center, spacing: 8) {
+                    liveActivityFilmIcon(context.attributes.filmName, size: 28)
+                    VStack(alignment: .leading, spacing: 1) {
                         Text(context.attributes.filmName)
                             .font(.system(size: 14, weight: .semibold))
-                            .lineLimit(1)
-                    } icon: {
-                        Image(systemName: "film")
-                            .foregroundStyle(.orange)
-                    }
-                    if let cam = context.attributes.cameraName, !cam.isEmpty {
-                        Text(cam)
-                            .font(.system(size: 11))
-                            .foregroundStyle(.secondary)
-                            .lineLimit(1)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.7)
+                            .fixedSize(horizontal: false, vertical: true)
+                        if let cam = context.attributes.cameraName, !cam.isEmpty {
+                            Text(cam)
+                                .font(.system(size: 11))
+                                .foregroundStyle(.secondary)
+                                .lineLimit(1)
+                        }
                     }
                 }
+                .padding(.leading, 4)
             }
             DynamicIslandExpandedRegion(.trailing) {
-                VStack(alignment: .trailing, spacing: 2) {
+                VStack(alignment: .trailing, spacing: 1) {
                     Text("\(shot)/\(cap)")
                         .font(.system(size: 17, weight: .bold, design: .rounded))
                         .monospacedDigit()
@@ -52,7 +54,9 @@ struct RollLiveActivity: Widget {
                         .font(.system(size: 11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
+                .padding(.trailing, 4)
             }
             DynamicIslandExpandedRegion(.bottom) {
                 VStack(alignment: .leading, spacing: 6) {
@@ -70,11 +74,12 @@ struct RollLiveActivity: Widget {
                     .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                 }
+                .padding(.horizontal, 4)
+                .padding(.top, 2)
                 .environment(\.layoutDirection, widgetLayoutDirection())
             }
         } compactLeading: {
-            Image(systemName: "film")
-                .foregroundStyle(.orange)
+            liveActivityFilmIcon(context.attributes.filmName, size: 20)
         } compactTrailing: {
             Text("\(shot)/\(cap)")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -104,15 +109,24 @@ private struct LockScreenLiveActivityView: View {
     var body: some View {
         HStack(spacing: 14) {
             ZStack {
+                if let cover = liveActivityCoverImage(for: context.attributes.filmName) {
+                    Image(uiImage: cover)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 42, height: 42)
+                        .clipShape(Circle())
+                }
                 Circle()
                     .stroke(Color.orange.opacity(0.2), lineWidth: 5)
                 Circle()
                     .trim(from: 0, to: progress)
                     .stroke(Color.orange, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                Image(systemName: "film")
-                    .font(.system(size: 18))
-                    .foregroundStyle(.orange)
+                if liveActivityCoverImage(for: context.attributes.filmName) == nil {
+                    Image(systemName: "film")
+                        .font(.system(size: 18))
+                        .foregroundStyle(.orange)
+                }
             }
             .frame(width: 52, height: 52)
 
@@ -158,4 +172,59 @@ private struct LockScreenLiveActivityView: View {
 
 private func widgetLayoutDirection() -> LayoutDirection {
     widgetLanguageCode() == "ar" ? .rightToLeft : .leftToRight
+}
+
+// MARK: - Film cover helpers
+
+/// Loads the cached film cover image (written by the app into the shared App
+/// Group container under `WidgetCovers/`) for the given film name. Returns nil
+/// when no cover has been cached for that film.
+func liveActivityCoverImage(for filmName: String) -> UIImage? {
+    let safeName = filmName
+        .replacingOccurrences(of: " ", with: "_")
+        .replacingOccurrences(of: "/", with: "_")
+    guard let containerURL = FileManager.default.containerURL(
+        forSecurityApplicationGroupIdentifier: "group.com.williamcachamwri.FilmVault"
+    ) else { return nil }
+    let fileURL = containerURL
+        .appendingPathComponent("WidgetCovers")
+        .appendingPathComponent("cover_\(safeName).jpg")
+    guard let data = try? Data(contentsOf: fileURL),
+          let image = UIImage(data: data) else { return nil }
+    // Live Activities / Dynamic Island have a much tighter rendering budget than
+    // home-screen widgets, so a full-resolution cover renders blank. Downscale
+    // to a small thumbnail so it always displays.
+    return image.downscaled(toMaxDimension: 120)
+}
+
+private extension UIImage {
+    func downscaled(toMaxDimension maxDimension: CGFloat) -> UIImage {
+        let longest = max(size.width, size.height)
+        guard longest > maxDimension, longest > 0 else { return self }
+        let scale = maxDimension / longest
+        let newSize = CGSize(width: size.width * scale, height: size.height * scale)
+        let format = UIGraphicsImageRendererFormat.default()
+        format.scale = 1
+        let renderer = UIGraphicsImageRenderer(size: newSize, format: format)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: newSize))
+        }
+    }
+}
+
+/// Shows the film cover thumbnail when available, falling back to the orange
+/// filmstrip SF Symbol when no cover has been cached.
+@ViewBuilder
+func liveActivityFilmIcon(_ filmName: String, size: CGFloat) -> some View {
+    if let cover = liveActivityCoverImage(for: filmName) {
+        Image(uiImage: cover)
+            .resizable()
+            .scaledToFill()
+            .frame(width: size, height: size)
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.24, style: .continuous))
+    } else {
+        Image(systemName: "film")
+            .font(.system(size: size * 0.72))
+            .foregroundStyle(.orange)
+    }
 }

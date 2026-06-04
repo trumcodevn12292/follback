@@ -371,3 +371,44 @@
 "Pulled" = "Pull (понижение)";
 "Clear all" = "Очистить всё";
 "Show %d rolls" = "Показать %d плёнок";
+
+/* Onboarding */
+"Continue" = "Продолжить";
+"Get Started" = "Начать";
+"Track Every Roll" = "Учитывайте каждую плёнку";
+"Relive the Journey" = "Переживите путешествие заново";
+"Your analog film journal" = "Ваш дневник плёночной фотографии";
+"Film stocks, cameras, and locations" = "Плёнки, камеры и места съёмки";
+"Photos, stats, and contact sheets" = "Фотографии, статистика и контактные листы";
+
+/* Cost tracking */
+"COST" = "СТОИМОСТЬ";
+"SPENDING" = "РАСХОДЫ";
+"Cost" = "Стоимость";
+"Film cost" = "Цена плёнки";
+"Developing cost" = "Проявка и скан";
+"Total cost" = "Итого";
+"Track what you spent on film and developing." = "Записывайте расходы на плёнку и проявку.";
+"Add costs to your rolls to see your spending here." = "Добавьте стоимость к плёнкам, чтобы видеть расходы здесь.";
+"Currency" = "Валюта";
+"Total spent" = "Всего потрачено";
+"This year" = "В этом году";
+"Average per roll" = "В среднем за плёнку";
+
+/* Insights / Spending dashboard */
+"Insights" = "Аналитика";
+"Develop & scan" = "Проявка и скан";
+"Most-shot films" = "Самые снимаемые плёнки";
+"Most-used cameras" = "Самые используемые камеры";
+"Purchase price" = "Цена покупки";
+"Add costs to your rolls and cameras to see your spending." = "Добавьте стоимость плёнок и камер, чтобы увидеть свои расходы.";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "Полукадр";
+"Half" = "Полукадр";
+"%d shots" = "%d кадров";
+"Achievements" = "Достижения";
+"week streak" = "неделя подряд";
+"weeks streak" = "недель подряд";
+"%d films" = "%d плёнок";

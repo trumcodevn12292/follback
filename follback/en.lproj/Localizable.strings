@@ -281,3 +281,44 @@
 "Pulled" = "Pulled";
 "Clear all" = "Clear all";
 "Show %d rolls" = "Show %d rolls";
+
+/* Onboarding */
+"Continue" = "Continue";
+"Get Started" = "Get Started";
+"Track Every Roll" = "Track Every Roll";
+"Relive the Journey" = "Relive the Journey";
+"Your analog film journal" = "Your analog film journal";
+"Film stocks, cameras, and locations" = "Film stocks, cameras, and locations";
+"Photos, stats, and contact sheets" = "Photos, stats, and contact sheets";
+
+/* Cost tracking */
+"COST" = "COST";
+"SPENDING" = "SPENDING";
+"Cost" = "Cost";
+"Film cost" = "Film cost";
+"Developing cost" = "Developing cost";
+"Total cost" = "Total cost";
+"Track what you spent on film and developing." = "Track what you spent on film and developing.";
+"Add costs to your rolls to see your spending here." = "Add costs to your rolls to see your spending here.";
+"Currency" = "Currency";
+"Total spent" = "Total spent";
+"This year" = "This year";
+"Average per roll" = "Average per roll";
+
+/* Insights / Spending dashboard */
+"Insights" = "Insights";
+"Develop & scan" = "Develop & scan";
+"Most-shot films" = "Most-shot films";
+"Most-used cameras" = "Most-used cameras";
+"Purchase price" = "Purchase price";
+"Add costs to your rolls and cameras to see your spending." = "Add costs to your rolls and cameras to see your spending.";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "Half-frame";
+"Half" = "Half";
+"%d shots" = "%d shots";
+"Achievements" = "Achievements";
+"week streak" = "week streak";
+"weeks streak" = "weeks streak";
+"%d films" = "%d films";

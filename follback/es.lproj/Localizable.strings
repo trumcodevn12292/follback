@@ -369,3 +369,44 @@
 "Pulled" = "Reducido (pull)";
 "Clear all" = "Borrar todo";
 "Show %d rolls" = "Ver %d carretes";
+
+/* Onboarding */
+"Continue" = "Continuar";
+"Get Started" = "Empezar";
+"Track Every Roll" = "Registra cada carrete";
+"Relive the Journey" = "Revive el viaje";
+"Your analog film journal" = "Tu diario de fotografía analógica";
+"Film stocks, cameras, and locations" = "Películas, cámaras y lugares";
+"Photos, stats, and contact sheets" = "Fotos, estadísticas y hojas de contacto";
+
+/* Cost tracking */
+"COST" = "COSTE";
+"SPENDING" = "GASTOS";
+"Cost" = "Coste";
+"Film cost" = "Coste del carrete";
+"Developing cost" = "Revelado y escaneo";
+"Total cost" = "Coste total";
+"Track what you spent on film and developing." = "Registra lo que gastas en carretes y revelado.";
+"Add costs to your rolls to see your spending here." = "Añade costes a tus carretes para ver tus gastos aquí.";
+"Currency" = "Moneda";
+"Total spent" = "Total gastado";
+"This year" = "Este año";
+"Average per roll" = "Media por carrete";
+
+/* Insights / Spending dashboard */
+"Insights" = "Estadísticas";
+"Develop & scan" = "Revelado y escaneo";
+"Most-shot films" = "Películas más usadas";
+"Most-used cameras" = "Cámaras más usadas";
+"Purchase price" = "Precio de compra";
+"Add costs to your rolls and cameras to see your spending." = "Añade costes a tus carretes y cámaras para ver tus gastos.";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "Medio cuadro";
+"Half" = "Medio";
+"%d shots" = "%d fotos";
+"Achievements" = "Logros";
+"week streak" = "semana seguida";
+"weeks streak" = "semanas seguidas";
+"%d films" = "%d películas";

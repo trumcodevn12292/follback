@@ -369,3 +369,44 @@
 "Pulled" = "Kéo tối (Pull)";
 "Clear all" = "Xoá tất cả";
 "Show %d rolls" = "Xem %d cuộn";
+
+/* Onboarding */
+"Continue" = "Tiếp tục";
+"Get Started" = "Bắt đầu";
+"Track Every Roll" = "Theo dõi từng cuộn phim";
+"Relive the Journey" = "Sống lại hành trình";
+"Your analog film journal" = "Nhật ký phim nhựa của bạn";
+"Film stocks, cameras, and locations" = "Loại phim, máy ảnh và địa điểm";
+"Photos, stats, and contact sheets" = "Ảnh, thống kê và bảng contact";
+
+/* Cost tracking */
+"COST" = "CHI PHÍ";
+"SPENDING" = "CHI TIÊU";
+"Cost" = "Chi phí";
+"Film cost" = "Tiền phim";
+"Developing cost" = "Tiền tráng/scan";
+"Total cost" = "Tổng chi phí";
+"Track what you spent on film and developing." = "Ghi lại số tiền bạn chi cho phim và tráng scan.";
+"Add costs to your rolls to see your spending here." = "Thêm chi phí cho các cuộn để xem chi tiêu tại đây.";
+"Currency" = "Tiền tệ";
+"Total spent" = "Tổng đã chi";
+"This year" = "Năm nay";
+"Average per roll" = "Trung bình mỗi cuộn";
+
+/* Insights / Spending dashboard */
+"Insights" = "Thống kê";
+"Develop & scan" = "Tráng & scan";
+"Most-shot films" = "Phim chụp nhiều nhất";
+"Most-used cameras" = "Máy ảnh dùng nhiều nhất";
+"Purchase price" = "Giá mua";
+"Add costs to your rolls and cameras to see your spending." = "Thêm chi phí cho cuộn phim và máy ảnh để xem mức chi tiêu.";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "Nửa khung";
+"Half" = "Nửa";
+"%d shots" = "%d kiểu";
+"Achievements" = "Thành tích";
+"week streak" = "tuần liên tiếp";
+"weeks streak" = "tuần liên tiếp";
+"%d films" = "%d loại phim";

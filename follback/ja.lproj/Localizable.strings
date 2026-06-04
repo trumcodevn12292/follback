@@ -370,3 +370,44 @@
 "Pulled" = "減感";
 "Clear all" = "すべてクリア";
 "Show %d rolls" = "%d 本を表示";
+
+/* Onboarding */
+"Continue" = "続ける";
+"Get Started" = "はじめる";
+"Track Every Roll" = "すべてのフィルムを記録";
+"Relive the Journey" = "旅をもう一度";
+"Your analog film journal" = "あなたのフィルム写真ノート";
+"Film stocks, cameras, and locations" = "フィルム・カメラ・撮影場所";
+"Photos, stats, and contact sheets" = "写真・統計・コンタクトシート";
+
+/* Cost tracking */
+"COST" = "費用";
+"SPENDING" = "支出";
+"Cost" = "費用";
+"Film cost" = "フィルム代";
+"Developing cost" = "現像・スキャン代";
+"Total cost" = "合計費用";
+"Track what you spent on film and developing." = "フィルム代と現像代の出費を記録しましょう。";
+"Add costs to your rolls to see your spending here." = "フィルムに費用を追加すると、ここに支出が表示されます。";
+"Currency" = "通貨";
+"Total spent" = "合計支出";
+"This year" = "今年";
+"Average per roll" = "1本あたり平均";
+
+/* Insights / Spending dashboard */
+"Insights" = "統計";
+"Develop & scan" = "現像・スキャン";
+"Most-shot films" = "よく使うフィルム";
+"Most-used cameras" = "よく使うカメラ";
+"Purchase price" = "購入価格";
+"Add costs to your rolls and cameras to see your spending." = "フィルムやカメラに費用を入力すると支出が表示されます。";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "ハーフフレーム";
+"Half" = "ハーフ";
+"%d shots" = "%d 枚";
+"Achievements" = "実績";
+"week streak" = "週連続";
+"weeks streak" = "週連続";
+"%d films" = "%d 種類のフィルム";

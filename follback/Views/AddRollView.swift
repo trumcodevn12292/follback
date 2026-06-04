@@ -18,6 +18,7 @@ struct AddRollView: View {
     @State private var selectedCamera: Camera?
     @State private var selectedCameraModelName: String?
     @State private var capacity = 36
+    @State private var isHalfFrame = false
     @State private var iso = 400
     @State private var format: FilmFormat = .mm35
     @State private var evCompensation: Float = 0
@@ -31,6 +32,9 @@ struct AddRollView: View {
     @State private var showCustomInput = false
     @State private var activeCover: ActiveCover?
     @State private var selectedLabName: String?
+    @State private var filmCostText = ""
+    @State private var devCostText = ""
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
 
     let isoOptions = [50, 100, 200, 400, 800, 1600, 3200]
 
@@ -627,6 +631,25 @@ struct AddRollView: View {
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
 
+                    if format == .mm35 {
+                        settingsDivider
+
+                        Toggle(isOn: $isHalfFrame) {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Half-frame")
+                                    .font(.system(size: 16, weight: .medium))
+                                    .foregroundColor(Color.filmText)
+                                Text(L("%d shots", capacity * 2))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmTertiary)
+                                    .opacity(isHalfFrame ? 1 : 0)
+                            }
+                        }
+                        .tint(Color.filmAccent)
+                        .padding(.horizontal, 18)
+                        .padding(.vertical, 14)
+                    }
+
                     if selectedFilmStock == nil && selectedCustomFilm == nil {
                         settingsDivider
 
@@ -762,6 +785,22 @@ struct AddRollView: View {
                         .fill(Color.filmSurface)
                 )
 
+                // Cost section
+                Text("Cost")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+                    .padding(.horizontal, 4)
+
+                VStack(spacing: 0) {
+                    costRow(label: "Film cost", text: $filmCostText)
+                    settingsDivider
+                    costRow(label: "Developing cost", text: $devCostText)
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                )
+
                 // Notes section
                 Text("Notes")
                     .font(.system(size: 14, weight: .medium))
@@ -822,6 +861,34 @@ struct AddRollView: View {
             .padding(.horizontal, 18)
     }
 
+    private func costRow(label: String, text: Binding<String>) -> some View {
+        HStack {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(Money.symbol(for: currencyCode))
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: 110)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 14)
+    }
+
+    private func parsedCost(_ text: String) -> Double? {
+        Money.parseAmount(text)
+    }
+
     // MARK: - Helpers
 
     private var filmDisplayName: String {
@@ -839,10 +906,13 @@ struct AddRollView: View {
             cameras.first { $0.name == name || name.contains($0.name) }
         } ?? selectedCamera
 
+        let halfFrame = isHalfFrame && format == .mm35
+        let effectiveCapacity = halfFrame ? capacity * 2 : capacity
+
         let roll = Roll(
             filmName: filmDisplayName,
             camera: matchedCamera,
-            capacity: capacity,
+            capacity: effectiveCapacity,
             iso: iso,
             format: format,
             evCompensation: evCompensation,
@@ -854,6 +924,9 @@ struct AddRollView: View {
             longitude: locationLongitude,
             labName: selectedLabName
         )
+        roll.isHalfFrame = halfFrame
+        roll.filmCost = parsedCost(filmCostText)
+        roll.devCost = parsedCost(devCostText)
         modelContext.insert(roll)
         try? modelContext.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)

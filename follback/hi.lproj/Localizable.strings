@@ -369,3 +369,44 @@
 "Pulled" = "पुल किया";
 "Clear all" = "सभी हटाएँ";
 "Show %d rolls" = "%d रोल दिखाएँ";
+
+/* Onboarding */
+"Continue" = "जारी रखें";
+"Get Started" = "शुरू करें";
+"Track Every Roll" = "हर रोल को ट्रैक करें";
+"Relive the Journey" = "सफर को फिर से जिएं";
+"Your analog film journal" = "आपकी एनालॉग फिल्म डायरी";
+"Film stocks, cameras, and locations" = "फिल्म, कैमरे और स्थान";
+"Photos, stats, and contact sheets" = "तस्वीरें, आँकड़े और कॉन्टैक्ट शीट";
+
+/* Cost tracking */
+"COST" = "लागत";
+"SPENDING" = "खर्च";
+"Cost" = "लागत";
+"Film cost" = "फ़िल्म की कीमत";
+"Developing cost" = "डेवलपिंग/स्कैन";
+"Total cost" = "कुल लागत";
+"Track what you spent on film and developing." = "फ़िल्म और डेवलपिंग पर हुए खर्च को दर्ज करें।";
+"Add costs to your rolls to see your spending here." = "अपने रोल में लागत जोड़ें ताकि आपका खर्च यहाँ दिखे।";
+"Currency" = "मुद्रा";
+"Total spent" = "कुल खर्च";
+"This year" = "इस साल";
+"Average per roll" = "प्रति रोल औसत";
+
+/* Insights / Spending dashboard */
+"Insights" = "आँकड़े";
+"Develop & scan" = "डेवलप और स्कैन";
+"Most-shot films" = "सबसे ज़्यादा शूट की गई फ़िल्में";
+"Most-used cameras" = "सबसे ज़्यादा इस्तेमाल किए कैमरे";
+"Purchase price" = "खरीद मूल्य";
+"Add costs to your rolls and cameras to see your spending." = "अपने रोल और कैमरों में लागत जोड़ें ताकि आप अपना खर्च देख सकें।";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "हाफ़-फ़्रेम";
+"Half" = "हाफ़";
+"%d shots" = "%d शॉट";
+"Achievements" = "उपलब्धियाँ";
+"week streak" = "सप्ताह की लय";
+"weeks streak" = "सप्ताह की लय";
+"%d films" = "%d फ़िल्में";

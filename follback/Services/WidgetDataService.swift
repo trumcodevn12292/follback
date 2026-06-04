@@ -13,7 +13,7 @@ struct WidgetDataService {
 
         let recentRolls = rolls
             .sorted { $0.startDate > $1.startDate }
-            .prefix(6)
+            .prefix(10)
             .map { widgetRollData(for: $0) }
 
         // Roll currently being shot (most recently updated in-progress roll),
@@ -62,9 +62,16 @@ struct WidgetDataService {
 
         WidgetCenter.shared.reloadAllTimelines()
 
-        // Cache cover images for widget
+        // Cache cover images for widget + Live Activity. Always include the
+        // active roll so its cover is available in the Dynamic Island / Lock
+        // Screen even when it is not among the most recent rolls.
         Task {
-            await cacheCoverImages(for: Array(recentRolls))
+            var coversToCache = Array(recentRolls)
+            if let active = activeRollModel.map({ widgetRollData(for: $0) }),
+               !coversToCache.contains(where: { $0.id == active.id }) {
+                coversToCache.append(active)
+            }
+            await cacheCoverImages(for: coversToCache)
         }
     }
 

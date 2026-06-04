@@ -282,3 +282,44 @@
 "Pulled" = "减感";
 "Clear all" = "全部清除";
 "Show %d rolls" = "显示 %d 个胶卷";
+
+/* Onboarding */
+"Continue" = "继续";
+"Get Started" = "开始使用";
+"Track Every Roll" = "记录每一卷胶卷";
+"Relive the Journey" = "重温每段旅程";
+"Your analog film journal" = "你的胶片摄影日志";
+"Film stocks, cameras, and locations" = "胶卷、相机与拍摄地点";
+"Photos, stats, and contact sheets" = "照片、统计与印样";
+
+/* Cost tracking */
+"COST" = "费用";
+"SPENDING" = "支出";
+"Cost" = "费用";
+"Film cost" = "胶卷费用";
+"Developing cost" = "冲扫费用";
+"Total cost" = "总费用";
+"Track what you spent on film and developing." = "记录你在购买胶卷和冲扫上的花费。";
+"Add costs to your rolls to see your spending here." = "为胶卷添加费用，即可在此查看你的支出。";
+"Currency" = "货币";
+"Total spent" = "累计支出";
+"This year" = "今年";
+"Average per roll" = "每卷平均";
+
+/* Insights / Spending dashboard */
+"Insights" = "统计";
+"Develop & scan" = "冲扫";
+"Most-shot films" = "最常用胶卷";
+"Most-used cameras" = "最常用相机";
+"Purchase price" = "购买价格";
+"Add costs to your rolls and cameras to see your spending." = "为胶卷和相机添加费用即可查看你的支出。";
+
+
+/* Half-frame & achievements */
+"Half-frame" = "半格";
+"Half" = "半格";
+"%d shots" = "%d 张";
+"Achievements" = "成就";
+"week streak" = "周连续";
+"weeks streak" = "周连续";
+"%d films" = "%d 种胶卷";

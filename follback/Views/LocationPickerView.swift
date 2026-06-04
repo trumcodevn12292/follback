@@ -101,7 +101,7 @@ struct LocationPickerView: View {
                                                     .font(.system(size: 15, weight: .medium))
                                                     .foregroundColor(Color.filmText)
                                                     .lineLimit(1)
-                                                if let subtitle = formattedAddress(for: item) {
+                                                if let subtitle = formattedAddress(for: item.placemark) {
                                                     Text(subtitle)
                                                         .font(.system(size: 12))
                                                         .foregroundColor(Color.filmTertiary)

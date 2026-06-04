@@ -13,6 +13,7 @@ class Camera {
     var notes: String
     var lens: String?
     var addedAt: Date
+    var purchasePrice: Double?   // what the camera body cost, for spending stats
 
     @Relationship(inverse: \Roll.camera)
     var rolls: [Roll]?

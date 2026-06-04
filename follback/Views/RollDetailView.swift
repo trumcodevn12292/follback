@@ -387,7 +387,12 @@ struct RollDetailView: View {
                             }
                         }
 
-                    infoChipView(label: "Film format", value: roll.filmFormat.displayName)
+                    infoChipView(
+                        label: "Film format",
+                        value: roll.isHalfFrame
+                            ? "\(roll.filmFormat.displayName) · \(L("Half"))"
+                            : roll.filmFormat.displayName
+                    )
 
                     Divider()
                         .frame(height: 40)
@@ -484,10 +489,74 @@ struct RollDetailView: View {
 
             developmentCard
                 .padding(.horizontal, 16)
+
+            costCard
+                .padding(.horizontal, 16)
         }
         .padding(.bottom, 16)
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
+    }
+
+    private var costCard: some View {
+        Button {
+            showEditDetails = true
+            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(spacing: 8) {
+                    Image(systemName: "dollarsign.circle.fill")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmAccent)
+                    Text("COST")
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(Color.filmTertiary)
+                        .kerning(0.8)
+                    Spacer()
+                    Image(systemName: roll.hasCost ? "pencil" : "plus")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Color.filmTertiary)
+                }
+
+                if roll.hasCost {
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let film = roll.filmCost {
+                            costLine(label: L("Film cost"), value: Money.format(film))
+                        }
+                        if let dev = roll.devCost {
+                            costLine(label: L("Developing cost"), value: Money.format(dev))
+                        }
+                        if let total = roll.totalCost {
+                            Divider().background(Color.filmBorder.opacity(0.3))
+                            costLine(label: L("Total cost"), value: Money.format(total), emphasized: true)
+                        }
+                    }
+                } else {
+                    Text("Track what you spent on film and developing.")
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .padding(16)
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func costLine(label: String, value: String, emphasized: Bool = false) -> some View {
+        HStack {
+            Text(label)
+                .font(.system(size: 14, weight: emphasized ? .semibold : .regular))
+                .foregroundColor(emphasized ? Color.filmText : Color.filmSecondary)
+            Spacer()
+            Text(value)
+                .font(.system(size: 14, weight: emphasized ? .bold : .medium))
+                .foregroundColor(emphasized ? Color.filmAccent : Color.filmText)
+        }
     }
 
     private var developmentCard: some View {
@@ -1925,6 +1994,9 @@ struct EditRollDetailsView: View {
     @State private var locationLatitude: Double?
     @State private var locationLongitude: Double?
     @State private var labName: String?
+    @State private var filmCostText: String = ""
+    @State private var devCostText: String = ""
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
     @State private var showFilmPicker = false
     @State private var showLocationPicker = false
     @State private var showLabPicker = false
@@ -2009,9 +2081,15 @@ struct EditRollDetailsView: View {
 
                             settingsRow("Exposures", value: "\(capacity)") {
                                 Picker("", selection: $capacity) {
-                                    Text("12").tag(12)
-                                    Text("24").tag(24)
-                                    Text("36").tag(36)
+                                    if roll.isHalfFrame {
+                                        Text("24").tag(24)
+                                        Text("48").tag(48)
+                                        Text("72").tag(72)
+                                    } else {
+                                        Text("12").tag(12)
+                                        Text("24").tag(24)
+                                        Text("36").tag(36)
+                                    }
                                 }
                                 .pickerStyle(.menu)
                                 .tint(Color.filmAccent)
@@ -2150,6 +2228,24 @@ struct EditRollDetailsView: View {
                         .buttonStyle(.plain)
                     }
 
+                    // Cost
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("COST")
+                            .font(.system(size: 12, weight: .bold))
+                            .foregroundColor(Color.filmTertiary)
+                            .kerning(0.8)
+
+                        VStack(spacing: 0) {
+                            editCostRow(label: "Film cost", text: $filmCostText)
+                            Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+                            editCostRow(label: "Developing cost", text: $devCostText)
+                        }
+                        .background(
+                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                .fill(Color.filmSurface)
+                        )
+                    }
+
                     // Notes
                     VStack(alignment: .leading, spacing: 8) {
                         Text("NOTES")
@@ -2223,7 +2319,41 @@ struct EditRollDetailsView: View {
             locationLatitude = roll.latitude
             locationLongitude = roll.longitude
             labName = roll.labName
+            filmCostText = roll.filmCost.map { formattedCostInput($0) } ?? ""
+            devCostText = roll.devCost.map { formattedCostInput($0) } ?? ""
         }
+    }
+
+    private func editCostRow(label: String, text: Binding<String>) -> some View {
+        HStack {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(Money.symbol(for: currencyCode))
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: 110)
+                .onChange(of: text.wrappedValue) { _, newValue in
+                    let formatted = Money.groupedInput(newValue)
+                    if formatted != newValue { text.wrappedValue = formatted }
+                }
+        }
+        .padding(16)
+    }
+
+    /// Renders a stored amount as grouped input text without trailing ".0".
+    private func formattedCostInput(_ value: Double) -> String {
+        Money.editableText(value)
+    }
+
+    private func parsedCost(_ text: String) -> Double? {
+        Money.parseAmount(text)
     }
 
     private func settingsRow<Content: View>(_ label: String, value: String, @ViewBuilder trailing: () -> Content) -> some View {
@@ -2437,6 +2567,8 @@ struct EditRollDetailsView: View {
         roll.latitude = locationLatitude
         roll.longitude = locationLongitude
         roll.labName = (labName ?? "").isEmpty ? nil : labName
+        roll.filmCost = parsedCost(filmCostText)
+        roll.devCost = parsedCost(devCostText)
         roll.updatedAt = Date()
         try? modelContext.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
