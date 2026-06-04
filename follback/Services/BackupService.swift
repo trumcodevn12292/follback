@@ -32,6 +32,7 @@ struct CameraBackup: Codable {
     var notes: String
     var lens: String?
     var addedAt: Date
+    var purchasePrice: Double?
 }
 
 struct RollBackup: Codable {
@@ -161,7 +162,8 @@ enum BackupService {
                 photoAssetID: c.photoAssetID,
                 notes: c.notes,
                 lens: c.lens,
-                addedAt: c.addedAt
+                addedAt: c.addedAt,
+                purchasePrice: c.purchasePrice
             )
         }
 
@@ -216,6 +218,7 @@ enum BackupService {
             camera.notes = cb.notes
             camera.lens = cb.lens
             camera.addedAt = cb.addedAt
+            camera.purchasePrice = cb.purchasePrice
             context.insert(camera)
             camerasByID[cb.id] = camera
             camerasAdded += 1

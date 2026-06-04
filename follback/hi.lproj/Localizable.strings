@@ -392,3 +392,11 @@
 "Total spent" = "कुल खर्च";
 "This year" = "इस साल";
 "Average per roll" = "प्रति रोल औसत";
+
+/* Insights / Spending dashboard */
+"Insights" = "आँकड़े";
+"Develop & scan" = "डेवलप और स्कैन";
+"Most-shot films" = "सबसे ज़्यादा शूट की गई फ़िल्में";
+"Most-used cameras" = "सबसे ज़्यादा इस्तेमाल किए कैमरे";
+"Purchase price" = "खरीद मूल्य";
+"Add costs to your rolls and cameras to see your spending." = "अपने रोल और कैमरों में लागत जोड़ें ताकि आप अपना खर्च देख सकें।";

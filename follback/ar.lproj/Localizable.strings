@@ -391,3 +391,11 @@
 "Total spent" = "إجمالي الإنفاق";
 "This year" = "هذا العام";
 "Average per roll" = "المتوسط لكل فيلم";
+
+/* Insights / Spending dashboard */
+"Insights" = "إحصاءات";
+"Develop & scan" = "التحميض والمسح";
+"Most-shot films" = "أكثر الأفلام تصويرًا";
+"Most-used cameras" = "أكثر الكاميرات استخدامًا";
+"Purchase price" = "سعر الشراء";
+"Add costs to your rolls and cameras to see your spending." = "أضف التكاليف إلى أفلامك وكاميراتك لعرض إنفاقك.";

@@ -393,3 +393,11 @@
 "Total spent" = "合計支出";
 "This year" = "今年";
 "Average per roll" = "1本あたり平均";
+
+/* Insights / Spending dashboard */
+"Insights" = "統計";
+"Develop & scan" = "現像・スキャン";
+"Most-shot films" = "よく使うフィルム";
+"Most-used cameras" = "よく使うカメラ";
+"Purchase price" = "購入価格";
+"Add costs to your rolls and cameras to see your spending." = "フィルムやカメラに費用を入力すると支出が表示されます。";

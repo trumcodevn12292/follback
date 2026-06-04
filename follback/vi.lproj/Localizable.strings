@@ -392,3 +392,11 @@
 "Total spent" = "Tổng đã chi";
 "This year" = "Năm nay";
 "Average per roll" = "Trung bình mỗi cuộn";
+
+/* Insights / Spending dashboard */
+"Insights" = "Thống kê";
+"Develop & scan" = "Tráng & scan";
+"Most-shot films" = "Phim chụp nhiều nhất";
+"Most-used cameras" = "Máy ảnh dùng nhiều nhất";
+"Purchase price" = "Giá mua";
+"Add costs to your rolls and cameras to see your spending." = "Thêm chi phí cho cuộn phim và máy ảnh để xem mức chi tiêu.";

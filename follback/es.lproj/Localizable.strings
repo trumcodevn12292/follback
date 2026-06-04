@@ -392,3 +392,11 @@
 "Total spent" = "Total gastado";
 "This year" = "Este año";
 "Average per roll" = "Media por carrete";
+
+/* Insights / Spending dashboard */
+"Insights" = "Estadísticas";
+"Develop & scan" = "Revelado y escaneo";
+"Most-shot films" = "Películas más usadas";
+"Most-used cameras" = "Cámaras más usadas";
+"Purchase price" = "Precio de compra";
+"Add costs to your rolls and cameras to see your spending." = "Añade costes a tus carretes y cámaras para ver tus gastos.";

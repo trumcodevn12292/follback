@@ -394,3 +394,11 @@
 "Total spent" = "Всего потрачено";
 "This year" = "В этом году";
 "Average per roll" = "В среднем за плёнку";
+
+/* Insights / Spending dashboard */
+"Insights" = "Аналитика";
+"Develop & scan" = "Проявка и скан";
+"Most-shot films" = "Самые снимаемые плёнки";
+"Most-used cameras" = "Самые используемые камеры";
+"Purchase price" = "Цена покупки";
+"Add costs to your rolls and cameras to see your spending." = "Добавьте стоимость плёнок и камер, чтобы увидеть свои расходы.";

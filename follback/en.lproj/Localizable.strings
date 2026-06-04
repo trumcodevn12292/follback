@@ -304,3 +304,11 @@
 "Total spent" = "Total spent";
 "This year" = "This year";
 "Average per roll" = "Average per roll";
+
+/* Insights / Spending dashboard */
+"Insights" = "Insights";
+"Develop & scan" = "Develop & scan";
+"Most-shot films" = "Most-shot films";
+"Most-used cameras" = "Most-used cameras";
+"Purchase price" = "Purchase price";
+"Add costs to your rolls and cameras to see your spending." = "Add costs to your rolls and cameras to see your spending.";

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 import UniformTypeIdentifiers
+import Kingfisher
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
@@ -563,23 +564,9 @@ struct SettingsView: View {
 
     // MARK: - Spending Card
 
-    private var rollsWithCost: [Roll] { rolls.filter { $0.hasCost } }
-
-    private var totalSpent: Double {
+    private var grandTotalSpent: Double {
         rolls.compactMap { $0.totalCost }.reduce(0, +)
-    }
-
-    private var spentThisYear: Double {
-        let year = Calendar.current.component(.year, from: Date())
-        return rolls
-            .filter { Calendar.current.component(.year, from: $0.startDate) == year }
-            .compactMap { $0.totalCost }
-            .reduce(0, +)
-    }
-
-    private var averagePerRoll: Double {
-        let count = rollsWithCost.count
-        return count == 0 ? 0 : totalSpent / Double(count)
+            + cameras.compactMap { $0.purchasePrice }.reduce(0, +)
     }
 
     private var spendingCard: some View {
@@ -622,21 +609,29 @@ struct SettingsView: View {
                 }
                 .padding(16)
 
-                if rollsWithCost.isEmpty {
-                    Divider().background(Color.filmBorder.opacity(0.3))
-                    Text("Add costs to your rolls to see your spending here.")
-                        .font(.system(size: 13))
-                        .foregroundColor(Color.filmTertiary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                } else {
-                    Divider().background(Color.filmBorder.opacity(0.3))
-                    spendingRow(label: L("Total spent"), value: Money.format(totalSpent), emphasized: true)
-                    Divider().background(Color.filmBorder.opacity(0.3))
-                    spendingRow(label: L("This year"), value: Money.format(spentThisYear))
-                    Divider().background(Color.filmBorder.opacity(0.3))
-                    spendingRow(label: L("Average per roll"), value: Money.format(averagePerRoll))
+                Divider().background(Color.filmBorder.opacity(0.3))
+
+                NavigationLink {
+                    InsightsView()
+                } label: {
+                    HStack {
+                        Text(L("Insights"))
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        if grandTotalSpent > 0 {
+                            Text(Money.format(grandTotalSpent))
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(Color.filmAccent)
+                        }
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                    .padding(16)
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -646,19 +641,6 @@ struct SettingsView: View {
         .opacity(appeared ? 1 : 0)
         .offset(y: appeared ? 0 : 15)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
-    }
-
-    private func spendingRow(label: String, value: String, emphasized: Bool = false) -> some View {
-        HStack {
-            Text(label)
-                .font(.system(size: 15, weight: emphasized ? .semibold : .regular))
-                .foregroundColor(emphasized ? Color.filmText : Color.filmSecondary)
-            Spacer()
-            Text(value)
-                .font(.system(size: 15, weight: emphasized ? .bold : .semibold))
-                .foregroundColor(emphasized ? Color.filmAccent : Color.filmText)
-        }
-        .padding(16)
     }
 
     // MARK: - Reminders Card
@@ -1055,6 +1037,314 @@ struct SettingsView: View {
                 cacheCleared = false
             }
             calculateCacheSize()
+        }
+    }
+}
+
+// MARK: - Insights / Spending dashboard
+
+struct InsightsView: View {
+    @Query(sort: \Roll.createdAt, order: .reverse) private var rolls: [Roll]
+    @Query(sort: \Camera.name) private var cameras: [Camera]
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
+    @ObservedObject private var l10n = LocalizationManager.shared
+
+    // MARK: Totals
+
+    private var filmTotal: Double { rolls.compactMap { $0.filmCost }.reduce(0, +) }
+    private var devTotal: Double { rolls.compactMap { $0.devCost }.reduce(0, +) }
+    private var cameraTotal: Double { cameras.compactMap { $0.purchasePrice }.reduce(0, +) }
+    private var grandTotal: Double { filmTotal + devTotal + cameraTotal }
+
+    private struct Breakdown: Identifiable {
+        let id = UUID()
+        let label: String
+        let amount: Double
+        let color: Color
+    }
+
+    private var breakdown: [Breakdown] {
+        [
+            Breakdown(label: L("Film"), amount: filmTotal, color: Color.filmText),
+            Breakdown(label: L("Develop & scan"), amount: devTotal, color: Color.filmTertiary),
+            Breakdown(label: L("Cameras"), amount: cameraTotal, color: Color.filmAccent),
+        ].filter { $0.amount > 0 }
+    }
+
+    // MARK: Aggregates
+
+    private struct FilmStat: Identifiable {
+        let id = UUID()
+        let name: String
+        let iso: Int
+        let format: String
+        let rollCount: Int
+        let photos: Int
+    }
+
+    private struct CameraStat: Identifiable {
+        let id: UUID
+        let camera: Camera
+        let rollCount: Int
+        let photos: Int
+    }
+
+    private var filmStats: [FilmStat] {
+        let groups = Dictionary(grouping: rolls.filter { !$0.filmName.isEmpty }) { $0.filmName }
+        return groups.map { name, group -> FilmStat in
+            let sample = group[0]
+            return FilmStat(
+                name: name,
+                iso: sample.iso,
+                format: sample.filmFormat.displayName,
+                rollCount: group.count,
+                photos: group.reduce(0) { $0 + $1.filledFrames }
+            )
+        }
+        .sorted { $0.rollCount != $1.rollCount ? $0.rollCount > $1.rollCount : $0.photos > $1.photos }
+    }
+
+    private var cameraStats: [CameraStat] {
+        cameras.compactMap { cam -> CameraStat? in
+            let used = rolls.filter { $0.camera?.id == cam.id }
+            guard !used.isEmpty else { return nil }
+            return CameraStat(
+                id: cam.id,
+                camera: cam,
+                rollCount: used.count,
+                photos: used.reduce(0) { $0 + $1.filledFrames }
+            )
+        }
+        .sorted { $0.rollCount != $1.rollCount ? $0.rollCount > $1.rollCount : $0.photos > $1.photos }
+    }
+
+    var body: some View {
+        ScrollView(showsIndicators: false) {
+            VStack(spacing: 24) {
+                totalCard
+
+                if !filmStats.isEmpty {
+                    section(title: L("Most-shot films")) {
+                        VStack(spacing: 10) {
+                            ForEach(filmStats.prefix(5)) { stat in
+                                filmRow(stat)
+                            }
+                        }
+                    }
+                }
+
+                if !cameraStats.isEmpty {
+                    section(title: L("Most-used cameras")) {
+                        VStack(spacing: 10) {
+                            ForEach(cameraStats.prefix(5)) { stat in
+                                cameraRow(stat)
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .padding(.bottom, 24)
+        }
+        .background(Color.filmBackground.ignoresSafeArea())
+        .navigationTitle(L("Insights"))
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    // MARK: Total card
+
+    private var totalCard: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text(L("Total spent"))
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color.filmTertiary)
+                    .kerning(0.8)
+                Spacer()
+                Text(currencyCode)
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundColor(Color.filmTertiary)
+                    .kerning(0.8)
+            }
+
+            Text(Money.formatNumber(grandTotal))
+                .font(.system(size: 44, weight: .heavy))
+                .foregroundColor(Color.filmText)
+                .minimumScaleFactor(0.5)
+                .lineLimit(1)
+
+            if grandTotal > 0 {
+                stackedBar
+                VStack(spacing: 10) {
+                    ForEach(breakdown) { item in
+                        HStack(spacing: 12) {
+                            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                                .fill(item.color)
+                                .frame(width: 18, height: 18)
+                            Text(item.label)
+                                .font(.system(size: 16, weight: .medium))
+                                .foregroundColor(Color.filmText)
+                            Spacer()
+                            Text(Money.formatNumber(item.amount))
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(Color.filmText)
+                        }
+                    }
+                }
+            } else {
+                Text(L("Add costs to your rolls and cameras to see your spending."))
+                    .font(.system(size: 13))
+                    .foregroundColor(Color.filmTertiary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .fill(Color.filmSurface)
+        )
+    }
+
+    private var stackedBar: some View {
+        GeometryReader { geo in
+            HStack(spacing: 3) {
+                ForEach(breakdown) { item in
+                    let fraction = grandTotal > 0 ? item.amount / grandTotal : 0
+                    Capsule()
+                        .fill(item.color)
+                        .frame(width: max(6, geo.size.width * fraction - 3))
+                }
+            }
+        }
+        .frame(height: 14)
+    }
+
+    // MARK: Sections
+
+    private func section<Content: View>(title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title.uppercased())
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+            content()
+        }
+    }
+
+    private func filmRow(_ stat: FilmStat) -> some View {
+        HStack(spacing: 14) {
+            filmThumbnail(for: stat.name)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(stat.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+                    .lineLimit(1)
+                Text("ISO \(stat.iso) · \(stat.format)")
+                    .font(.system(size: 13))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            Spacer()
+            usageLabel(rolls: stat.rollCount, photos: stat.photos)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.filmSurface)
+        )
+    }
+
+    private func cameraRow(_ stat: CameraStat) -> some View {
+        HStack(spacing: 14) {
+            cameraThumbnail(stat.camera)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(stat.camera.name)
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(Color.filmText)
+                    .lineLimit(1)
+                Text(stat.camera.brand)
+                    .font(.system(size: 13))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            Spacer()
+            usageLabel(rolls: stat.rollCount, photos: stat.photos)
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.filmSurface)
+        )
+    }
+
+    private func usageLabel(rolls: Int, photos: Int) -> some View {
+        let rollText = rolls == 1 ? L("%d roll", rolls) : L("%d rolls", rolls)
+        return Text("\(rollText) · \(L("%d photos", photos))")
+            .font(.system(size: 13, weight: .medium))
+            .foregroundColor(Color.filmSecondary)
+    }
+
+    // MARK: Thumbnails
+
+    private func filmStock(for name: String) -> FilmStock? {
+        FilmStock.allStocks.first {
+            $0.displayName.lowercased() == name.lowercased() ||
+            "\($0.brand) \($0.name)".lowercased() == name.lowercased()
+        }
+    }
+
+    private func customFilm(for name: String) -> CustomFilm? {
+        CustomFilmStore.shared.films.first { $0.name.lowercased() == name.lowercased() }
+    }
+
+    @ViewBuilder
+    private func filmThumbnail(for name: String) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.filmSurfaceSecondary)
+                .frame(width: 56, height: 56)
+
+            if let custom = customFilm(for: name),
+               let data = custom.coverImageData,
+               let uiImage = UIImage(data: data) {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else if let stock = filmStock(for: name),
+                      let urlString = stock.githubCoverUrl,
+                      let url = URL(string: urlString) {
+                KFImage(url)
+                    .downsampling(size: CGSize(width: 120, height: 120))
+                    .cacheOriginalImage()
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                Image(systemName: "film")
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(Color.filmTertiary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func cameraThumbnail(_ camera: Camera) -> some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(Color.filmSurfaceSecondary)
+                .frame(width: 56, height: 56)
+
+            if let assetID = camera.photoAssetID, !assetID.isEmpty {
+                PhotoThumbnail(assetID: assetID, targetSize: 120)
+                    .frame(width: 56, height: 56)
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            } else {
+                Image(systemName: "camera")
+                    .font(.system(size: 20, weight: .light))
+                    .foregroundColor(Color.filmTertiary)
+            }
         }
     }
 }

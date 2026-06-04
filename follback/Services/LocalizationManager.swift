@@ -154,6 +154,17 @@ enum Money {
         return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
     }
 
+    /// Formats just the grouped number (no currency symbol), so a big amount can
+    /// be shown next to a separate currency-code label. Whole numbers drop the
+    /// fractional part.
+    static func formatNumber(_ amount: Double) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        formatter.locale = appLocale()
+        formatter.maximumFractionDigits = amount.truncatingRemainder(dividingBy: 1) == 0 ? 0 : 2
+        return formatter.string(from: NSNumber(value: amount)) ?? "\(amount)"
+    }
+
     /// Symbol (e.g. "$", "₫") for the given currency code, for use as a field prefix.
     static func symbol(for code: String? = nil) -> String {
         let target = code ?? currencyCode

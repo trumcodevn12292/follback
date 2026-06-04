@@ -187,6 +187,8 @@ struct AddCameraSheet: View {
     @State private var lens = ""
     @State private var type: CameraType = .slr
     @State private var format: FilmFormat = .mm35
+    @State private var priceText = ""
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
 
     init(onSave: ((Camera) -> Void)? = nil) {
         self.onSave = onSave
@@ -235,6 +237,10 @@ struct AddCameraSheet: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
+
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        priceRow(label: "Purchase price", text: $priceText)
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -278,6 +284,34 @@ struct AddCameraSheet: View {
         .padding(.vertical, 14)
     }
 
+    private func priceRow(label: String, text: Binding<String>) -> some View {
+        HStack {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(Money.symbol(for: currencyCode))
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: 120)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private func parsedCost(_ text: String) -> Double? {
+        let cleaned = text
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: ",", with: ".")
+        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
+        return value
+    }
+
     private func saveCamera() {
         let camera = Camera(
             name: name,
@@ -286,6 +320,7 @@ struct AddCameraSheet: View {
             type: type,
             lens: lens.isEmpty ? nil : lens
         )
+        camera.purchasePrice = parsedCost(priceText)
         modelContext.insert(camera)
         try? modelContext.save()
         onSave?(camera)
@@ -306,6 +341,8 @@ struct EditCameraSheet: View {
     @State private var lens: String = ""
     @State private var type: CameraType = .slr
     @State private var format: FilmFormat = .mm35
+    @State private var priceText = ""
+    @AppStorage(Money.currencyKey) private var currencyCode = Money.defaultCode
 
     var body: some View {
         NavigationStack {
@@ -350,6 +387,10 @@ struct EditCameraSheet: View {
                         }
                         .padding(.horizontal, 16)
                         .padding(.vertical, 14)
+
+                        Divider().background(Color.filmBorder.opacity(0.3)).padding(.horizontal, 16)
+
+                        priceRow(label: "Purchase price", text: $priceText)
                     }
                     .background(
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -379,6 +420,9 @@ struct EditCameraSheet: View {
                 lens = camera.lens ?? ""
                 type = camera.cameraType
                 format = camera.filmFormat
+                priceText = camera.purchasePrice.map {
+                    $0.truncatingRemainder(dividingBy: 1) == 0 ? String(Int($0)) : String($0)
+                } ?? ""
             }
         }
         .presentationDetents([.medium, .large])
@@ -400,12 +444,41 @@ struct EditCameraSheet: View {
         .padding(.vertical, 14)
     }
 
+    private func priceRow(label: String, text: Binding<String>) -> some View {
+        HStack {
+            Text(LocalizedStringKey(label))
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+            Text(Money.symbol(for: currencyCode))
+                .font(.system(size: 15))
+                .foregroundColor(Color.filmTertiary)
+            TextField("0", text: text)
+                .keyboardType(.decimalPad)
+                .multilineTextAlignment(.trailing)
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundColor(Color.filmText)
+                .frame(maxWidth: 120)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
+    }
+
+    private func parsedCost(_ text: String) -> Double? {
+        let cleaned = text
+            .trimmingCharacters(in: .whitespaces)
+            .replacingOccurrences(of: ",", with: ".")
+        guard !cleaned.isEmpty, let value = Double(cleaned), value > 0 else { return nil }
+        return value
+    }
+
     private func saveChanges() {
         camera.name = name
         camera.brand = brand
         camera.lens = lens.isEmpty ? nil : lens
         camera.type = type.rawValue
         camera.format = format.rawValue
+        camera.purchasePrice = parsedCost(priceText)
         try? modelContext.save()
         UINotificationFeedbackGenerator().notificationOccurred(.success)
         dismiss()
