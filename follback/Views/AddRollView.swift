@@ -374,6 +374,13 @@ struct AddRollView: View {
                         .font(.system(size: 15, weight: .semibold))
                         .foregroundColor(Color.filmText)
                     HStack(spacing: 6) {
+                        if !film.brand.isEmpty {
+                            Text(film.brand)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(Color.filmTertiary)
+                            Text("·")
+                                .foregroundColor(Color.filmTertiary)
+                        }
                         Text("ISO \(film.iso)")
                             .font(.system(size: 11, weight: .bold, design: .monospaced))
                             .foregroundColor(Color.filmAccent)
@@ -1102,6 +1109,7 @@ private struct AddCustomFilmSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var brand = ""
     @State private var iso = 400
     @State private var type = "COLOR_NEGATIVE"
     @State private var coverItem: PhotosPickerItem?
@@ -1165,6 +1173,27 @@ private struct AddCustomFilmSheet: View {
                                 .kerning(0.8)
 
                             TextField("e.g. My Kodak Portra 400", text: $name)
+                                .font(.system(size: 16))
+                                .foregroundColor(Color.filmText)
+                                .padding(14)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                        .fill(Color.filmSurface)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                                .stroke(Color.filmBorder, lineWidth: 0.5)
+                                        )
+                                )
+                        }
+
+                        // Brand
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text("BRAND")
+                                .font(.system(size: 12, weight: .bold))
+                                .foregroundColor(Color.filmTertiary)
+                                .kerning(0.8)
+
+                            TextField("e.g. Kodak, Fujifilm, Ilford", text: $brand)
                                 .font(.system(size: 16))
                                 .foregroundColor(Color.filmText)
                                 .padding(14)
@@ -1255,6 +1284,7 @@ private struct AddCustomFilmSheet: View {
                             let film = CustomFilm(
                                 id: UUID().uuidString,
                                 name: name,
+                                brand: brand,
                                 iso: iso,
                                 filmType: type,
                                 coverImageData: coverData

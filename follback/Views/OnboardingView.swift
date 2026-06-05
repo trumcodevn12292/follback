@@ -7,6 +7,8 @@ struct OnboardingView: View {
     let onComplete: () -> Void
     @State private var currentPage = 0
     @State private var appeared = false
+    @State private var showPermissionAlert = false
+    @State private var permissionAlertMessage = ""
     @StateObject private var locationManager = OnboardingLocationManager()
 
     private let pages: [(icon: String, title: String, subtitle: String)] = [
@@ -121,26 +123,65 @@ struct OnboardingView: View {
                     }
                 }
         )
+        .alert("Permission Required", isPresented: $showPermissionAlert) {
+            Button("Open Settings") {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button("Later", role: .cancel) {}
+        } message: {
+            Text(permissionAlertMessage)
+        }
     }
 
     private func requestPhotoAccess() {
-        PHPhotoLibrary.requestAuthorization(for: .readWrite) { _ in }
+        let status = PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        if status == .denied || status == .restricted {
+            permissionAlertMessage = "Photo access is required to attach photos to your rolls. You can enable it in Settings."
+            showPermissionAlert = true
+            return
+        }
+        if status == .notDetermined {
+            PHPhotoLibrary.requestAuthorization(for: .readWrite) { newStatus in
+                if newStatus == .denied || newStatus == .restricted {
+                    DispatchQueue.main.async {
+                        permissionAlertMessage = "Photo access is required to attach photos to your rolls. You can enable it in Settings."
+                        showPermissionAlert = true
+                    }
+                }
+            }
+        }
     }
 
     private func requestLocationAccess() {
-        locationManager.requestPermission()
+        let status = locationManager.authorizationStatus
+        if status == .denied || status == .restricted {
+            permissionAlertMessage = "Location access is optional but helps tag your photos with where they were taken. You can enable it in Settings."
+            showPermissionAlert = true
+            return
+        }
+        if status == .notDetermined {
+            locationManager.requestPermission()
+        }
     }
 }
 
 private class OnboardingLocationManager: NSObject, ObservableObject, CLLocationManagerDelegate {
     private let manager = CLLocationManager()
+    @Published var authorizationStatus: CLAuthorizationStatus = .notDetermined
 
     override init() {
         super.init()
         manager.delegate = self
+        authorizationStatus = manager.authorizationStatus
     }
 
     func requestPermission() {
         manager.requestWhenInUseAuthorization()
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        authorizationStatus = manager.authorizationStatus
     }
 }

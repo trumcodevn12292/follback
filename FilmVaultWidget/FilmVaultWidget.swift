@@ -290,20 +290,23 @@ struct FilmVaultWidgetEntryView: View {
         }
     }
 
-    private func metaLine(_ roll: WidgetRollItem, size: CGFloat = 11) -> some View {
+    private func metaLine(_ roll: WidgetRollItem, size: CGFloat = 11, compact: Bool = false) -> some View {
         HStack(spacing: 5) {
-            Text("ISO \(roll.iso)")
-            if !roll.format.isEmpty {
+            Text(compact ? "\(roll.iso)°" : "ISO \(roll.iso)")
+                .minimumScaleFactor(compact ? 0.5 : 0.6)
+            if !compact, !roll.format.isEmpty {
                 Text("•")
                 Text(roll.format)
+                    .minimumScaleFactor(0.6)
             }
             if let cam = roll.cameraName, !cam.isEmpty {
                 Text("•")
-                Text(cam).lineLimit(1)
+                Text(cam).lineLimit(1).minimumScaleFactor(compact ? 0.4 : 0.5)
             }
-            if let pp = roll.pushPull, !pp.isEmpty {
+            if !compact, let pp = roll.pushPull, !pp.isEmpty {
                 Text("•")
                 Text(pp).foregroundColor(.orange)
+                    .minimumScaleFactor(0.6)
             }
         }
         .font(.system(size: size))
@@ -352,6 +355,7 @@ struct FilmVaultWidgetEntryView: View {
             Text(value)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
+                .minimumScaleFactor(0.7)
             Text(label)
                 .font(.system(size: 11, weight: .medium))
                 .foregroundColor(.white.opacity(0.5))
@@ -413,10 +417,11 @@ struct FilmVaultWidgetEntryView: View {
             Spacer(minLength: 4)
 
             Text(roll.filmName)
-                .font(.system(size: 16, weight: .bold))
+                .font(.system(size: 15, weight: .bold))
                 .foregroundColor(.white)
                 .lineLimit(1)
-            metaLine(roll, size: 10)
+                .minimumScaleFactor(0.5)
+            metaLine(roll, size: 9, compact: true)
 
             Spacer(minLength: 6)
 
@@ -424,13 +429,17 @@ struct FilmVaultWidgetEntryView: View {
                 Text("\(roll.photoCount)")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
+                    .minimumScaleFactor(0.6)
                 Text("/\(roll.capacity)")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
                     .foregroundColor(.white.opacity(0.4))
-                Spacer()
+                    .minimumScaleFactor(0.6)
+                Spacer(minLength: 2)
                 Text(WL("%d left", roll.framesLeft))
                     .font(.system(size: 10, weight: .medium))
                     .foregroundColor(.white.opacity(0.5))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
             }
             progressBar(roll)
                 .padding(.top, 5)
@@ -445,9 +454,11 @@ struct FilmVaultWidgetEntryView: View {
                 Text("\(entry.data.totalRolls)")
                     .font(.system(size: 34, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
+                    .minimumScaleFactor(0.5)
                 Text(WL("rolls"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.5))
+                    .lineLimit(1)
             }
             HStack(spacing: 4) {
                 Image(systemName: "camera.fill")
@@ -456,6 +467,8 @@ struct FilmVaultWidgetEntryView: View {
                 Text(WL("%d photos", entry.data.totalPhotos))
                     .font(.system(size: 12, weight: .semibold, design: .rounded))
                     .foregroundColor(.orange)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
             .padding(.top, 5)
             HStack(spacing: 10) {
@@ -472,10 +485,12 @@ struct FilmVaultWidgetEntryView: View {
             Text(value)
                 .font(.system(size: 12, weight: .bold, design: .rounded))
                 .foregroundColor(.white.opacity(0.85))
+                .minimumScaleFactor(0.7)
             Text(label)
                 .font(.system(size: 9, weight: .medium))
                 .foregroundColor(.white.opacity(0.45))
                 .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
     }
 
@@ -497,7 +512,7 @@ struct FilmVaultWidgetEntryView: View {
                 statChip("\(entry.data.shootingCount)", WL("Shooting"), .orange, "dot.radiowaves.left.and.right")
                 statChip("\(entry.data.toDevelopCount)", WL("To Develop"), .green, "timer")
             }
-            .frame(width: 138)
+            .frame(maxWidth: .infinity)
         }
         .padding(14)
         .containerBackground(for: .widget) { background }
@@ -514,16 +529,18 @@ struct FilmVaultWidgetEntryView: View {
                     progressRing(roll, size: 58, line: 5)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(roll.filmName)
-                            .font(.system(size: 16, weight: .bold))
+                            .font(.system(size: 15, weight: .bold))
                             .foregroundColor(.white)
                             .lineLimit(1)
+                            .minimumScaleFactor(0.5)
                         Text(WL("%d left", roll.framesLeft))
                             .font(.system(size: 11, weight: .semibold))
                             .foregroundColor(statusColor(roll.status))
+                            .minimumScaleFactor(0.7)
                     }
                 }
                 Spacer(minLength: 6)
-                metaLine(roll, size: 11)
+                metaLine(roll, size: 10, compact: true)
             }
         } else {
             VStack(alignment: .leading, spacing: 0) {
@@ -532,14 +549,18 @@ struct FilmVaultWidgetEntryView: View {
                 Text("\(entry.data.totalRolls)")
                     .font(.system(size: 38, weight: .bold, design: .rounded))
                     .foregroundColor(.white)
+                    .minimumScaleFactor(0.5)
                 Text(WL("%d photos", entry.data.totalPhotos))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
                     .foregroundColor(.orange)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 Spacer()
                 Text(WL("No roll in progress right now."))
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.4))
                     .lineLimit(2)
+                    .minimumScaleFactor(0.7)
             }
         }
     }
@@ -688,7 +709,7 @@ struct FilmVaultWidgetEntryView: View {
         let streakWeeks = data.streakWeeks ?? 0
         let distinctFilms = data.distinctFilms ?? 0
         let films = data.filmStats ?? []
-        let maxRolls = films.first?.rollCount ?? 1
+        _ = films.first?.rollCount ?? 1
 
         return VStack(alignment: .leading, spacing: 0) {
             // Stats tiles
@@ -785,9 +806,11 @@ struct FilmVaultWidgetEntryView: View {
                                     .font(.system(size: 12, weight: .semibold))
                                     .foregroundColor(.white)
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.7)
                                 Text("ISO \(film.iso) \u{00B7} \(film.format)")
                                     .font(.system(size: 9))
                                     .foregroundColor(.white.opacity(0.4))
+                                    .minimumScaleFactor(0.7)
                             }
 
                             Spacer(minLength: 4)
@@ -795,9 +818,11 @@ struct FilmVaultWidgetEntryView: View {
                             Text("\(film.rollCount)")
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
+                                .minimumScaleFactor(0.7)
                             Text(WL("rolls"))
                                 .font(.system(size: 8, weight: .medium))
                                 .foregroundColor(.white.opacity(0.4))
+                                .minimumScaleFactor(0.7)
                         }
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
@@ -825,11 +850,12 @@ struct FilmVaultWidgetEntryView: View {
             Text(value)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundColor(.white)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.6)
             Text(label)
                 .font(.system(size: 8, weight: .medium))
                 .foregroundColor(.white.opacity(0.45))
                 .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 8)
@@ -876,12 +902,15 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 15, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 metaLine(roll, size: 10)
             }
-            Spacer()
+            Spacer(minLength: 4)
             Text(WL("%d left", roll.framesLeft))
                 .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(statusColor(roll.status))
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
         }
         .padding(11)
         .background(
@@ -926,19 +955,24 @@ struct FilmVaultWidgetEntryView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.white)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
                 HStack(spacing: 5) {
                     Circle().fill(statusColor(roll.status)).frame(width: 5, height: 5)
                     Text(WL(statusDisplayKey(roll.status)))
                         .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.45))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                     Text("·").foregroundColor(.white.opacity(0.3))
                     Text(WL("%d of %d frames", roll.photoCount, roll.capacity))
                         .font(.system(size: 10))
                         .foregroundColor(.white.opacity(0.45))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 4)
 
             progressRing(roll, size: 24, line: 2.5)
         }

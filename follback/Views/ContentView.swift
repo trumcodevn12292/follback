@@ -142,6 +142,8 @@ struct ContentView: View {
         default:
             break
         }
+        // Always re-sync widget data and Live Activity after consuming any intent
+        updateWidgetData()
     }
 
     private func updateQuickActions(rolls: [Roll]) {

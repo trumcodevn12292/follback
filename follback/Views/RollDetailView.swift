@@ -1906,7 +1906,7 @@ private struct PhotoPageView: View {
         let maxDimension = max(screenWidth, screenHeight)
 
         // Local file
-        if assetID.contains("_frame_") {
+        if !assetID.contains("/") {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(assetID)
             DispatchQueue.global(qos: .userInitiated).async {
@@ -2939,7 +2939,7 @@ struct ContactSheetView: View {
             for frame in frames {
                 guard let assetID = frame.photoAssetID else { continue }
 
-                if assetID.contains("_frame_") {
+                if !assetID.contains("/") {
                     let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                         .appendingPathComponent(assetID)
                     let img = autoreleasepool {

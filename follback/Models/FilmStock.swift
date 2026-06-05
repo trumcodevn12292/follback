@@ -135,8 +135,10 @@ struct FilmStock: Identifiable, Hashable, Codable {
 struct CustomFilm: Identifiable, Codable, Hashable {
     let id: String
     var name: String
+    var brand: String = ""
     var iso: Int
     var filmType: String  // "COLOR_NEGATIVE", "BW_NEGATIVE", "COLOR_POSITIVE"
+    var format: String = "35mm"
     var coverImageData: Data?
 
     var displayName: String { name }

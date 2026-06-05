@@ -6,17 +6,21 @@ import UIKit
 final class CustomFilmModel {
     var id: String
     var name: String
+    var brand: String = ""
     var iso: Int
     var filmType: String
+    var format: String = "35mm"
     var coverImageData: Data?
     var createdAt: Date
 
-    init(id: String = UUID().uuidString, name: String, iso: Int = 400,
-         filmType: String = "COLOR_NEGATIVE", coverImageData: Data? = nil) {
+    init(id: String = UUID().uuidString, name: String, brand: String = "", iso: Int = 400,
+         filmType: String = "COLOR_NEGATIVE", format: String = "35mm", coverImageData: Data? = nil) {
         self.id = id
         self.name = name
+        self.brand = brand
         self.iso = iso
         self.filmType = filmType
+        self.format = format
         self.coverImageData = coverImageData
         self.createdAt = Date()
     }
@@ -45,8 +49,10 @@ final class CustomFilmModel {
             let model = CustomFilmModel(
                 id: film.id,
                 name: film.name,
+                brand: film.brand,
                 iso: film.iso,
                 filmType: film.filmType,
+                format: film.format,
                 coverImageData: film.coverImageData
             )
             modelContext.insert(model)

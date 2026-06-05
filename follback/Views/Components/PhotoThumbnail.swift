@@ -26,7 +26,7 @@ struct PhotoThumbnail: View {
 
     private func loadImage() {
         let pixelSize = targetSize * UIScreen.main.scale
-        if assetID.contains("_frame_") {
+        if !assetID.contains("/") {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(assetID)
             DispatchQueue.global(qos: .userInitiated).async {

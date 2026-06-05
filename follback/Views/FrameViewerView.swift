@@ -226,7 +226,7 @@ struct FrameViewerView: View {
         let screenScale = UIScreen.main.scale
         let maxDimension = max(UIScreen.main.bounds.width, UIScreen.main.bounds.height) * screenScale
 
-        if assetID.contains("_frame_") {
+        if !assetID.contains("/") {
             let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent(assetID)
             DispatchQueue.global(qos: .userInitiated).async {
