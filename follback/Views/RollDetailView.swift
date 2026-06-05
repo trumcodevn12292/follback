@@ -2775,6 +2775,7 @@ struct ContactSheetView: View {
     @State private var savedToPhotos = false
     @State private var isSaving = false
     @State private var coverImage: UIImage?
+    @State private var preloadedLabLogo: UIImage?
 
     private let columns = 4
     private let filmBase = Color(hex: "#1C1408")
@@ -2871,9 +2872,11 @@ struct ContactSheetView: View {
                 .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .onAppear {
-            loadAllImages()
-            loadCoverImage()
+        .task {
+            await loadAllImages()
+            await loadCoverImage()
+            await preloadLabLogoImage()
+            withAnimation(.easeOut(duration: 0.5)) { isLoading = false }
         }
     }
 
@@ -2964,7 +2967,13 @@ struct ContactSheetView: View {
                 // Lab info (left)
                 if let lab = matchingLab {
                     HStack(spacing: 4 * fontSize) {
-                        if let logoUrl = lab.logoUrl, let url = URL(string: logoUrl) {
+                        if let preloaded = preloadedLabLogo {
+                            Image(uiImage: preloaded)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 14 * fontSize, height: 14 * fontSize)
+                                .clipShape(Circle())
+                        } else if let logoUrl = lab.logoUrl, let url = URL(string: logoUrl) {
                             AsyncImage(url: url) { image in
                                 image.resizable().scaledToFill()
                             } placeholder: {
@@ -3027,6 +3036,13 @@ struct ContactSheetView: View {
                   let img = UIImage(data: data) else { return }
             await MainActor.run { coverImage = img }
         }
+    }
+
+    private func preloadLabLogoImage() async {
+        guard let lab = matchingLab, let logoUrl = lab.logoUrl, let url = URL(string: logoUrl) else { return }
+        guard let (data, _) = try? await URLSession.shared.data(from: url),
+              let img = UIImage(data: data) else { return }
+        await MainActor.run { preloadedLabLogo = img }
     }
 
     // MARK: - Film Strip Row
