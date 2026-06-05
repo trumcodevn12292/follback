@@ -344,3 +344,10 @@
 "View in AR" = "在AR中查看";
 "Tap a photo to place it in AR" = "点击照片即可在AR空间中放置";
 "selected" = "已选择";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "帧";
+"View Roll" = "查看胶卷";
+"%d frames with location" = "%d 个带位置的帧";
+"%d rolls with location" = "%d 个带位置的胶卷";
+"Duplicate" = "复制";

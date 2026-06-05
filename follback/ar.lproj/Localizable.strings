@@ -430,3 +430,10 @@
 "View in AR" = "عرض في AR";
 "Tap a photo to place it in AR" = "اضغط على صورة لوضعها في AR";
 "selected" = "محددة";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "الإطارات";
+"View Roll" = "عرض الفيلم";
+"%d frames with location" = "%d إطارًا مع الموقع";
+"%d rolls with location" = "%d فيلمًا مع الموقع";
+"Duplicate" = "نسخ";

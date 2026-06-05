@@ -431,3 +431,10 @@
 "View in AR" = "Xem trong AR";
 "Tap a photo to place it in AR" = "Chạm vào ảnh để đặt trong không gian AR";
 "selected" = "đã chọn";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "Khung hình";
+"View Roll" = "Xem cuộn";
+"%d frames with location" = "%d khung hình có vị trí";
+"%d rolls with location" = "%d cuộn phim có vị trí";
+"Duplicate" = "Nhân bản";

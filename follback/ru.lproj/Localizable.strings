@@ -433,3 +433,10 @@
 "View in AR" = "Просмотр в AR";
 "Tap a photo to place it in AR" = "Нажмите на фото, чтобы разместить его в AR";
 "selected" = "выбрано";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "Кадры";
+"View Roll" = "Смотреть плёнку";
+"%d frames with location" = "%d кадров с местоположением";
+"%d rolls with location" = "%d плёнок с местоположением";
+"Duplicate" = "Дублировать";

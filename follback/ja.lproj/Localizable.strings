@@ -432,3 +432,10 @@
 "View in AR" = "ARで表示";
 "Tap a photo to place it in AR" = "写真をタップしてAR空間に配置";
 "selected" = "選択済み";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "コマ";
+"View Roll" = "フィルムを表示";
+"%d frames with location" = "位置情報あり %d コマ";
+"%d rolls with location" = "位置情報あり %d 本";
+"Duplicate" = "複製";

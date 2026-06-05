@@ -15,11 +15,14 @@ struct FrameEditorView: View {
     @State private var focusDistance = ""
     @State private var flashUsed = false
     @State private var locationName = ""
+    @State private var latitude: Double?
+    @State private var longitude: Double?
     @State private var notes = ""
     @State private var selectedItem: PhotosPickerItem?
     @State private var previewImage: UIImage?
     @State private var photoAuthStatus: PHAuthorizationStatus = .notDetermined
     @State private var cardAppeared = false
+    @State private var showLocationPicker = false
 
     var body: some View {
         ScrollView(showsIndicators: false) {
@@ -61,6 +64,16 @@ struct FrameEditorView: View {
                     }
                 }
             }
+        }
+        .sheet(isPresented: $showLocationPicker) {
+            LocationPickerView(
+                locationName: Binding<String?>(
+                    get: { locationName.isEmpty ? nil : locationName },
+                    set: { locationName = $0 ?? "" }
+                ),
+                latitude: $latitude,
+                longitude: $longitude
+            )
         }
     }
 
@@ -193,11 +206,25 @@ struct FrameEditorView: View {
 
             Divider().background(Color.filmBorder)
 
-            fieldRow(label: "Location") {
-                TextField("Where was this taken?", text: $locationName)
-                    .font(.system(size: 16))
-                    .foregroundColor(Color.filmText)
+            Button {
+                showLocationPicker = true
+                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+            } label: {
+                HStack {
+                    Image(systemName: "mappin")
+                        .font(.system(size: 14))
+                        .foregroundColor(locationName.isEmpty ? Color.filmTertiary : Color.filmAccent)
+                    Text(locationName.isEmpty ? L("Add Location") : locationName)
+                        .font(.system(size: 15, weight: locationName.isEmpty ? .regular : .medium))
+                        .foregroundColor(locationName.isEmpty ? Color.filmTertiary : Color.filmText)
+                        .lineLimit(1)
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12))
+                        .foregroundColor(Color.filmTertiary)
+                }
             }
+            .buttonStyle(.plain)
 
             Divider().background(Color.filmBorder)
 
@@ -264,6 +291,8 @@ struct FrameEditorView: View {
         focusDistance = frame.focusDistance ?? ""
         flashUsed = frame.flashUsed
         locationName = frame.locationName ?? ""
+        latitude = frame.latitude
+        longitude = frame.longitude
         notes = frame.notes
     }
 
@@ -299,6 +328,8 @@ struct FrameEditorView: View {
         target.focusDistance = focusDistance.isEmpty ? nil : focusDistance
         target.flashUsed = flashUsed
         target.locationName = locationName.isEmpty ? nil : locationName
+        target.latitude = latitude
+        target.longitude = longitude
         target.notes = notes
         target.capturedAt = Date()
 

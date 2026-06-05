@@ -431,3 +431,10 @@
 "View in AR" = "एआर में देखें";
 "Tap a photo to place it in AR" = "एआर में रखने के लिए फोटो पर टैप करें";
 "selected" = "चयनित";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "फ्रेम";
+"View Roll" = "रोल देखें";
+"%d frames with location" = "%d फ्रेम स्थान सहित";
+"%d rolls with location" = "%d रोल स्थान सहित";
+"Duplicate" = "डुप्लिकेट";

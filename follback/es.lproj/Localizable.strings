@@ -431,3 +431,10 @@
 "View in AR" = "Ver en RA";
 "Tap a photo to place it in AR" = "Toca una foto para colocarla en RA";
 "selected" = "seleccionadas";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "Fotogramas";
+"View Roll" = "Ver carrete";
+"%d frames with location" = "%d fotogramas con ubicación";
+"%d rolls with location" = "%d carretes con ubicación";
+"Duplicate" = "Duplicar";

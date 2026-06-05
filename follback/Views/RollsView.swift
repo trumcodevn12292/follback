@@ -13,6 +13,7 @@ struct RollsView: View {
     @State private var appeared = false
     @State private var isLoading = true
     @State private var showSearch = false
+    @State private var showMap = false
     @State private var searchText = ""
     @State private var showFilterSheet = false
     @State private var sortOption: RollSortOption = .newest
@@ -232,6 +233,9 @@ struct RollsView: View {
                 }
                 .background(ClearBackgroundView())
             }
+            .fullScreenCover(isPresented: $showMap) {
+                RollsMapView(rolls: rolls)
+            }
             .onAppear {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
                     withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
@@ -388,6 +392,18 @@ struct RollsView: View {
                                 .offset(x: 3, y: -2)
                         }
                     }
+                }
+                .buttonStyle(.plain)
+
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    showMap = true
+                } label: {
+                    Image(systemName: "map")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+                        .frame(width: 36, height: 36)
+                        .background(Circle().fill(Color.filmSurface))
                 }
                 .buttonStyle(.plain)
 

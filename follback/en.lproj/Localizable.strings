@@ -343,3 +343,10 @@
 "View in AR" = "View in AR";
 "Tap a photo to place it in AR" = "Tap a photo to place it in AR";
 "selected" = "selected";
+
+/* Added: Rolls map view & swipe actions */
+"Frames" = "Frames";
+"View Roll" = "View Roll";
+"%d frames with location" = "%d frames with location";
+"%d rolls with location" = "%d rolls with location";
+"Duplicate" = "Duplicate";
