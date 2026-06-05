@@ -350,3 +350,30 @@
 "%d frames with location" = "%d frames with location";
 "%d rolls with location" = "%d rolls with location";
 "Duplicate" = "Duplicate";
+
+/* LLab order tracking */
+"LLab" = "LLab";
+"LLAB" = "LLAB";
+"Sign in to LLab" = "Sign in to LLab";
+"Track your film developing orders" = "Track your film developing orders";
+"Failed to connect to LLab" = "Failed to connect to LLab";
+"Invalid email or password" = "Invalid email or password";
+"Sign In" = "Sign In";
+"Signing in..." = "Signing in...";
+"Email" = "Email";
+"Password" = "Password";
+"your@email.com" = "your@email.com";
+"Points" = "Points";
+"Orders" = "Orders";
+"Level" = "Level";
+"ORDERS" = "ORDERS";
+"PICKUP ORDERS" = "PICKUP ORDERS";
+"Loading orders..." = "Loading orders...";
+"No orders yet" = "No orders yet";
+"Your LLab orders will appear here" = "Your LLab orders will appear here";
+"%d points · %d orders" = "%d points · %d orders";
+"You will be signed out of your LLab account." = "You will be signed out of your LLab account.";
+"Signed in successfully" = "Signed in successfully";
+"%d film(s)" = "%d film(s)";
+"Order #%@ is ready!" = "Order #%@ is ready!";
+"Your film order at LLab is complete. Time to pick it up!" = "Your film order at LLab is complete. Time to pick it up!";

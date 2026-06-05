@@ -438,3 +438,30 @@
 "%d frames with location" = "%d khung hình có vị trí";
 "%d rolls with location" = "%d cuộn phim có vị trí";
 "Duplicate" = "Nhân bản";
+
+/* LLab order tracking */
+"LLab" = "LLab";
+"LLAB" = "LLAB";
+"Sign in to LLab" = "Đăng nhập LLab";
+"Track your film developing orders" = "Theo dõi đơn hàng rửa phim của bạn";
+"Failed to connect to LLab" = "Không thể kết nối đến LLab";
+"Invalid email or password" = "Email hoặc mật khẩu không đúng";
+"Sign In" = "Đăng nhập";
+"Signing in..." = "Đang đăng nhập...";
+"Email" = "Email";
+"Password" = "Mật khẩu";
+"your@email.com" = "email@example.com";
+"Points" = "Điểm";
+"Orders" = "Đơn hàng";
+"Level" = "Hạng";
+"ORDERS" = "ĐƠN HÀNG";
+"PICKUP ORDERS" = "ĐƠN NHẬN PHIM";
+"Loading orders..." = "Đang tải đơn hàng...";
+"No orders yet" = "Chưa có đơn hàng";
+"Your LLab orders will appear here" = "Đơn hàng LLab của bạn sẽ hiển thị tại đây";
+"%d points · %d orders" = "%d điểm · %d đơn hàng";
+"You will be signed out of your LLab account." = "Bạn sẽ đăng xuất khỏi tài khoản LLab.";
+"Signed in successfully" = "Đăng nhập thành công";
+"%d film(s)" = "%d cuộn phim";
+"Order #%@ is ready!" = "Đơn hàng #%@ đã sẵn sàng!";
+"Your film order at LLab is complete. Time to pick it up!" = "Đơn hàng rửa phim tại LLab đã hoàn tất. Đến lấy phim thôi!";

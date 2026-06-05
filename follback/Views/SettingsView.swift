@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showResetOnboardingAlert = false
     @ObservedObject private var driveService = GoogleDriveService.shared
+    @ObservedObject private var lLab = LLabService.shared
     @ObservedObject private var reminderManager = ReminderManager.shared
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var l10n = LocalizationManager.shared
@@ -70,6 +71,7 @@ struct SettingsView: View {
                     remindersCard
                     liveActivityCard
                     googleDriveCard
+                    llabCard
                     dataCard
                     generalCard
                     aboutCard
@@ -364,6 +366,80 @@ struct SettingsView: View {
         .offset(y: appeared ? 0 : 15)
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.07), value: appeared)
     }
+
+    private var llabCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("LLAB")
+                .font(.system(size: 12, weight: .bold))
+                .foregroundColor(Color.filmTertiary)
+                .kerning(0.8)
+
+            VStack(spacing: 0) {
+                if lLab.isSignedIn {
+                    NavigationLink {
+                        LLabOrderTrackerView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image("LLabLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(lLab.user?.fullName ?? "LLab")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Color.filmText)
+                                Text(L("%d points · %d orders", lLab.user?.rewardPoints ?? 0, lLab.orders.count))
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmTertiary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color.filmTertiary.opacity(0.5))
+                        }
+                        .padding(16)
+                    }
+                    .buttonStyle(.plain)
+                } else {
+                    NavigationLink {
+                        LLabOrderTrackerView()
+                    } label: {
+                        HStack(spacing: 12) {
+                            Image("LLabLogo")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 24, height: 24)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text("Sign in to LLab")
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .foregroundColor(Color.filmText)
+                                Text("Track your film developing orders")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmTertiary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(Color.filmTertiary.opacity(0.5))
+                        }
+                        .padding(16)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .fill(Color.filmSurface)
+            )
+        }
+        .opacity(appeared ? 1 : 0)
+        .offset(y: appeared ? 0 : 15)
+        .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.08), value: appeared)
+    }
+
+    // MARK: - General Card
 
     private var generalCard: some View {
         VStack(alignment: .leading, spacing: 12) {
