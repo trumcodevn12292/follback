@@ -56,19 +56,6 @@ struct PhotoShareCardView: View {
                         }
                     }
 
-                    Spacer(minLength: 0)
-
-                    if let cover = coverImage {
-                        Image(uiImage: cover)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 52, height: 52)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                            )
-                    }
                 }
 
                 HStack(spacing: 10) {
