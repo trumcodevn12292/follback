@@ -1733,13 +1733,16 @@ struct FullScreenPhotoView: View {
             .sorted { $0.number < $1.number }
     }
 
+    @State private var currentImage: UIImage?
+    @State private var shareImage: UIImage?
+
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
 
             TabView(selection: $currentIndex) {
                 ForEach(Array(photoFrames.enumerated()), id: \.element.id) { index, photoFrame in
-                    PhotoPageView(frame: photoFrame, onDismiss: { dismiss() })
+                    PhotoPageView(frame: photoFrame, onDismiss: { dismiss() }, loadedImage: $currentImage)
                         .tag(index)
                 }
             }
@@ -1773,6 +1776,16 @@ struct FullScreenPhotoView: View {
                             .frame(width: 36, height: 36)
                             .background(Circle().fill(.ultraThinMaterial))
                     }
+
+                    Button {
+                        shareCurrentPhoto()
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.system(size: 15, weight: .bold))
+                            .foregroundColor(.white)
+                            .frame(width: 36, height: 36)
+                            .background(Circle().fill(.ultraThinMaterial))
+                    }
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 8)
@@ -1784,6 +1797,7 @@ struct FullScreenPhotoView: View {
                 }
             }
         }
+        .background(ShareController(image: shareImage, onComplete: { shareImage = nil }))
         .onAppear {
             if let idx = photoFrames.firstIndex(where: { $0.id == frame.id }) {
                 currentIndex = idx
@@ -1834,6 +1848,33 @@ struct FullScreenPhotoView: View {
         .foregroundColor(.white.opacity(0.9))
     }
 
+    private func shareCurrentPhoto() {
+        guard let img = currentImage else { return }
+        let card = PhotoShareCardView(image: img, frame: photoFrames[currentIndex], roll: roll)
+        let renderer = ImageRenderer(content: card)
+        renderer.proposedSize = ProposedViewSize(width: 1080, height: 1350)
+        renderer.scale = 1
+        shareImage = renderer.uiImage
+    }
+}
+
+// MARK: - ShareController
+private struct ShareController: UIViewControllerRepresentable {
+    let image: UIImage?
+    let onComplete: () -> Void
+
+    func makeUIViewController(context: Context) -> UIViewController {
+        UIViewController()
+    }
+
+    func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
+        guard let image else { return }
+        let avc = UIActivityViewController(activityItems: [image], applicationActivities: nil)
+        avc.completionWithItemsHandler = { _, _, _, _ in
+            onComplete()
+        }
+        uiViewController.present(avc, animated: true)
+    }
 }
 
 // MARK: - Photo Page View (single photo in album viewer)
@@ -1841,6 +1882,7 @@ struct FullScreenPhotoView: View {
 private struct PhotoPageView: View {
     let frame: Frame
     let onDismiss: () -> Void
+    @Binding var loadedImage: UIImage?
     @State private var image: UIImage?
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
@@ -1894,6 +1936,7 @@ private struct PhotoPageView: View {
         }
         .onAppear { loadImage() }
         .onDisappear { image = nil }
+        .onChange(of: image) { _, new in loadedImage = new }
     }
 
     private func loadImage() {
