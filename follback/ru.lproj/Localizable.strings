@@ -412,3 +412,12 @@
 "week streak" = "неделя подряд";
 "weeks streak" = "недель подряд";
 "%d films" = "%d плёнок";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "цена/фото";
+"Cost trend" = "Динамика расходов";
+"Most-used labs" = "Самые используемые лаборатории";
+"%d rolls delivered" = "%d плёнок проявлено";
+"No data yet" = "Нет данных";
+"Start shooting and logging your rolls to see insights." = "Начните снимать и записывать свои плёнки, чтобы увидеть статистику.";

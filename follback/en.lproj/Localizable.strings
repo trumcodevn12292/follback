@@ -322,3 +322,12 @@
 "week streak" = "week streak";
 "weeks streak" = "weeks streak";
 "%d films" = "%d films";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "cost/photo";
+"Cost trend" = "Cost trend";
+"Most-used labs" = "Most-used labs";
+"%d rolls delivered" = "%d rolls delivered";
+"No data yet" = "No data yet";
+"Start shooting and logging your rolls to see insights." = "Start shooting and logging your rolls to see insights.";

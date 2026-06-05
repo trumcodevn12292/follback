@@ -410,3 +410,12 @@
 "week streak" = "tuần liên tiếp";
 "weeks streak" = "tuần liên tiếp";
 "%d films" = "%d loại phim";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "chi phí/ảnh";
+"Cost trend" = "Xu hướng chi phí";
+"Most-used labs" = "Lab dùng nhiều nhất";
+"%d rolls delivered" = "%d cuộn đã giao";
+"No data yet" = "Chưa có dữ liệu";
+"Start shooting and logging your rolls to see insights." = "Bắt đầu chụp và ghi lại các cuộn phim để xem thống kê.";

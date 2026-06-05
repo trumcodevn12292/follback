@@ -409,3 +409,12 @@
 "week streak" = "أسبوع متتالٍ";
 "weeks streak" = "أسابيع متتالية";
 "%d films" = "%d أفلام";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "التكلفة/صورة";
+"Cost trend" = "اتجاه التكلفة";
+"Most-used labs" = "المختبرات الأكثر استخدامًا";
+"%d rolls delivered" = "تم تسليم %d أفلام";
+"No data yet" = "لا توجد بيانات بعد";
+"Start shooting and logging your rolls to see insights." = "ابدأ التصوير وتسجيل أفلامك لعرض الإحصائيات.";

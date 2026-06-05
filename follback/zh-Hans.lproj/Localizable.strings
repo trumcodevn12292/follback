@@ -323,3 +323,12 @@
 "week streak" = "周连续";
 "weeks streak" = "周连续";
 "%d films" = "%d 种胶卷";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "成本/张";
+"Cost trend" = "费用趋势";
+"Most-used labs" = "最常用冲印店";
+"%d rolls delivered" = "%d 卷已交付";
+"No data yet" = "暂无数据";
+"Start shooting and logging your rolls to see insights." = "开始拍摄和记录您的胶卷即可查看统计数据。";

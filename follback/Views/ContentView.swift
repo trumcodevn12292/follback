@@ -43,12 +43,19 @@ struct ContentView: View {
                     }
                     .tag(2)
 
-                SettingsView()
+                StatisticsView()
                     .tabItem {
-                        Image(systemName: selectedTab == 3 ? "gearshape.fill" : "gearshape")
-                        Text("Settings")
+                        Image(systemName: selectedTab == 3 ? "chart.bar.fill" : "chart.bar")
+                        Text("Insights")
                     }
                     .tag(3)
+
+                SettingsView()
+                    .tabItem {
+                        Image(systemName: selectedTab == 4 ? "gearshape.fill" : "gearshape")
+                        Text("Settings")
+                    }
+                    .tag(4)
             }
             .tint(Color.filmAccent)
             .opacity(tabAppeared ? 1 : 0)
@@ -69,7 +76,7 @@ struct ContentView: View {
                 showNewRoll = true
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionSettings)) { _ in
-                selectedTab = 3
+                selectedTab = 4
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionRecentRoll)) { notification in
                 selectedTab = 0
@@ -86,6 +93,9 @@ struct ContentView: View {
                 .presentationDragIndicator(.visible)
             }
             .onChange(of: selectedTab) { _, _ in
+                let generator = UIImpactFeedbackGenerator(style: .light)
+                generator.prepare()
+                generator.impactOccurred()
                 updateWidgetData()
             }
             .onChange(of: allRolls.count) { _, _ in

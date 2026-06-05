@@ -573,7 +573,7 @@ struct RollsView: View {
                         onCoverTap: { stock in filmDetailStock = stock }
                     )
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(RollCardButtonStyle())
                 .background(rollFrameReader(for: roll))
                 .opacity(appeared ? 1 : 0)
                 .offset(
@@ -1214,5 +1214,22 @@ struct FlowLayout: Layout {
             x += size.width + spacing
             rowHeight = max(rowHeight, size.height)
         }
+    }
+}
+
+// MARK: - Card press animation
+
+private struct RollCardButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.96 : 1)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+            .onChange(of: configuration.isPressed) { _, pressed in
+                if pressed {
+                    let generator = UIImpactFeedbackGenerator(style: .soft)
+                    generator.prepare()
+                    generator.impactOccurred()
+                }
+            }
     }
 }

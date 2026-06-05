@@ -410,3 +410,12 @@
 "week streak" = "सप्ताह की लय";
 "weeks streak" = "सप्ताह की लय";
 "%d films" = "%d फ़िल्में";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "लागत/फ़ोटो";
+"Cost trend" = "लागत का रुझान";
+"Most-used labs" = "सबसे ज़्यादा इस्तेमाल किए गए लैब";
+"%d rolls delivered" = "%d रोल वितरित";
+"No data yet" = "अभी तक कोई डेटा नहीं";
+"Start shooting and logging your rolls to see insights." = "आँकड़े देखने के लिए शूटिंग शुरू करें और अपने रोल लॉग करें।";

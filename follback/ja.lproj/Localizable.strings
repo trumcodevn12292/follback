@@ -411,3 +411,12 @@
 "week streak" = "週連続";
 "weeks streak" = "週連続";
 "%d films" = "%d 種類のフィルム";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "コスト/枚";
+"Cost trend" = "費用の推移";
+"Most-used labs" = "よく使うラボ";
+"%d rolls delivered" = "%d 本現像済み";
+"No data yet" = "データがありません";
+"Start shooting and logging your rolls to see insights." = "撮影してログを記録すると統計が表示されます。";

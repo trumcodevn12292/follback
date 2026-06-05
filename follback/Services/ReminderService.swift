@@ -92,7 +92,6 @@ final class ReminderManager: ObservableObject {
         for roll in rolls {
             switch roll.rollStatus {
             case .inProgress:
-                // Nudge if a roll has been "in progress" for too long.
                 let base = calendar.date(byAdding: .day, value: staleDays, to: roll.startDate) ?? roll.startDate
                 let fireDate = normalizedFireDate(from: base, hour: hour, now: now, calendar: calendar)
                 addRequest(
@@ -103,7 +102,6 @@ final class ReminderManager: ObservableObject {
                     calendar: calendar
                 )
             case .completed:
-                // Remind to get a finished roll developed.
                 let base = calendar.date(byAdding: .day, value: developDays, to: roll.updatedAt) ?? roll.updatedAt
                 let fireDate = normalizedFireDate(from: base, hour: hour, now: now, calendar: calendar)
                 addRequest(
@@ -117,6 +115,9 @@ final class ReminderManager: ObservableObject {
                 break
             }
         }
+
+        scheduleInactivityReminder(rolls: rolls)
+        checkRollAchievements(rolls: rolls)
     }
 
     /// Returns the fire date at the preferred hour. If the computed time is in the
@@ -154,5 +155,95 @@ final class ReminderManager: ObservableObject {
             let ids = requests.map { $0.identifier }.filter { $0.hasPrefix(self.idPrefix) }
             self.center.removePendingNotificationRequests(withIdentifiers: ids)
         }
+    }
+
+    // MARK: - Rich Notifications
+
+    func scheduleInactivityReminder(rolls: [Roll]) {
+        guard ReminderDefaults.enabled else { return }
+
+        let calendar = Calendar.current
+        var lastActive: Date?
+        for roll in rolls {
+            if lastActive == nil || roll.startDate > lastActive! { lastActive = roll.startDate }
+            for frame in roll.frames ?? [] {
+                guard let d = frame.capturedAt else { continue }
+                if lastActive == nil || d > lastActive! { lastActive = d }
+            }
+        }
+        guard let last = lastActive,
+              let daysIdle = calendar.dateComponents([.day], from: last, to: Date()).day,
+              daysIdle >= 7
+        else { return }
+
+        let fireDate = normalizedFireDate(
+            from: calendar.date(byAdding: .day, value: 1, to: Date()) ?? Date(),
+            hour: ReminderDefaults.hour,
+            now: Date(),
+            calendar: calendar
+        )
+        addRequest(
+            id: "\(idPrefix)inactivity",
+            title: L("Miss the smell of film?"),
+            body: L("It's been %d days since your last shot. Time to load a new roll!", daysIdle),
+            fireDate: fireDate,
+            calendar: calendar
+        )
+    }
+
+    private func lastAchievedKey(_ key: String) -> String { "lastNotified_\(key)" }
+
+    func checkRollAchievements(rolls: [Roll]) {
+        guard ReminderDefaults.enabled else { return }
+        let ud = UserDefaults.standard
+
+        let total = rolls.count
+        let photos = rolls.reduce(0) { $0 + $1.filledFrames }
+        let films = Set(rolls.map(\.filmName).filter { !$0.isEmpty }).count
+
+        let rollGoals = [1, 10, 25, 50, 100]
+        for goal in rollGoals where total >= goal {
+            let key = "rolls_\(goal)"
+            if !ud.bool(forKey: lastAchievedKey(key)) {
+                ud.set(true, forKey: lastAchievedKey(key))
+                let body = total == 1 ? L("You finished your first roll! The journey begins.") : L("You've shot %d rolls! Keep the film flowing.", total)
+                fireAchievement(title: L("Achievement unlocked: %d rolls", goal), body: body)
+            }
+        }
+
+        let photoGoals = [100, 500, 1000, 5000]
+        for goal in photoGoals where photos >= goal {
+            let key = "photos_\(goal)"
+            if !ud.bool(forKey: lastAchievedKey(key)) {
+                ud.set(true, forKey: lastAchievedKey(key))
+                fireAchievement(title: L("Achievement unlocked: %d photos", goal), body: L("You've captured %d photos on film!", photos))
+            }
+        }
+
+        let filmGoals = [5, 15, 30]
+        for goal in filmGoals where films >= goal {
+            let key = "films_\(goal)"
+            if !ud.bool(forKey: lastAchievedKey(key)) {
+                ud.set(true, forKey: lastAchievedKey(key))
+                fireAchievement(title: L("Achievement unlocked: %d films", goal), body: L("You've shot %d different films — nice variety!", films))
+            }
+        }
+    }
+
+    private func fireAchievement(title: String, body: String) {
+        let content = UNMutableNotificationContent()
+        content.title = title
+        content.body = body
+        content.sound = .default
+
+        var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
+        comps.second = comps.second.map { $0 + 2 }
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "\(idPrefix)achievement.\(UUID().uuidString)",
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
     }
 }

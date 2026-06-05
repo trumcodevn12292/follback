@@ -410,3 +410,12 @@
 "week streak" = "semana seguida";
 "weeks streak" = "semanas seguidas";
 "%d films" = "%d películas";
+
+
+/* Added: Insights tab (statistics dashboard) */
+"cost/photo" = "coste/foto";
+"Cost trend" = "Tendencia de gastos";
+"Most-used labs" = "Laboratorios más usados";
+"%d rolls delivered" = "%d carretes revelados";
+"No data yet" = "Sin datos todavía";
+"Start shooting and logging your rolls to see insights." = "Empieza a disparar y registrar tus carretes para ver estadísticas.";
