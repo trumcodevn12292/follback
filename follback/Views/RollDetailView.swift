@@ -36,6 +36,7 @@ struct RollDetailView: View {
     @State private var showEditDetails = false
     @State private var showContactSheet = false
     @State private var showCarouselCreator = false
+    @State private var showArGallery = false
     @State private var filmDetailStock: FilmStock?
     @State private var showImportOptions = false
     @State private var showFileImporter = false
@@ -166,6 +167,9 @@ struct RollDetailView: View {
         }
         .fullScreenCover(isPresented: $showCarouselCreator) {
             SeamlessCarouselView(roll: roll)
+        }
+        .fullScreenCover(isPresented: $showArGallery) {
+            ARGalleryView(roll: roll)
         }
         .fullScreenCover(item: $filmDetailStock) { stock in
             FilmDetailPopup(stock: stock) {
@@ -325,6 +329,7 @@ struct RollDetailView: View {
                 if hasPhotos {
                     Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
                     Button { showCarouselCreator = true } label: { Label("Create Post", systemImage: "square.grid.3x1.below.line.grid.1x2") }
+                    Button { showArGallery = true } label: { Label("AR Gallery", systemImage: "arkit") }
                     Button {
                         withAnimation(.spring(response: 0.3)) { isSelectMode = true }
                     } label: { Label("Select Photos", systemImage: "checkmark.circle") }
