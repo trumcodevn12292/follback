@@ -1240,135 +1240,163 @@ private struct SwipeableRollCard: View {
 
     @State private var swipeOffset: CGFloat = 0
     @State private var isSwiped: Bool = false
+    @State private var isDragging: Bool = false
 
-    private let leadingThreshold: CGFloat = -80
-    private let trailingThreshold: CGFloat = 80
-    private let actionWidth: CGFloat = 72
+    private let snapThreshold: CGFloat = 50
+    private let maxSwipe: CGFloat = 144
 
     var body: some View {
-        ZStack(alignment: .trailing) {
-            // Action buttons behind the card
-            if swipeOffset < -10 {
+        GeometryReader { geo in
+            ZStack(alignment: .leading) {
+                // Right actions (Archive + Delete) — always rendered
                 HStack(spacing: 0) {
-                    Spacer()
+                    Spacer(minLength: 0)
                     actionButton(
                         icon: "archivebox",
                         label: L("Archive"),
                         color: Color.filmTertiary,
-                        action: { actionAndReset { onArchive() } }
+                        size: geo.size.height,
+                        action: onArchive
                     )
                     actionButton(
                         icon: "trash",
                         label: L("Delete"),
                         color: .red,
-                        action: { actionAndReset { onDelete() } }
+                        size: geo.size.height,
+                        action: onDelete
                     )
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
 
-            if swipeOffset > 10 {
+                // Left action (Duplicate) — always rendered
                 HStack(spacing: 0) {
                     actionButton(
                         icon: "plus.square.on.square",
                         label: L("Duplicate"),
                         color: Color(hex: "#C8BAA8"),
-                        action: { actionAndReset { onDuplicate() } }
+                        size: geo.size.height,
+                        action: onDuplicate
                     )
-                    Spacer()
+                    Spacer(minLength: 0)
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-            }
 
-            // Card
-            RollCard(
-                roll: roll,
-                onDelete: onDelete,
-                onArchive: onArchive,
-                onEditDetails: onEditDetails,
-                onCoverTap: onCoverTap
-            )
-            .opacity(appeared ? 1 : 0)
-            .offset(
-                x: swipeOffset + physicsBody.x,
-                y: (appeared ? 0 : 18) + physicsBody.y
-            )
-            .rotationEffect(.degrees(physicsBody.angle))
-            .scaleEffect(appeared ? 1 : 0.97)
-            .animation(
-                .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
-                value: appeared
-            )
-            .highPriorityGesture(
-                DragGesture(minimumDistance: 20)
-                    .onChanged { value in
-                        let translation = value.translation.width
-                        if isSwiped {
-                            swipeOffset = max(translation - trailingThreshold, leadingThreshold)
+                // Card
+                RollCard(
+                    roll: roll,
+                    onDelete: onDelete,
+                    onArchive: onArchive,
+                    onEditDetails: onEditDetails,
+                    onCoverTap: onCoverTap
+                )
+                .offset(x: swipeOffset + physicsBody.x, y: (appeared ? 0 : 18) + physicsBody.y)
+                .rotationEffect(.degrees(physicsBody.angle))
+                .scaleEffect(isDragging ? 0.97 : (appeared ? 1 : 0.97))
+                .shadow(color: .black.opacity(isDragging ? 0.2 : 0), radius: isDragging ? 8 : 0, y: isDragging ? 4 : 0)
+                .animation(.spring(response: 0.3, dampingFraction: 0.75), value: isDragging)
+            }
+        }
+        .frame(height: 160)
+        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .animation(.spring(response: 0.3, dampingFraction: 0.75), value: swipeOffset)
+        .gesture(
+            DragGesture(minimumDistance: 10, coordinateSpace: .local)
+                .onChanged { value in
+                    let rawTranslation = value.translation.width
+                    let current = isSwiped ? rawTranslation - (swipeOffset == 0 ? 0 : swipeOffset) : rawTranslation
+                    isDragging = true
+
+                    let adjusted: CGFloat
+                    if current < 0 {
+                        // Rubber-band trailing (left swipe)
+                        let clamped = max(current, -maxSwipe)
+                        if current < -maxSwipe {
+                            adjusted = -maxSwipe - (max(0, abs(current) - maxSwipe) * 0.15)
                         } else {
-                            swipeOffset = translation
+                            adjusted = clamped
+                        }
+                    } else {
+                        // Rubber-band leading (right swipe)
+                        let clamped = min(current, maxSwipe)
+                        if current > maxSwipe {
+                            adjusted = maxSwipe + (max(0, current - maxSwipe) * 0.15)
+                        } else {
+                            adjusted = clamped
                         }
                     }
-                    .onEnded { value in
-                        let velocity = value.predictedEndTranslation.width - value.translation.width
-                        let threshold: CGFloat = 40
-                        if swipeOffset < -threshold || (swipeOffset < -20 && velocity < -200) {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                swipeOffset = leadingThreshold
-                            }
-                            isSwiped = true
-                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                        } else if swipeOffset > threshold || (swipeOffset > 20 && velocity > 200) {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                swipeOffset = trailingThreshold
-                            }
-                            isSwiped = true
-                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
-                        } else {
-                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                                swipeOffset = 0
-                            }
-                            isSwiped = false
-                        }
+
+                    if isSwiped && abs(adjusted) < snapThreshold * 0.6 {
+                        swipeOffset = adjusted
+                    } else {
+                        let baseline = isSwiped ? (swipeOffset < 0 ? -snapThreshold : snapThreshold) : 0
+                        swipeOffset = baseline + (adjusted - baseline) * 0.85
                     }
-            )
-            .onTapGesture {
-                if isSwiped {
-                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-                        swipeOffset = 0
-                    }
-                    isSwiped = false
-                } else {
-                    onTap()
                 }
+                .onEnded { value in
+                    isDragging = false
+                    let velocity = value.predictedEndTranslation.width - value.translation.width
+
+                    if swipeOffset < -snapThreshold * 0.5 || (swipeOffset < -20 && velocity < -300) {
+                        withAnimation(.interpolatingSpring(mass: 0.7, stiffness: 180, damping: 18)) {
+                            swipeOffset = -snapThreshold
+                        }
+                        if !isSwiped {
+                            isSwiped = true
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        }
+                    } else if swipeOffset > snapThreshold * 0.5 || (swipeOffset > 20 && velocity > 300) {
+                        withAnimation(.interpolatingSpring(mass: 0.7, stiffness: 180, damping: 18)) {
+                            swipeOffset = snapThreshold
+                        }
+                        if !isSwiped {
+                            isSwiped = true
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        }
+                    } else {
+                        withAnimation(.interpolatingSpring(mass: 0.7, stiffness: 200, damping: 20)) {
+                            swipeOffset = 0
+                        }
+                        isSwiped = false
+                    }
+                }
+        )
+        .onTapGesture {
+            if isSwiped {
+                withAnimation(.interpolatingSpring(mass: 0.7, stiffness: 200, damping: 20)) {
+                    swipeOffset = 0
+                }
+                isSwiped = false
+            } else {
+                onTap()
             }
         }
     }
 
-    private func actionButton(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+    private func actionButton(icon: String, label: String, color: Color, size: CGFloat, action: @escaping () -> Void) -> some View {
+        Button(action: {
+            withAnimation(.interpolatingSpring(mass: 0.7, stiffness: 200, damping: 20)) {
+                swipeOffset = 0
+            }
+            isSwiped = false
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            action()
+        }) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 20, weight: .semibold))
                 Text(label)
                     .font(.system(size: 10, weight: .medium))
             }
             .foregroundColor(.white)
-            .frame(width: actionWidth)
+            .frame(width: 72)
             .frame(maxHeight: .infinity)
             .background(color)
         }
         .buttonStyle(.plain)
-    }
-
-    private func actionAndReset(_ action: @escaping () -> Void) {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
-            swipeOffset = 0
-        }
-        isSwiped = false
-        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-        action()
+        .opacity(swipeOffset == 0 ? 0 : 1)
+        .scaleEffect(swipeOffset == 0 ? 0.7 : 1)
+        .animation(.spring(response: 0.25, dampingFraction: 0.7), value: swipeOffset == 0)
     }
 }
