@@ -13,6 +13,7 @@ struct RollsMapView: View {
     @State private var showFrames = false
     @State private var showRollDetail = false
     @State private var showFrameEditor = false
+    @State private var coverImages: [UUID: UIImage] = [:]
 
     private var rollsWithLocation: [Roll] {
         rolls.filter { $0.latitude != nil && $0.longitude != nil }
@@ -39,6 +40,7 @@ struct RollsMapView: View {
                             )
                         ) {
                             annotationBadge(
+                                coverImage: coverImages[roll.id],
                                 label: "#\(frame.number)",
                                 isFrame: true
                             )
@@ -55,6 +57,7 @@ struct RollsMapView: View {
                             )
                         ) {
                             annotationBadge(
+                                coverImage: coverImages[roll.id],
                                 label: roll.filmName,
                                 isFrame: false
                             )
@@ -83,6 +86,7 @@ struct RollsMapView: View {
         .sheet(item: $selectedFrame) { frame in
             frameEditorSheet(frame)
         }
+        .task { await loadCovers() }
     }
 
     private var selectedItem: Binding<MapItem?> {
@@ -119,16 +123,29 @@ struct RollsMapView: View {
 
     // MARK: - Annotation Badge
 
-    private func annotationBadge(label: String, isFrame: Bool) -> some View {
+    private func annotationBadge(coverImage: UIImage?, label: String, isFrame: Bool) -> some View {
         VStack(spacing: 2) {
-            Image(systemName: isFrame ? "circle.fill" : "square.fill")
-                .font(.system(size: isFrame ? 10 : 14))
-                .foregroundColor(isFrame ? Color(hex: "#C8BAA8") : Color(hex: "#C86B28"))
-                .background(
-                    Circle()
-                        .fill(.white)
-                        .frame(width: isFrame ? 18 : 24, height: isFrame ? 18 : 24)
-                )
+            if let cover = coverImage {
+                Image(uiImage: cover)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 36, height: 36)
+                    .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    )
+                    .shadow(color: .black.opacity(0.3), radius: 3)
+            } else {
+                Image(systemName: isFrame ? "circle.fill" : "square.fill")
+                    .font(.system(size: isFrame ? 10 : 14))
+                    .foregroundColor(isFrame ? Color(hex: "#C8BAA8") : Color(hex: "#C86B28"))
+                    .background(
+                        Circle()
+                            .fill(.white)
+                            .frame(width: isFrame ? 18 : 24, height: isFrame ? 18 : 24)
+                    )
+            }
             Text(label)
                 .font(.system(size: 9, weight: .bold, design: .monospaced))
                 .foregroundColor(.white)
@@ -195,6 +212,26 @@ struct RollsMapView: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 8)
         .background(.ultraThinMaterial)
+    }
+
+    // MARK: - Cover Loading
+
+    private func matchingFilmStock(for roll: Roll) -> FilmStock? {
+        FilmStock.allStocks.first { stock in
+            stock.displayName.lowercased() == roll.filmName.lowercased() ||
+            "\(stock.brand) \(stock.name)".lowercased() == roll.filmName.lowercased()
+        }
+    }
+
+    private func loadCovers() async {
+        for roll in rollsWithLocation {
+            guard let stock = matchingFilmStock(for: roll),
+                  let urlString = stock.githubCoverUrl,
+                  let url = URL(string: urlString) else { continue }
+            guard let (data, _) = try? await URLSession.shared.data(from: url),
+                  let img = UIImage(data: data) else { continue }
+            await MainActor.run { coverImages[roll.id] = img }
+        }
     }
 
     // MARK: - Roll Detail Sheet
