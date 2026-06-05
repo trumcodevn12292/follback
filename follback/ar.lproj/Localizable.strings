@@ -418,3 +418,9 @@
 "%d rolls delivered" = "تم تسليم %d أفلام";
 "No data yet" = "لا توجد بيانات بعد";
 "Start shooting and logging your rolls to see insights." = "ابدأ التصوير وتسجيل أفلامك لعرض الإحصائيات.";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "حفظ البطاقة في الصور";
+"Export Card" = "تصدير البطاقة";
+"Save to Photos" = "حفظ في الصور";

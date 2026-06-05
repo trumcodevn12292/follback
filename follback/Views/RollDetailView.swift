@@ -1165,12 +1165,12 @@ struct RollDetailView: View {
             Button {
                 fullScreenFrame = frame
             } label: {
-                Label("View Full Screen", systemImage: "arrow.up.left.and.arrow.down.right")
+                Label(L("View Full Screen"), systemImage: "arrow.up.left.and.arrow.down.right")
             }
             Button {
                 savePhotoToCameraRoll(frame)
             } label: {
-                Label("Save to Photos", systemImage: "square.and.arrow.down")
+                Label(L("Save to Photos"), systemImage: "square.and.arrow.down")
             }
             Button {
                 withAnimation(.spring(response: 0.3)) {
@@ -1178,7 +1178,7 @@ struct RollDetailView: View {
                     selectedFrames.insert(frame.id)
                 }
             } label: {
-                Label("Select", systemImage: "checkmark.circle")
+                Label(L("Select"), systemImage: "checkmark.circle")
             }
         }
     }
@@ -1243,7 +1243,7 @@ struct RollDetailView: View {
         ) { img, _ in
             guard let img else { return }
             UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
-            Task { await MainActor.run { toastMessage = "Saved to Photos"; withAnimation { showToastFlag = true } } }
+                Task { await MainActor.run { toastMessage = L("Saved to Photos"); withAnimation { showToastFlag = true } } }
         }
     }
 
@@ -1765,7 +1765,7 @@ struct FullScreenPhotoView: View {
 
     @State private var currentImage: UIImage?
     @State private var shareImage: UIImage?
-    @State private var showShareOptions = false
+    @State private var showShareMenu = false
     @State private var showSaveToast = false
 
     var body: some View {
@@ -1810,7 +1810,9 @@ struct FullScreenPhotoView: View {
                     }
 
                     Button {
-                        showShareOptions = true
+                        withAnimation(.spring(response: 0.35, dampingFraction: 0.85)) {
+                            showShareMenu.toggle()
+                        }
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 15, weight: .bold))
@@ -1830,23 +1832,24 @@ struct FullScreenPhotoView: View {
             }
         }
         .background(ShareController(image: shareImage, onComplete: { shareImage = nil }))
-        .confirmationDialog("Share Photo Card", isPresented: $showShareOptions) {
-            Button("Save Card to Photos") {
-                saveCardToPhotos()
+        .overlay {
+            if showShareMenu {
+                Color.black.opacity(0.001)
+                    .ignoresSafeArea()
+                    .onTapGesture {
+                        withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                            showShareMenu = false
+                        }
+                    }
+                shareMenu
             }
-            Button("Export Card") {
-                shareCard()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("Export your film-style photo card")
         }
         .overlay(alignment: .top) {
             if showSaveToast {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    Text("Saved to Photos")
+                    Text(L("Saved to Photos"))
                         .font(.system(size: 14, weight: .medium))
                 }
                 .foregroundColor(.white)
@@ -1862,6 +1865,7 @@ struct FullScreenPhotoView: View {
                 }
             }
         }
+        .onDisappear { showShareMenu = false }
         .onAppear {
             if let idx = photoFrames.firstIndex(where: { $0.id == frame.id }) {
                 currentIndex = idx
@@ -1912,23 +1916,100 @@ struct FullScreenPhotoView: View {
         .foregroundColor(.white.opacity(0.9))
     }
 
-    private func renderCard() -> UIImage? {
+    private var shareMenu: some View {
+        VStack(spacing: 0) {
+            shareMenuButton(
+                icon: "square.and.arrow.down",
+                title: L("Save Card to Photos")
+            ) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    showShareMenu = false
+                }
+                Task { await saveCardToPhotos() }
+            }
+            Divider().background(.white.opacity(0.1))
+            shareMenuButton(
+                icon: "square.and.arrow.up",
+                title: L("Export Card")
+            ) {
+                withAnimation(.spring(response: 0.3, dampingFraction: 0.85)) {
+                    showShareMenu = false
+                }
+                Task { await shareCard() }
+            }
+        }
+        .frame(width: 200)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .stroke(.white.opacity(0.1), lineWidth: 0.5)
+        )
+        .shadow(color: .black.opacity(0.3), radius: 20, y: 8)
+        .transition(.move(edge: .top).combined(with: .opacity).combined(with: .scale(scale: 0.92)))
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+        .padding(.trailing, 16)
+        .padding(.top, 52)
+    }
+
+    private func shareMenuButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack(spacing: 10) {
+                Image(systemName: icon)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.white.opacity(0.7))
+                    .frame(width: 20)
+                Text(title)
+                    .font(.system(size: 15, weight: .medium))
+                    .foregroundColor(.white)
+                Spacer()
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 12)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func loadCoverImage() async -> UIImage? {
+        let name = roll.filmName.lowercased()
+        guard let stock = FilmStock.allStocks.first(where: {
+            $0.displayName.lowercased() == name ||
+            "\($0.brand) \($0.name)".lowercased() == name ||
+            $0.name.lowercased() == name
+        }), let urlString = stock.githubCoverUrl, let url = URL(string: urlString)
+        else { return nil }
+        do {
+            let (data, _) = try await URLSession.shared.data(from: url)
+            return UIImage(data: data)
+        } catch {
+            return nil
+        }
+    }
+
+    private func renderCard(cover: UIImage?) -> UIImage? {
         guard let img = currentImage else { return nil }
-        let card = PhotoShareCardView(image: img, frame: photoFrames[currentIndex], roll: roll)
+        let card = PhotoShareCardView(
+            image: img,
+            coverImage: cover,
+            frame: photoFrames[currentIndex],
+            roll: roll
+        )
         let renderer = ImageRenderer(content: card)
         renderer.proposedSize = ProposedViewSize(width: 1080, height: nil)
         renderer.scale = 1
         return renderer.uiImage
     }
 
-    private func saveCardToPhotos() {
-        guard let uiImage = renderCard() else { return }
+    private func saveCardToPhotos() async {
+        let cover = await loadCoverImage()
+        guard let uiImage = renderCard(cover: cover) else { return }
         UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
         withAnimation { showSaveToast = true }
     }
 
-    private func shareCard() {
-        shareImage = renderCard()
+    private func shareCard() async {
+        let cover = await loadCoverImage()
+        shareImage = renderCard(cover: cover)
     }
 
     private func saveRawPhotoToLibrary(_ assetID: String) {
@@ -1964,12 +2045,22 @@ private struct ShareController: UIViewControllerRepresentable {
     }
 
     func updateUIViewController(_ uiViewController: UIViewController, context: Context) {
-        guard let image else { return }
+        guard let image, !context.coordinator.hasPresented else { return }
+        context.coordinator.hasPresented = true
         let avc = UIActivityViewController(activityItems: [image], applicationActivities: nil)
         avc.completionWithItemsHandler = { _, _, _, _ in
+            context.coordinator.hasPresented = false
             onComplete()
         }
         uiViewController.present(avc, animated: true)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
+    class Coordinator {
+        var hasPresented = false
     }
 }
 

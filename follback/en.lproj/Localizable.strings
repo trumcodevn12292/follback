@@ -331,3 +331,9 @@
 "%d rolls delivered" = "%d rolls delivered";
 "No data yet" = "No data yet";
 "Start shooting and logging your rolls to see insights." = "Start shooting and logging your rolls to see insights.";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "Save Card to Photos";
+"Export Card" = "Export Card";
+"Save to Photos" = "Save to Photos";

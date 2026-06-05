@@ -420,3 +420,9 @@
 "%d rolls delivered" = "%d 本現像済み";
 "No data yet" = "データがありません";
 "Start shooting and logging your rolls to see insights." = "撮影してログを記録すると統計が表示されます。";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "カードを写真に保存";
+"Export Card" = "カードをエクスポート";
+"Save to Photos" = "写真に保存";

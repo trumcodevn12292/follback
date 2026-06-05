@@ -419,3 +419,9 @@
 "%d rolls delivered" = "%d carretes revelados";
 "No data yet" = "Sin datos todavía";
 "Start shooting and logging your rolls to see insights." = "Empieza a disparar y registrar tus carretes para ver estadísticas.";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "Guardar tarjeta en fotos";
+"Export Card" = "Exportar tarjeta";
+"Save to Photos" = "Guardar en fotos";

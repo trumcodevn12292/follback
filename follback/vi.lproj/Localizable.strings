@@ -419,3 +419,9 @@
 "%d rolls delivered" = "%d cuộn đã giao";
 "No data yet" = "Chưa có dữ liệu";
 "Start shooting and logging your rolls to see insights." = "Bắt đầu chụp và ghi lại các cuộn phim để xem thống kê.";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "Lưu thẻ vào ảnh";
+"Export Card" = "Xuất thẻ";
+"Save to Photos" = "Lưu vào ảnh";

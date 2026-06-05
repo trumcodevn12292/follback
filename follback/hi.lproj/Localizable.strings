@@ -419,3 +419,9 @@
 "%d rolls delivered" = "%d रोल वितरित";
 "No data yet" = "अभी तक कोई डेटा नहीं";
 "Start shooting and logging your rolls to see insights." = "आँकड़े देखने के लिए शूटिंग शुरू करें और अपने रोल लॉग करें।";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "कार्ड को फ़ोटो में सहेजें";
+"Export Card" = "कार्ड निर्यात करें";
+"Save to Photos" = "फ़ोटो में सहेजें";

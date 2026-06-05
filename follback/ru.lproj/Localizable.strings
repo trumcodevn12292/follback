@@ -421,3 +421,9 @@
 "%d rolls delivered" = "%d плёнок проявлено";
 "No data yet" = "Нет данных";
 "Start shooting and logging your rolls to see insights." = "Начните снимать и записывать свои плёнки, чтобы увидеть статистику.";
+
+
+/* Added: Photo share card */
+"Save Card to Photos" = "Сохранить карточку в фото";
+"Export Card" = "Экспортировать карточку";
+"Save to Photos" = "Сохранить в фото";
