@@ -1168,6 +1168,11 @@ struct RollDetailView: View {
                 Label("View Full Screen", systemImage: "arrow.up.left.and.arrow.down.right")
             }
             Button {
+                savePhotoToCameraRoll(frame)
+            } label: {
+                Label("Save to Photos", systemImage: "square.and.arrow.down")
+            }
+            Button {
                 withAnimation(.spring(response: 0.3)) {
                     isSelectMode = true
                     selectedFrames.insert(frame.id)
@@ -1215,6 +1220,31 @@ struct RollDetailView: View {
             selectedFrames.removeAll()
         }
         UINotificationFeedbackGenerator().notificationOccurred(.success)
+    }
+
+    private func savePhotoToCameraRoll(_ frame: Frame) {
+        guard let assetID = frame.photoAssetID else { return }
+        if !assetID.contains("/") {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(assetID)
+            if let img = UIImage(contentsOfFile: url.path) {
+                UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
+                Task { await showToast("Saved to Photos") }
+            }
+            return
+        }
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
+        guard let asset = result.firstObject else { return }
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: PHImageManagerMaximumSize,
+            contentMode: .aspectFit,
+            options: nil
+        ) { img, _ in
+            guard let img else { return }
+            UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
+            Task { await MainActor.run { toastMessage = "Saved to Photos"; withAnimation { showToastFlag = true } } }
+        }
     }
 
     // MARK: - Lab Picker Sheet
@@ -1735,6 +1765,8 @@ struct FullScreenPhotoView: View {
 
     @State private var currentImage: UIImage?
     @State private var shareImage: UIImage?
+    @State private var showShareOptions = false
+    @State private var showSaveToast = false
 
     var body: some View {
         ZStack {
@@ -1778,7 +1810,7 @@ struct FullScreenPhotoView: View {
                     }
 
                     Button {
-                        shareCurrentPhoto()
+                        showShareOptions = true
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                             .font(.system(size: 15, weight: .bold))
@@ -1798,6 +1830,38 @@ struct FullScreenPhotoView: View {
             }
         }
         .background(ShareController(image: shareImage, onComplete: { shareImage = nil }))
+        .confirmationDialog("Share Photo Card", isPresented: $showShareOptions) {
+            Button("Save Card to Photos") {
+                saveCardToPhotos()
+            }
+            Button("Export Card") {
+                shareCard()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Export your film-style photo card")
+        }
+        .overlay(alignment: .top) {
+            if showSaveToast {
+                HStack(spacing: 8) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("Saved to Photos")
+                        .font(.system(size: 14, weight: .medium))
+                }
+                .foregroundColor(.white)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                .background(Capsule().fill(.ultraThinMaterial))
+                .padding(.top, 60)
+                .transition(.move(edge: .top).combined(with: .opacity))
+                .onAppear {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        withAnimation { showSaveToast = false }
+                    }
+                }
+            }
+        }
         .onAppear {
             if let idx = photoFrames.firstIndex(where: { $0.id == frame.id }) {
                 currentIndex = idx
@@ -1848,13 +1912,45 @@ struct FullScreenPhotoView: View {
         .foregroundColor(.white.opacity(0.9))
     }
 
-    private func shareCurrentPhoto() {
-        guard let img = currentImage else { return }
+    private func renderCard() -> UIImage? {
+        guard let img = currentImage else { return nil }
         let card = PhotoShareCardView(image: img, frame: photoFrames[currentIndex], roll: roll)
         let renderer = ImageRenderer(content: card)
         renderer.proposedSize = ProposedViewSize(width: 1080, height: nil)
         renderer.scale = 1
-        shareImage = renderer.uiImage
+        return renderer.uiImage
+    }
+
+    private func saveCardToPhotos() {
+        guard let uiImage = renderCard() else { return }
+        UIImageWriteToSavedPhotosAlbum(uiImage, nil, nil, nil)
+        withAnimation { showSaveToast = true }
+    }
+
+    private func shareCard() {
+        shareImage = renderCard()
+    }
+
+    private func saveRawPhotoToLibrary(_ assetID: String) {
+        if !assetID.contains("/") {
+            let url = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+                .appendingPathComponent(assetID)
+            if let img = UIImage(contentsOfFile: url.path) {
+                UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
+            }
+            return
+        }
+        let result = PHAsset.fetchAssets(withLocalIdentifiers: [assetID], options: nil)
+        guard let asset = result.firstObject else { return }
+        PHImageManager.default().requestImage(
+            for: asset,
+            targetSize: PHImageManagerMaximumSize,
+            contentMode: .aspectFit,
+            options: nil
+        ) { img, _ in
+            guard let img else { return }
+            UIImageWriteToSavedPhotosAlbum(img, nil, nil, nil)
+        }
     }
 }
 

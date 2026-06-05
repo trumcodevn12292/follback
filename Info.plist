@@ -33,6 +33,8 @@
 	<true/>
 	<key>NSSupportsLiveActivitiesFrequentUpdates</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>FilmVault needs permission to save photos to your library.</string>
 
 </dict>
 </plist>
