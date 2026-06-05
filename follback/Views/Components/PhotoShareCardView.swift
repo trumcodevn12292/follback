@@ -19,22 +19,6 @@ struct PhotoShareCardView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                 .shadow(color: .black.opacity(0.5), radius: 24, y: 10)
                 .padding(.top, pad)
-                .overlay(alignment: .topTrailing) {
-                    if let cover = coverImage {
-                        Image(uiImage: cover)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 64, height: 64)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                    .stroke(Color.white.opacity(0.15), lineWidth: 1)
-                            )
-                            .shadow(color: .black.opacity(0.3), radius: 8, y: 4)
-                            .padding(.trailing, pad + 12)
-                            .padding(.top, pad + 12)
-                    }
-                }
 
             Spacer(minLength: 0)
 
@@ -44,6 +28,18 @@ struct PhotoShareCardView: View {
                     .padding(.bottom, 28)
 
                 HStack(spacing: 16) {
+                    if let cover = coverImage {
+                        Image(uiImage: cover)
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: 60, height: 60)
+                            .clipShape(RoundedRectangle(cornerRadius: 11, style: .continuous))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 11, style: .continuous)
+                                    .stroke(Color.white.opacity(0.1), lineWidth: 0.5)
+                            )
+                    }
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(roll.filmName)
                             .font(.system(size: 36, weight: .bold, design: .rounded))
@@ -55,7 +51,6 @@ struct PhotoShareCardView: View {
                                 .foregroundColor(.white.opacity(0.45))
                         }
                     }
-
                 }
 
                 HStack(spacing: 10) {
