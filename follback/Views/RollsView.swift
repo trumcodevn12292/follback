@@ -580,49 +580,23 @@ struct RollsView: View {
     private var rollList: some View {
         LazyVStack(spacing: 12) {
             ForEach(Array(filteredRolls.enumerated()), id: \.element.id) { index, roll in
-                NavigationLink(value: roll) {
-                    RollCard(
-                        roll: roll,
-                        onDelete: { deleteRoll(roll) },
-                        onArchive: { archiveRoll(roll) },
-                        onEditDetails: { editingRoll = roll },
-                        onCoverTap: { stock in filmDetailStock = stock }
-                    )
-                }
-                .buttonStyle(RollCardButtonStyle())
+                SwipeableRollCard(
+                    roll: roll,
+                    index: index,
+                    appeared: appeared,
+                    physicsBody: (
+                        physics.bodies[roll.id]?.x ?? 0,
+                        physics.bodies[roll.id]?.y ?? 0,
+                        physics.bodies[roll.id]?.angle ?? 0
+                    ),
+                    onTap: { navPath.append(roll) },
+                    onDelete: { deleteRoll(roll) },
+                    onArchive: { archiveRoll(roll) },
+                    onDuplicate: { duplicateRoll(roll) },
+                    onEditDetails: { editingRoll = roll },
+                    onCoverTap: { stock in filmDetailStock = stock }
+                )
                 .background(rollFrameReader(for: roll))
-                .opacity(appeared ? 1 : 0)
-                .offset(
-                    x: physics.bodies[roll.id]?.x ?? 0,
-                    y: (appeared ? 0 : 18) + (physics.bodies[roll.id]?.y ?? 0)
-                )
-                .rotationEffect(.degrees(physics.bodies[roll.id]?.angle ?? 0))
-                .scaleEffect(appeared ? 1 : 0.97)
-                .animation(
-                    .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
-                    value: appeared
-                )
-                .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                    Button(role: .destructive) {
-                        deleteRoll(roll)
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
-                    Button {
-                        archiveRoll(roll)
-                    } label: {
-                        Label("Archive", systemImage: "archivebox")
-                    }
-                    .tint(Color.filmTertiary)
-                }
-                .swipeActions(edge: .leading, allowsFullSwipe: false) {
-                    Button {
-                        duplicateRoll(roll)
-                    } label: {
-                        Label("Duplicate", systemImage: "plus.square.on.square")
-                    }
-                    .tint(Color.filmAccent)
-                }
             }
         }
         .padding(.horizontal, 16)
@@ -1247,5 +1221,154 @@ private struct RollCardButtonStyle: ButtonStyle {
                     generator.impactOccurred()
                 }
             }
+    }
+}
+
+// MARK: - Swipeable Roll Card
+
+private struct SwipeableRollCard: View {
+    let roll: Roll
+    let index: Int
+    let appeared: Bool
+    let physicsBody: (x: CGFloat, y: CGFloat, angle: CGFloat)
+    let onTap: () -> Void
+    let onDelete: () -> Void
+    let onArchive: () -> Void
+    let onDuplicate: () -> Void
+    let onEditDetails: () -> Void
+    let onCoverTap: (FilmStock) -> Void
+
+    @State private var swipeOffset: CGFloat = 0
+    @State private var isSwiped: Bool = false
+
+    private let leadingThreshold: CGFloat = -80
+    private let trailingThreshold: CGFloat = 80
+    private let actionWidth: CGFloat = 72
+
+    var body: some View {
+        ZStack(alignment: .trailing) {
+            // Action buttons behind the card
+            if swipeOffset < -10 {
+                HStack(spacing: 0) {
+                    Spacer()
+                    actionButton(
+                        icon: "archivebox",
+                        label: L("Archive"),
+                        color: Color.filmTertiary,
+                        action: { actionAndReset { onArchive() } }
+                    )
+                    actionButton(
+                        icon: "trash",
+                        label: L("Delete"),
+                        color: .red,
+                        action: { actionAndReset { onDelete() } }
+                    )
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            if swipeOffset > 10 {
+                HStack(spacing: 0) {
+                    actionButton(
+                        icon: "plus.square.on.square",
+                        label: L("Duplicate"),
+                        color: Color(hex: "#C8BAA8"),
+                        action: { actionAndReset { onDuplicate() } }
+                    )
+                    Spacer()
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+            }
+
+            // Card
+            RollCard(
+                roll: roll,
+                onDelete: onDelete,
+                onArchive: onArchive,
+                onEditDetails: onEditDetails,
+                onCoverTap: onCoverTap
+            )
+            .opacity(appeared ? 1 : 0)
+            .offset(
+                x: swipeOffset + physicsBody.x,
+                y: (appeared ? 0 : 18) + physicsBody.y
+            )
+            .rotationEffect(.degrees(physicsBody.angle))
+            .scaleEffect(appeared ? 1 : 0.97)
+            .animation(
+                .spring(response: 0.5, dampingFraction: 0.82).delay(Double(index) * 0.05),
+                value: appeared
+            )
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 20)
+                    .onChanged { value in
+                        let translation = value.translation.width
+                        if isSwiped {
+                            swipeOffset = max(translation - trailingThreshold, leadingThreshold)
+                        } else {
+                            swipeOffset = translation
+                        }
+                    }
+                    .onEnded { value in
+                        let velocity = value.predictedEndTranslation.width - value.translation.width
+                        let threshold: CGFloat = 40
+                        if swipeOffset < -threshold || (swipeOffset < -20 && velocity < -200) {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                swipeOffset = leadingThreshold
+                            }
+                            isSwiped = true
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        } else if swipeOffset > threshold || (swipeOffset > 20 && velocity > 200) {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                swipeOffset = trailingThreshold
+                            }
+                            isSwiped = true
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        } else {
+                            withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                                swipeOffset = 0
+                            }
+                            isSwiped = false
+                        }
+                    }
+            )
+            .onTapGesture {
+                if isSwiped {
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+                        swipeOffset = 0
+                    }
+                    isSwiped = false
+                } else {
+                    onTap()
+                }
+            }
+        }
+    }
+
+    private func actionButton(icon: String, label: String, color: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            VStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 18, weight: .semibold))
+                Text(label)
+                    .font(.system(size: 10, weight: .medium))
+            }
+            .foregroundColor(.white)
+            .frame(width: actionWidth)
+            .frame(maxHeight: .infinity)
+            .background(color)
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func actionAndReset(_ action: @escaping () -> Void) {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.8)) {
+            swipeOffset = 0
+        }
+        isSwiped = false
+        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+        action()
     }
 }
