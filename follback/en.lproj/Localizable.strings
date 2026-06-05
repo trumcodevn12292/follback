@@ -337,3 +337,9 @@
 "Save Card to Photos" = "Save Card to Photos";
 "Export Card" = "Export Card";
 "Save to Photos" = "Save to Photos";
+
+/* Added: AR Gallery */
+"AR Gallery" = "AR Gallery";
+"View in AR" = "View in AR";
+"Tap a photo to place it in AR" = "Tap a photo to place it in AR";
+"selected" = "selected";

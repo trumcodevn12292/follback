@@ -427,3 +427,9 @@
 "Save Card to Photos" = "Сохранить карточку в фото";
 "Export Card" = "Экспортировать карточку";
 "Save to Photos" = "Сохранить в фото";
+
+/* Added: AR Gallery */
+"AR Gallery" = "AR-галерея";
+"View in AR" = "Просмотр в AR";
+"Tap a photo to place it in AR" = "Нажмите на фото, чтобы разместить его в AR";
+"selected" = "выбрано";

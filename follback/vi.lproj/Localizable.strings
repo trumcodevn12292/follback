@@ -425,3 +425,9 @@
 "Save Card to Photos" = "Lưu thẻ vào ảnh";
 "Export Card" = "Xuất thẻ";
 "Save to Photos" = "Lưu vào ảnh";
+
+/* Added: AR Gallery */
+"AR Gallery" = "Thư viện AR";
+"View in AR" = "Xem trong AR";
+"Tap a photo to place it in AR" = "Chạm vào ảnh để đặt trong không gian AR";
+"selected" = "đã chọn";

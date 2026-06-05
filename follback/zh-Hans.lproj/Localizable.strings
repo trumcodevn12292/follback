@@ -338,3 +338,9 @@
 "Save Card to Photos" = "保存卡片到相册";
 "Export Card" = "导出卡片";
 "Save to Photos" = "保存到相册";
+
+/* Added: AR Gallery */
+"AR Gallery" = "AR 画廊";
+"View in AR" = "在AR中查看";
+"Tap a photo to place it in AR" = "点击照片即可在AR空间中放置";
+"selected" = "已选择";

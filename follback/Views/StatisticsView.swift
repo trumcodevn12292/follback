@@ -124,12 +124,15 @@ struct StatisticsView: View {
 
     private var monthlyCostData: [String: Double] {
         let calendar = Calendar.current
+        let fmt = DateFormatter()
+        fmt.locale = appLocale()
+        let months = fmt.shortMonthSymbols ?? []
         let grouped = Dictionary(grouping: rolls.filter { $0.hasCost }) { roll -> String in
             let comps = calendar.dateComponents([.year, .month], from: roll.startDate)
             let month = comps.month ?? 1
             let year = comps.year ?? 2024
-            let months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"]
-            return "\(months[month-1]) \(year)"
+            let m = month > 0 && month <= months.count ? months[month - 1] : "\(month)"
+            return "\(m) \(year)"
         }
         return grouped.mapValues { $0.compactMap(\.totalCost).reduce(0, +) }
     }

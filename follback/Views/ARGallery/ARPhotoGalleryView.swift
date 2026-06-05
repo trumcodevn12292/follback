@@ -65,7 +65,7 @@ struct ARPhotoGalleryView: View {
                 // Bottom strip
                 VStack(spacing: 8) {
                     if showHelp && !images.isEmpty {
-                        Text("Tap a photo to place it in AR")
+                        Text(L("Tap a photo to place it in AR"))
                             .font(.system(size: 11, weight: .medium))
                             .foregroundColor(.white.opacity(0.6))
                             .padding(.horizontal, 12)

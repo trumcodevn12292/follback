@@ -424,3 +424,9 @@
 "Save Card to Photos" = "حفظ البطاقة في الصور";
 "Export Card" = "تصدير البطاقة";
 "Save to Photos" = "حفظ في الصور";
+
+/* Added: AR Gallery */
+"AR Gallery" = "معرض AR";
+"View in AR" = "عرض في AR";
+"Tap a photo to place it in AR" = "اضغط على صورة لوضعها في AR";
+"selected" = "محددة";

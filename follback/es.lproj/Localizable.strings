@@ -425,3 +425,9 @@
 "Save Card to Photos" = "Guardar tarjeta en fotos";
 "Export Card" = "Exportar tarjeta";
 "Save to Photos" = "Guardar en fotos";
+
+/* Added: AR Gallery */
+"AR Gallery" = "Galería AR";
+"View in AR" = "Ver en RA";
+"Tap a photo to place it in AR" = "Toca una foto para colocarla en RA";
+"selected" = "seleccionadas";

@@ -426,3 +426,9 @@
 "Save Card to Photos" = "カードを写真に保存";
 "Export Card" = "カードをエクスポート";
 "Save to Photos" = "写真に保存";
+
+/* Added: AR Gallery */
+"AR Gallery" = "ARギャラリー";
+"View in AR" = "ARで表示";
+"Tap a photo to place it in AR" = "写真をタップしてAR空間に配置";
+"selected" = "選択済み";

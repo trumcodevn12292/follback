@@ -40,7 +40,7 @@ struct ARGalleryView: View {
                             .background(Color(hex: "#C8BAA8").opacity(0.2))
 
                         HStack(spacing: 12) {
-                            Text("\(selectedFrames.count) selected")
+                            Text("\(selectedFrames.count) \(L("selected"))")
                                 .font(.system(size: 14, weight: .medium))
                                 .foregroundColor(Color(hex: "#9A8E7E"))
 
@@ -53,7 +53,7 @@ struct ARGalleryView: View {
                                 HStack(spacing: 8) {
                                     Image(systemName: "arkit")
                                         .font(.system(size: 16))
-                                    Text("View in AR")
+                                    Text(L("View in AR"))
                                         .font(.system(size: 14, weight: .semibold))
                                     if !selectedFrames.isEmpty {
                                         Text("(\(selectedFrames.count))")
@@ -77,7 +77,7 @@ struct ARGalleryView: View {
                     }
                 }
             }
-            .navigationTitle("AR Gallery")
+            .navigationTitle(L("AR Gallery"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

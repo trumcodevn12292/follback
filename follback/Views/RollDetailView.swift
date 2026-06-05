@@ -329,7 +329,7 @@ struct RollDetailView: View {
                 if hasPhotos {
                     Button { showContactSheet = true } label: { Label("Contact Sheet", systemImage: "film") }
                     Button { showCarouselCreator = true } label: { Label("Create Post", systemImage: "square.grid.3x1.below.line.grid.1x2") }
-                    Button { showArGallery = true } label: { Label("AR Gallery", systemImage: "arkit") }
+                    Button { showArGallery = true } label: { Label(L("AR Gallery"), systemImage: "arkit") }
                     Button {
                         withAnimation(.spring(response: 0.3)) { isSelectMode = true }
                     } label: { Label("Select Photos", systemImage: "checkmark.circle") }

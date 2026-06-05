@@ -425,3 +425,9 @@
 "Save Card to Photos" = "कार्ड को फ़ोटो में सहेजें";
 "Export Card" = "कार्ड निर्यात करें";
 "Save to Photos" = "फ़ोटो में सहेजें";
+
+/* Added: AR Gallery */
+"AR Gallery" = "एआर गैलरी";
+"View in AR" = "एआर में देखें";
+"Tap a photo to place it in AR" = "एआर में रखने के लिए फोटो पर टैप करें";
+"selected" = "चयनित";
