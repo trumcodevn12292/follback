@@ -1852,7 +1852,7 @@ struct FullScreenPhotoView: View {
         guard let img = currentImage else { return }
         let card = PhotoShareCardView(image: img, frame: photoFrames[currentIndex], roll: roll)
         let renderer = ImageRenderer(content: card)
-        renderer.proposedSize = ProposedViewSize(width: 1080, height: 1350)
+        renderer.proposedSize = ProposedViewSize(width: 1080, height: nil)
         renderer.scale = 1
         shareImage = renderer.uiImage
     }

@@ -5,72 +5,82 @@ struct PhotoShareCardView: View {
     let frame: Frame
     let roll: Roll
 
+    private let cardWidth: CGFloat = 1080
+    private let horizontalPadding: CGFloat = 48
+
+    private var photoWidth: CGFloat { cardWidth - horizontalPadding * 2 }
+
     var body: some View {
-        ZStack(alignment: .bottom) {
+        VStack(spacing: 0) {
             Image(uiImage: image)
                 .resizable()
-                .aspectRatio(contentMode: .fill)
-                .frame(width: 1080, height: 1350)
-                .clipped()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: photoWidth)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(.top, 48)
 
-            LinearGradient(
-                gradient: Gradient(colors: [
-                    .clear,
-                    .black.opacity(0.3),
-                    .black.opacity(0.7)
-                ]),
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 540)
+            Spacer(minLength: 0)
 
-            VStack(alignment: .leading, spacing: 8) {
-                Text(roll.filmName)
-                    .font(.system(size: 42, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-
-                if let camera = roll.camera {
-                    Text(camera.displayNameWithLens)
-                        .font(.system(size: 24, weight: .medium))
-                        .foregroundColor(.white.opacity(0.9))
-                }
-
-                HStack(spacing: 16) {
-                    if let ap = frame.apertureDisplay {
-                        settingsTag(ap)
-                    }
-                    if let ss = frame.shutterDisplay {
-                        settingsTag(ss)
-                    }
-                    if roll.iso > 0 {
-                        settingsTag("ISO \(roll.iso)")
-                    }
-                }
-                .font(.system(size: 18, weight: .semibold, design: .monospaced))
-
-                HStack(spacing: 12) {
-                    Text("#\(frame.number)")
-                        .font(.system(size: 18, weight: .bold, design: .rounded))
-                    if let date = frame.capturedAt {
-                        Text(date.formatted(date: .abbreviated, time: .omitted))
-                            .font(.system(size: 16, weight: .regular))
-                    }
-                }
-                .foregroundColor(.white.opacity(0.8))
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, 40)
-            .padding(.bottom, 48)
+            infoSection
+                .padding(.horizontal, horizontalPadding)
+                .padding(.bottom, 48)
         }
-        .frame(width: 1080, height: 1350)
-        .background(Color.black)
+        .frame(width: cardWidth)
+        .background(Color(red: 0.08, green: 0.08, blue: 0.09))
     }
 
-    private func settingsTag(_ text: String) -> some View {
+    private var infoSection: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Divider()
+                .background(Color.white.opacity(0.12))
+                .padding(.bottom, 28)
+
+            Text(roll.filmName)
+                .font(.system(size: 34, weight: .bold, design: .rounded))
+                .foregroundColor(.white)
+
+            if let camera = roll.camera {
+                Text(camera.displayNameWithLens)
+                    .font(.system(size: 18, weight: .regular))
+                    .foregroundColor(.white.opacity(0.55))
+                    .padding(.top, 4)
+            }
+
+            HStack(spacing: 12) {
+                if let ap = frame.apertureDisplay {
+                    tag(ap)
+                }
+                if let ss = frame.shutterDisplay {
+                    tag(ss)
+                }
+                if roll.iso > 0 {
+                    tag("ISO \(roll.iso)")
+                }
+            }
+            .font(.system(size: 15, weight: .semibold, design: .monospaced))
+            .padding(.top, 20)
+
+            HStack(spacing: 12) {
+                Text("#\(frame.number)")
+                    .fontWeight(.semibold)
+                if let date = frame.capturedAt {
+                    Text(date.formatted(date: .abbreviated, time: .omitted))
+                }
+            }
+            .font(.system(size: 14, weight: .regular, design: .rounded))
+            .foregroundColor(.white.opacity(0.45))
+            .padding(.top, 8)
+        }
+    }
+
+    private func tag(_ text: String) -> some View {
         Text(text)
-            .foregroundColor(.white)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 6)
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .foregroundColor(.white.opacity(0.85))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 5)
+            .background(
+                RoundedRectangle(cornerRadius: 6, style: .continuous)
+                    .fill(Color.white.opacity(0.08))
+            )
     }
 }
