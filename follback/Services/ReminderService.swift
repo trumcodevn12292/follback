@@ -230,6 +230,23 @@ final class ReminderManager: ObservableObject {
         }
     }
 
+    func sendTestNotification() {
+        let content = UNMutableNotificationContent()
+        content.title = "FilmVault Test"
+        content.body = "If you see this, notifications are working!"
+        content.sound = .default
+
+        var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
+        comps.second = comps.second.map { $0 + 3 }
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "\(idPrefix)test.\(UUID().uuidString)",
+            content: content,
+            trigger: trigger
+        )
+        center.add(request)
+    }
+
     private func fireAchievement(title: String, body: String) {
         let content = UNMutableNotificationContent()
         content.title = title

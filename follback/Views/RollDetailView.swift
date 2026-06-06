@@ -1398,10 +1398,13 @@ struct RollDetailView: View {
     }
 
     // MARK: - Camera Picker Sheet
+    @State private var showAddCameraInPicker = false
+
     private var cameraPickerSheet: some View {
         NavigationStack {
             ScrollView(showsIndicators: false) {
                 LazyVStack(alignment: .leading, spacing: 0) {
+                    // No Camera option
                     Button {
                         roll.camera = nil
                         roll.updatedAt = Date()
@@ -1426,12 +1429,35 @@ struct RollDetailView: View {
                         .padding(.horizontal, 16)
 
                     if allCameras.isEmpty {
-                        Text("No cameras yet. Add cameras from the Cameras tab.")
-                            .font(.system(size: 13))
-                            .foregroundColor(Color.filmTertiary)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 20)
+                        // Empty state with Add Camera button
+                        VStack(spacing: 12) {
+                            Text("No cameras yet")
+                                .font(.system(size: 13))
+                                .foregroundColor(Color.filmTertiary)
+
+                            Button {
+                                showAddCameraInPicker = true
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "plus.circle.fill")
+                                        .font(.system(size: 14))
+                                    Text("Add Camera")
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                                .foregroundColor(Color.filmAccent)
+                                .padding(.horizontal, 16)
+                                .padding(.vertical, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .stroke(Color.filmAccent.opacity(0.4), lineWidth: 1)
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 20)
+                        .frame(maxWidth: .infinity)
                     } else {
+                        // Camera list
                         ForEach(allCameras) { camera in
                             Button {
                                 roll.camera = camera
@@ -1461,6 +1487,22 @@ struct RollDetailView: View {
                             Divider().background(Color.filmBorder.opacity(0.2))
                                 .padding(.horizontal, 16)
                         }
+
+                        // Add Camera button at bottom
+                        Button {
+                            showAddCameraInPicker = true
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.system(size: 14))
+                                Text("Add Camera")
+                                    .font(.system(size: 14, weight: .medium))
+                            }
+                            .foregroundColor(Color.filmAccent)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -1470,6 +1512,11 @@ struct RollDetailView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { showCameraPicker = false }
+                }
+            }
+            .sheet(isPresented: $showAddCameraInPicker) {
+                NavigationStack {
+                    AddCameraView()
                 }
             }
         }

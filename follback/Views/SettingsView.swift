@@ -787,6 +787,31 @@ struct SettingsView: View {
                         }
                     }
                     .padding(16)
+
+                    if remindersEnabled {
+                        Divider().background(Color.filmBorder.opacity(0.3))
+                            .padding(.horizontal, 16)
+                        Button {
+                            Task {
+                                let granted = await reminderManager.requestAuthorization()
+                                if granted {
+                                    reminderManager.sendTestNotification()
+                                }
+                            }
+                        } label: {
+                            HStack {
+                                Image(systemName: "bell.badge.fill")
+                                    .font(.system(size: 13))
+                                    .foregroundColor(Color.filmAccent)
+                                Text("Send Test Notification")
+                                    .font(.system(size: 14, weight: .medium))
+                                    .foregroundColor(Color.filmAccent)
+                                Spacer()
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                        }
+                    }
                 }
             }
             .background(
