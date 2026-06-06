@@ -26,6 +26,17 @@ func WL(_ key: String, _ args: CVarArg...) -> String {
     String(format: WL(key), arguments: args)
 }
 
+// MARK: - Adaptive Colors
+
+extension Color {
+    /// Resolves to `dark` in dark mode, `light` in light mode.
+    static func adaptive(dark: Color, light: Color) -> Color {
+        Color(UIColor { traits in
+            UIColor(traits.userInterfaceStyle == .dark ? dark : light)
+        })
+    }
+}
+
 // MARK: - Shared Data Model
 
 struct FilmVaultWidgetData: Codable {
@@ -262,12 +273,22 @@ struct FilmVaultWidgetEntryView: View {
 
     // MARK: - Shared pieces
 
+    @Environment(\.colorScheme) var colorScheme
+
     private var background: some View {
-        LinearGradient(
-            colors: [Color(red: 0.09, green: 0.09, blue: 0.12), Color(red: 0.03, green: 0.03, blue: 0.05)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        if colorScheme == .dark {
+            LinearGradient(
+                colors: [Color(red: 0.09, green: 0.09, blue: 0.12), Color(red: 0.03, green: 0.03, blue: 0.05)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        } else {
+            LinearGradient(
+                colors: [Color(red: 0.95, green: 0.95, blue: 0.97), Color(red: 0.92, green: 0.92, blue: 0.95)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        }
     }
 
     private func headerBar(small: Bool = false) -> some View {
@@ -279,12 +300,12 @@ struct FilmVaultWidgetEntryView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
             Text("FilmVault")
                 .font(.system(size: small ? 12 : 13, weight: .heavy, design: .rounded))
-                .foregroundColor(.white.opacity(0.92))
+                .foregroundColor(.primary.opacity(0.92))
             Spacer()
             Button(intent: RefreshWidgetIntent()) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: small ? 10 : 11, weight: .bold))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.primary.opacity(0.45))
             }
             .buttonStyle(.plain)
         }
@@ -310,13 +331,13 @@ struct FilmVaultWidgetEntryView: View {
             }
         }
         .font(.system(size: size))
-        .foregroundColor(.white.opacity(0.5))
+        .foregroundColor(.primary.opacity(0.5))
         .lineLimit(1)
     }
 
     private func progressRing(_ roll: WidgetRollItem, size: CGFloat, line: CGFloat = 3) -> some View {
         ZStack {
-            Circle().stroke(Color.white.opacity(0.1), lineWidth: line)
+            Circle().stroke(Color.primary.opacity(0.1), lineWidth: line)
             Circle()
                 .trim(from: 0, to: CGFloat(roll.progress))
                 .stroke(statusColor(roll.status), style: StrokeStyle(lineWidth: line, lineCap: .round))
@@ -324,11 +345,11 @@ struct FilmVaultWidgetEntryView: View {
             VStack(spacing: 0) {
                 Text("\(roll.photoCount)")
                     .font(.system(size: size * 0.30, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
-                Rectangle().fill(Color.white.opacity(0.25)).frame(width: size * 0.26, height: 1)
+                    .foregroundColor(.primary)
+                Rectangle().fill(Color.primary.opacity(0.25)).frame(width: size * 0.26, height: 1)
                 Text("\(roll.capacity)")
                     .font(.system(size: size * 0.22, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.primary.opacity(0.5))
             }
         }
         .frame(width: size, height: size)
@@ -337,7 +358,7 @@ struct FilmVaultWidgetEntryView: View {
     private func progressBar(_ roll: WidgetRollItem, height: CGFloat = 5) -> some View {
         GeometryReader { geo in
             ZStack(alignment: .leading) {
-                Capsule().fill(Color.white.opacity(0.1))
+                Capsule().fill(Color.primary.opacity(0.1))
                 Capsule()
                     .fill(statusColor(roll.status))
                     .frame(width: max(0, geo.size.width * CGFloat(roll.progress)))
@@ -354,11 +375,11 @@ struct FilmVaultWidgetEntryView: View {
                 .frame(width: 16)
             Text(value)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .minimumScaleFactor(0.7)
             Text(label)
                 .font(.system(size: 11, weight: .medium))
-                .foregroundColor(.white.opacity(0.5))
+                .foregroundColor(.primary.opacity(0.5))
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 0)
@@ -367,7 +388,7 @@ struct FilmVaultWidgetEntryView: View {
         .padding(.vertical, 7)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill(Color.primary.opacity(0.05))
         )
     }
 
@@ -409,7 +430,7 @@ struct FilmVaultWidgetEntryView: View {
                 Button(intent: RefreshWidgetIntent()) {
                     Image(systemName: "arrow.clockwise")
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.primary.opacity(0.4))
                 }
                 .buttonStyle(.plain)
             }
@@ -418,7 +439,7 @@ struct FilmVaultWidgetEntryView: View {
 
             Text(roll.filmName)
                 .font(.system(size: 15, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .lineLimit(1)
                 .minimumScaleFactor(0.5)
             metaLine(roll, size: 9, compact: true)
@@ -428,16 +449,16 @@ struct FilmVaultWidgetEntryView: View {
             HStack(alignment: .lastTextBaseline, spacing: 2) {
                 Text("\(roll.photoCount)")
                     .font(.system(size: 32, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .minimumScaleFactor(0.6)
                 Text("/\(roll.capacity)")
                     .font(.system(size: 15, weight: .semibold, design: .rounded))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(.primary.opacity(0.4))
                     .minimumScaleFactor(0.6)
                 Spacer(minLength: 2)
                 Text(WL("%d left", roll.framesLeft))
                     .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.primary.opacity(0.5))
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
             }
@@ -453,11 +474,11 @@ struct FilmVaultWidgetEntryView: View {
             HStack(alignment: .firstTextBaseline, spacing: 3) {
                 Text("\(entry.data.totalRolls)")
                     .font(.system(size: 34, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .minimumScaleFactor(0.5)
                 Text(WL("rolls"))
                     .font(.system(size: 12, weight: .medium))
-                    .foregroundColor(.white.opacity(0.5))
+                    .foregroundColor(.primary.opacity(0.5))
                     .lineLimit(1)
             }
             HStack(spacing: 4) {
@@ -484,11 +505,11 @@ struct FilmVaultWidgetEntryView: View {
             Circle().fill(color).frame(width: 5, height: 5)
             Text(value)
                 .font(.system(size: 12, weight: .bold, design: .rounded))
-                .foregroundColor(.white.opacity(0.85))
+                .foregroundColor(.primary.opacity(0.85))
                 .minimumScaleFactor(0.7)
             Text(label)
                 .font(.system(size: 9, weight: .medium))
-                .foregroundColor(.white.opacity(0.45))
+                .foregroundColor(.primary.opacity(0.45))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -502,12 +523,12 @@ struct FilmVaultWidgetEntryView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             RoundedRectangle(cornerRadius: 1)
-                .fill(Color.white.opacity(0.08))
+                .fill(Color.primary.opacity(0.08))
                 .frame(width: 1)
                 .padding(.vertical, 2)
 
             VStack(spacing: 7) {
-                statChip("\(entry.data.totalRolls)", WL("rolls"), .white, "film")
+                statChip("\(entry.data.totalRolls)", WL("rolls"), .primary, "film")
                 statChip("\(entry.data.totalPhotos)", WL("photos"), .orange, "camera.fill")
                 statChip("\(entry.data.shootingCount)", WL("Shooting"), .orange, "dot.radiowaves.left.and.right")
                 statChip("\(entry.data.toDevelopCount)", WL("To Develop"), .green, "timer")
@@ -530,7 +551,7 @@ struct FilmVaultWidgetEntryView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(roll.filmName)
                             .font(.system(size: 15, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                             .lineLimit(1)
                             .minimumScaleFactor(0.5)
                         Text(WL("%d left", roll.framesLeft))
@@ -548,7 +569,7 @@ struct FilmVaultWidgetEntryView: View {
                 Spacer()
                 Text("\(entry.data.totalRolls)")
                     .font(.system(size: 38, weight: .bold, design: .rounded))
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .minimumScaleFactor(0.5)
                 Text(WL("%d photos", entry.data.totalPhotos))
                     .font(.system(size: 13, weight: .semibold, design: .rounded))
@@ -558,7 +579,7 @@ struct FilmVaultWidgetEntryView: View {
                 Spacer()
                 Text(WL("No roll in progress right now."))
                     .font(.system(size: 11))
-                    .foregroundColor(.white.opacity(0.4))
+                    .foregroundColor(.primary.opacity(0.4))
                     .lineLimit(2)
                     .minimumScaleFactor(0.7)
             }
@@ -590,7 +611,7 @@ struct FilmVaultWidgetEntryView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
             Text("FilmVault")
                 .font(.system(size: 13, weight: .heavy, design: .rounded))
-                .foregroundColor(.white.opacity(0.92))
+                .foregroundColor(.primary.opacity(0.92))
             Spacer()
 
             tabButton(index: 0, label: WL("Overview"))
@@ -599,7 +620,7 @@ struct FilmVaultWidgetEntryView: View {
             Button(intent: RefreshWidgetIntent()) {
                 Image(systemName: "arrow.clockwise")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.primary.opacity(0.45))
             }
             .buttonStyle(.plain)
             .padding(.leading, 4)
@@ -610,7 +631,7 @@ struct FilmVaultWidgetEntryView: View {
         Button(intent: WidgetTabSwitchIntent(tab: index)) {
             Text(label)
                 .font(.system(size: 10, weight: entry.insightsTab == index ? .heavy : .medium))
-                .foregroundColor(entry.insightsTab == index ? .orange : .white.opacity(0.45))
+                .foregroundColor(entry.insightsTab == index ? .orange : .primary.opacity(0.45))
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .background(
@@ -626,7 +647,7 @@ struct FilmVaultWidgetEntryView: View {
     private var largeOverviewContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
-                statChip("\(entry.data.totalRolls)", WL("rolls"), .white, "film")
+                statChip("\(entry.data.totalRolls)", WL("rolls"), .primary, "film")
                 statChip("\(entry.data.totalPhotos)", WL("photos"), .orange, "camera.fill")
             }
             .padding(.top, 10)
@@ -654,28 +675,28 @@ struct FilmVaultWidgetEntryView: View {
             HStack(spacing: 8) {
                 Text(WL("Recent"))
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.white.opacity(0.45))
+                    .foregroundColor(.primary.opacity(0.45))
                     .kerning(0.6)
                 Spacer()
                 if totalPages > 1 {
                     Text("\(page + 1)/\(totalPages)")
                         .font(.system(size: 10, weight: .semibold, design: .rounded))
-                        .foregroundColor(.white.opacity(0.4))
+                        .foregroundColor(.primary.opacity(0.4))
                         .monospacedDigit()
                     Button(intent: WidgetRecentPrevIntent()) {
                         Image(systemName: "chevron.up")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(page > 0 ? .orange : .white.opacity(0.18))
+                            .foregroundColor(page > 0 ? .orange : .primary.opacity(0.18))
                             .frame(width: 24, height: 24)
-                            .background(Circle().fill(Color.white.opacity(0.07)))
+                            .background(Circle().fill(Color.primary.opacity(0.07)))
                     }
                     .buttonStyle(.plain)
                     Button(intent: WidgetRecentNextIntent()) {
                         Image(systemName: "chevron.down")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(page < totalPages - 1 ? .orange : .white.opacity(0.18))
+                            .foregroundColor(page < totalPages - 1 ? .orange : .primary.opacity(0.18))
                             .frame(width: 24, height: 24)
-                            .background(Circle().fill(Color.white.opacity(0.07)))
+                            .background(Circle().fill(Color.primary.opacity(0.07)))
                     }
                     .buttonStyle(.plain)
                 }
@@ -691,7 +712,7 @@ struct FilmVaultWidgetEntryView: View {
                         rollRow(roll)
                     }
                     if index < pageItems.count - 1 {
-                        Divider().background(Color.white.opacity(0.05)).padding(.vertical, 5)
+                        Divider().background(Color.primary.opacity(0.05)).padding(.vertical, 5)
                     }
                 }
             }
@@ -732,23 +753,23 @@ struct FilmVaultWidgetEntryView: View {
                     HStack {
                         Text(WL("Spent"))
                             .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.white.opacity(0.45))
+                            .foregroundColor(.primary.opacity(0.45))
                             .kerning(0.5)
                         Spacer()
                         Text(totalSpentFormatted(totalSpent))
                             .font(.system(size: 14, weight: .bold, design: .rounded))
-                            .foregroundColor(.white)
+                            .foregroundColor(.primary)
                     }
                     spendingBar(filmCost: data.filmCost ?? 0, devCost: data.devCost ?? 0, total: totalSpent)
                     HStack(spacing: 12) {
                         if (data.filmCost ?? 0) > 0 {
                             HStack(spacing: 4) {
                                 Circle()
-                                    .fill(.white)
+                                    .fill(.primary)
                                     .frame(width: 6, height: 6)
                                 Text(WL("Film"))
                                     .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.primary.opacity(0.5))
                             }
                         }
                         if (data.devCost ?? 0) > 0 {
@@ -758,7 +779,7 @@ struct FilmVaultWidgetEntryView: View {
                                     .frame(width: 6, height: 6)
                                 Text(WL("Dev"))
                                     .font(.system(size: 9, weight: .medium))
-                                    .foregroundColor(.white.opacity(0.5))
+                                    .foregroundColor(.primary.opacity(0.5))
                             }
                         }
                         Spacer(minLength: 0)
@@ -772,7 +793,7 @@ struct FilmVaultWidgetEntryView: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(WL("Top Films"))
                         .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.white.opacity(0.45))
+                        .foregroundColor(.primary.opacity(0.45))
                         .kerning(0.5)
                         .padding(.top, 10)
                         .padding(.bottom, 6)
@@ -804,12 +825,12 @@ struct FilmVaultWidgetEntryView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(film.name)
                                     .font(.system(size: 12, weight: .semibold))
-                                    .foregroundColor(.white)
+                                    .foregroundColor(.primary)
                                     .lineLimit(1)
                                     .minimumScaleFactor(0.7)
                                 Text("ISO \(film.iso) \u{00B7} \(film.format)")
                                     .font(.system(size: 9))
-                                    .foregroundColor(.white.opacity(0.4))
+                                    .foregroundColor(.primary.opacity(0.4))
                                     .minimumScaleFactor(0.7)
                             }
 
@@ -817,18 +838,18 @@ struct FilmVaultWidgetEntryView: View {
 
                             Text("\(film.rollCount)")
                                 .font(.system(size: 13, weight: .bold, design: .rounded))
-                                .foregroundColor(.white)
+                                .foregroundColor(.primary)
                                 .minimumScaleFactor(0.7)
                             Text(WL("rolls"))
                                 .font(.system(size: 8, weight: .medium))
-                                .foregroundColor(.white.opacity(0.4))
+                                .foregroundColor(.primary.opacity(0.4))
                                 .minimumScaleFactor(0.7)
                         }
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
                         .background(
                             RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                .fill(Color.white.opacity(0.03))
+                                .fill(Color.primary.opacity(0.03))
                         )
 
                         if idx < min(films.count, 3) - 1 {
@@ -846,14 +867,14 @@ struct FilmVaultWidgetEntryView: View {
         VStack(spacing: 3) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundColor(accent ? .orange : .white.opacity(0.5))
+                .foregroundColor(accent ? .orange : .primary.opacity(0.5))
             Text(value)
                 .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .minimumScaleFactor(0.6)
             Text(label)
                 .font(.system(size: 8, weight: .medium))
-                .foregroundColor(.white.opacity(0.45))
+                .foregroundColor(.primary.opacity(0.45))
                 .lineLimit(1)
                 .minimumScaleFactor(0.7)
         }
@@ -861,7 +882,7 @@ struct FilmVaultWidgetEntryView: View {
         .padding(.vertical, 8)
         .background(
             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .fill(Color.white.opacity(0.05))
+                .fill(Color.primary.opacity(0.05))
         )
     }
 
@@ -872,7 +893,7 @@ struct FilmVaultWidgetEntryView: View {
                 let devFrac = total > 0 ? devCost / total : 0
                 if filmFrac > 0 {
                     Capsule()
-                        .fill(Color.white)
+                        .fill(Color.primary)
                         .frame(width: max(4, geo.size.width * filmFrac - 1))
                 }
                 if devFrac > 0 {
@@ -900,7 +921,7 @@ struct FilmVaultWidgetEntryView: View {
                 nowShootingTag()
                 Text(roll.filmName)
                     .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.6)
                 metaLine(roll, size: 10)
@@ -953,20 +974,20 @@ struct FilmVaultWidgetEntryView: View {
             VStack(alignment: .leading, spacing: 2) {
                 Text(roll.filmName)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
+                    .foregroundColor(.primary)
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
                 HStack(spacing: 5) {
                     Circle().fill(statusColor(roll.status)).frame(width: 5, height: 5)
                     Text(WL(statusDisplayKey(roll.status)))
                         .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.45))
+                        .foregroundColor(.primary.opacity(0.45))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
-                    Text("·").foregroundColor(.white.opacity(0.3))
+                    Text("·").foregroundColor(.primary.opacity(0.3))
                     Text(WL("%d of %d frames", roll.photoCount, roll.capacity))
                         .font(.system(size: 10))
-                        .foregroundColor(.white.opacity(0.45))
+                        .foregroundColor(.primary.opacity(0.45))
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                 }

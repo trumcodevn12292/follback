@@ -255,7 +255,7 @@ private struct LockScreenLiveActivityView: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 12)
         }
-        .activityBackgroundTint(Color.black.opacity(0.55))
+        .activityBackgroundTint(Color.primary.opacity(0.12))
         .activitySystemActionForegroundColor(.orange)
     }
 }
