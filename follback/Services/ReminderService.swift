@@ -236,9 +236,7 @@ final class ReminderManager: ObservableObject {
         content.body = "If you see this, notifications are working!"
         content.sound = .default
 
-        var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
-        comps.second = comps.second.map { $0 + 3 }
-        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
         let request = UNNotificationRequest(
             identifier: "\(idPrefix)test.\(UUID().uuidString)",
             content: content,
