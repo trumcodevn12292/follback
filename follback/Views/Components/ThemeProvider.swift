@@ -1,5 +1,6 @@
 import SwiftUI
 import Combine
+import WidgetKit
 
 // MARK: - Appearance mode
 
@@ -55,7 +56,12 @@ class ThemeManager: ObservableObject {
     static let appearanceKey = "appearanceMode"
 
     @Published var appearanceMode: AppearanceMode {
-        didSet { UserDefaults.standard.set(appearanceMode.rawValue, forKey: ThemeManager.appearanceKey) }
+        didSet {
+            UserDefaults.standard.set(appearanceMode.rawValue, forKey: ThemeManager.appearanceKey)
+            UserDefaults(suiteName: "group.com.williamcachamwri.FilmVault")?
+                .set(appearanceMode.rawValue, forKey: ThemeManager.appearanceKey)
+            WidgetCenter.shared.reloadAllTimelines()
+        }
     }
 
     /// Persisted accent hex. Writing it updates `Color.filmAccent` everywhere.

@@ -186,14 +186,16 @@ struct FilmVaultTimelineProvider: TimelineProvider {
         let data = loadWidgetData()
         let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
         let tab = WidgetTabStore.currentTab
-        completion(FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab))
+        let appearance = loadAppearanceMode()
+        completion(FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab, appearanceMode: appearance))
     }
 
     func getTimeline(in context: Context, completion: @escaping (Timeline<FilmVaultEntry>) -> Void) {
         let data = loadWidgetData()
         let page = WidgetPageStore.clampedPage(recentCount: data.recentRolls.count)
         let tab = WidgetTabStore.currentTab
-        let entry = FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab)
+        let appearance = loadAppearanceMode()
+        let entry = FilmVaultEntry(date: Date(), data: data, recentPage: page, insightsTab: tab, appearanceMode: appearance)
         let nextUpdate = Calendar.current.date(byAdding: .minute, value: 5, to: Date())!
         let timeline = Timeline(entries: [entry], policy: .after(nextUpdate))
         completion(timeline)
@@ -207,6 +209,11 @@ struct FilmVaultTimelineProvider: TimelineProvider {
         }
         return data
     }
+
+    private func loadAppearanceMode() -> String? {
+        UserDefaults(suiteName: "group.com.williamcachamwri.FilmVault")?
+            .string(forKey: "appearanceMode")
+    }
 }
 
 // MARK: - Timeline Entry
@@ -216,6 +223,7 @@ struct FilmVaultEntry: TimelineEntry {
     let data: FilmVaultWidgetData
     var recentPage: Int = 0
     var insightsTab: Int = 0
+    var appearanceMode: String?
 }
 
 extension FilmVaultWidgetData {
@@ -253,27 +261,37 @@ struct FilmVaultWidgetEntryView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        switch family {
-        case .systemSmall:
-            smallWidget
-        case .systemMedium:
-            mediumWidget
-        case .systemLarge:
-            largeWidget
-        case .accessoryCircular:
-            lockScreenCircular
-        case .accessoryRectangular:
-            lockScreenRectangular
-        case .accessoryInline:
-            lockScreenInline
-        default:
-            smallWidget
+        Group {
+            switch family {
+            case .systemSmall:
+                smallWidget
+            case .systemMedium:
+                mediumWidget
+            case .systemLarge:
+                largeWidget
+            case .accessoryCircular:
+                lockScreenCircular
+            case .accessoryRectangular:
+                lockScreenRectangular
+            case .accessoryInline:
+                lockScreenInline
+            default:
+                smallWidget
+            }
         }
+        .preferredColorScheme(appearanceOverride)
     }
 
-    // MARK: - Shared pieces
-
     @Environment(\.colorScheme) var colorScheme
+
+    private var appearanceOverride: ColorScheme? {
+        guard let mode = entry.appearanceMode else { return nil }
+        switch mode {
+        case "dark": return .dark
+        case "light": return .light
+        default: return nil
+        }
+    }
 
     private var background: some View {
         if colorScheme == .dark {
