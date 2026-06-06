@@ -1,6 +1,32 @@
 import SwiftUI
 import Combine
 
+// MARK: - Appearance mode
+
+enum AppearanceMode: String, CaseIterable {
+    case dark   = "dark"
+    case light  = "light"
+    case system = "system"
+}
+
+extension AppearanceMode {
+    var displayName: String {
+        switch self {
+        case .dark:   return "Dark"
+        case .light:  return "Light"
+        case .system: return "System"
+        }
+    }
+
+    var iconName: String {
+        switch self {
+        case .dark:   return "moon.fill"
+        case .light:  return "sun.max.fill"
+        case .system: return "circle.lefthalf.filled"
+        }
+    }
+}
+
 // MARK: - Accent color options (Settings → Appearance)
 
 struct AccentOption: Identifiable, Equatable {
@@ -26,9 +52,10 @@ class ThemeManager: ObservableObject {
     static let shared = ThemeManager()
 
     static let accentKey = "accentColorHex"
+    static let appearanceKey = "appearanceMode"
 
-    @Published var isDarkMode: Bool {
-        didSet { UserDefaults.standard.set(isDarkMode, forKey: "darkMode") }
+    @Published var appearanceMode: AppearanceMode {
+        didSet { UserDefaults.standard.set(appearanceMode.rawValue, forKey: ThemeManager.appearanceKey) }
     }
 
     /// Persisted accent hex. Writing it updates `Color.filmAccent` everywhere.
@@ -36,8 +63,26 @@ class ThemeManager: ObservableObject {
         didSet { UserDefaults.standard.set(accentHex, forKey: ThemeManager.accentKey) }
     }
 
+    /// Computed helper so existing `manager.isDarkMode` callers still work.
+    var isDarkMode: Bool {
+        switch appearanceMode {
+        case .dark:   return true
+        case .light:  return false
+        case .system: return UITraitCollection.current.userInterfaceStyle == .dark
+        }
+    }
+
     init() {
-        self.isDarkMode = UserDefaults.standard.object(forKey: "darkMode") as? Bool ?? true
+        // Migrate legacy "darkMode" key to new enum
+        if let legacy = UserDefaults.standard.object(forKey: "darkMode") as? Bool {
+            self.appearanceMode = legacy ? .dark : .light
+            UserDefaults.standard.removeObject(forKey: "darkMode")
+        } else if let saved = UserDefaults.standard.string(forKey: ThemeManager.appearanceKey),
+                  let mode = AppearanceMode(rawValue: saved) {
+            self.appearanceMode = mode
+        } else {
+            self.appearanceMode = .system
+        }
         self.accentHex = UserDefaults.standard.string(forKey: ThemeManager.accentKey) ?? Color.defaultAccentHex
     }
 }
@@ -69,8 +114,11 @@ struct ThemedRoot<Content: View>: View {
             .environment(\.locale, l10n.isFollowingSystem ? Locale.current : Locale(identifier: l10n.language.rawValue))
             .environment(\.layoutDirection, l10n.language.isRTL ? .rightToLeft : .leftToRight)
             .tint(Color.filmAccent)
-            .preferredColorScheme(manager.isDarkMode ? .dark : .light)
-            .id(manager.accentHex + (manager.isDarkMode ? "-d" : "-l") + "-" + l10n.language.rawValue + (l10n.isFollowingSystem ? "-sys" : ""))
+            .preferredColorScheme(
+                manager.appearanceMode == .system ? nil :
+                manager.appearanceMode == .dark   ? .dark : .light
+            )
+            .id(manager.accentHex + "-" + manager.appearanceMode.rawValue + "-" + l10n.language.rawValue + (l10n.isFollowingSystem ? "-sys" : ""))
     }
 }
 

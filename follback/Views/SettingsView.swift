@@ -85,9 +85,7 @@ struct SettingsView: View {
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
             .onAppear {
-                withAnimation(.spring(response: 0.5, dampingFraction: 0.82)) {
-                    appeared = true
-                }
+                appeared = true
                 reminderManager.refreshAuthorizationStatus()
             }
             .sheet(isPresented: $showCopyrightInfo) {
@@ -529,6 +527,48 @@ struct SettingsView: View {
                 .kerning(0.8)
 
             VStack(alignment: .leading, spacing: 14) {
+                // Theme selector
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Theme")
+                        .font(.system(size: 16, weight: .semibold))
+                        .foregroundColor(Color.filmText)
+
+                    HStack(spacing: 8) {
+                        ForEach(AppearanceMode.allCases, id: \.self) { mode in
+                            Button {
+                                themeManager.appearanceMode = mode
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                            } label: {
+                                HStack(spacing: 6) {
+                                    Image(systemName: mode.iconName)
+                                        .font(.system(size: 13, weight: .medium))
+                                    Text(mode.displayName)
+                                        .font(.system(size: 14, weight: .medium))
+                                }
+                                .foregroundColor(themeManager.appearanceMode == mode ? Color.filmBackground : Color.filmTertiary)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 9)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                        .fill(themeManager.appearanceMode == mode ? Color.filmAccent : Color.filmSurface)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                                        .stroke(
+                                            themeManager.appearanceMode == mode ? Color.clear : Color.filmBorder,
+                                            lineWidth: 0.5
+                                        )
+                                )
+                            }
+                            .buttonStyle(.plain)
+                            .animation(.filmSnappy, value: themeManager.appearanceMode)
+                        }
+                    }
+                }
+
+                Divider()
+                    .background(Color.filmBorder.opacity(0.3))
+
                 HStack(spacing: 12) {
                     VStack(alignment: .leading, spacing: 2) {
                         Text("Accent Color")

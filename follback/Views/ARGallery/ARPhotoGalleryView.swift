@@ -93,8 +93,8 @@ struct ARPhotoGalleryView: View {
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8)
                                                 .stroke(model.placedIndices.contains(index)
-                                                    ? Color(hex: "#C8BAA8")
-                                                    : Color.white.opacity(0.2),
+                                    ? Color.filmTertiary
+                                    : Color.white.opacity(0.2),
                                                     lineWidth: model.placedIndices.contains(index) ? 2 : 1)
                                         )
                                 }
@@ -127,7 +127,7 @@ struct ARPhotoGalleryView: View {
                     }
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Capsule().fill(Color(hex: "#2A2A2A")))
+                    .background(Capsule().fill(Color.filmSurface))
                     .transition(.move(edge: .top).combined(with: .opacity))
                     Spacer()
                 }

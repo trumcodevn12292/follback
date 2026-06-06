@@ -139,7 +139,7 @@ struct RollsMapView: View {
             } else {
                 Image(systemName: isFrame ? "circle.fill" : "square.fill")
                     .font(.system(size: isFrame ? 10 : 14))
-                    .foregroundColor(isFrame ? Color(hex: "#C8BAA8") : Color(hex: "#C86B28"))
+                    .foregroundColor(isFrame ? Color.filmTertiary : Color.filmCopper)
                     .background(
                         Circle()
                             .fill(.white)
@@ -251,23 +251,23 @@ struct RollsMapView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(roll.filmName)
                         .font(.system(size: 20, weight: .bold))
-                        .foregroundColor(Color(hex: "#F5F0E8"))
+                        .foregroundColor(Color.filmText)
 
                     if let loc = roll.locationName {
                         Label(loc, systemImage: "mappin")
                             .font(.system(size: 14))
-                            .foregroundColor(Color(hex: "#9A8E7E"))
+                            .foregroundColor(Color.filmSecondary)
                     }
 
                     HStack(spacing: 12) {
                         if let camera = roll.camera {
                             Label(camera.name, systemImage: "camera")
                                 .font(.system(size: 13))
-                                .foregroundColor(Color(hex: "#C8BAA8"))
+                                .foregroundColor(Color.filmTertiary)
                         }
                         Text(L("%d photos", frames.count))
                             .font(.system(size: 13, weight: .medium))
-                            .foregroundColor(Color(hex: "#C8BAA8"))
+                            .foregroundColor(Color.filmTertiary)
                     }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -276,7 +276,7 @@ struct RollsMapView: View {
                 Spacer()
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color(hex: "#0A0908"))
+            .background(Color.filmBackground)
             .navigationTitle(roll.filmName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -316,9 +316,9 @@ private struct FrameThumbnail: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                Color(hex: "#1C1408")
+                Color.filmSurfaceSecondary
                     .overlay {
-                        ProgressView().tint(Color(hex: "#C8BAA8"))
+                        ProgressView().tint(Color.filmTertiary)
                     }
             }
         }

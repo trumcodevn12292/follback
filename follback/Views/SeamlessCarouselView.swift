@@ -29,7 +29,7 @@ struct SeamlessCarouselView: View {
         ZStack {
             // Background gradient
             LinearGradient(
-                colors: [Color(hex: "#0A0908"), Color(hex: "#141210"), Color(hex: "#0A0908")],
+                colors: [Color.filmBackground, Color.filmSurfaceSecondary, Color.filmBackground],
                 startPoint: .top,
                 endPoint: .bottom
             )
@@ -80,30 +80,30 @@ struct SeamlessCarouselView: View {
             Button { dismiss() } label: {
                 Image(systemName: "xmark")
                     .font(.system(size: 13, weight: .bold))
-                    .foregroundColor(.white.opacity(0.8))
+                    .foregroundColor(Color.filmSecondary)
                     .frame(width: 34, height: 34)
-                    .background(Circle().fill(Color.white.opacity(0.08)))
+                    .background(Circle().fill(Color.filmSurface.opacity(0.5)))
             }
             Spacer()
             VStack(spacing: 2) {
                 Text("CREATE POST")
                     .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                    .foregroundColor(.white)
+                    .foregroundColor(Color.filmText)
                     .kerning(2)
                 Text("Seamless Carousel")
                     .font(.system(size: 9, weight: .medium))
-                    .foregroundColor(Color(hex: "#C86B28"))
+                    .foregroundColor(Color.filmCopper)
             }
             Spacer()
             Button { saveCarousel() } label: {
                 if isSaving {
-                    ProgressView().tint(.white).frame(width: 34, height: 34)
+                    ProgressView().tint(Color.filmSecondary).frame(width: 34, height: 34)
                 } else {
                     Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "arrow.down.to.line")
                         .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(savedToPhotos ? .green : Color(hex: "#C86B28"))
+                        .foregroundColor(savedToPhotos ? .green : Color.filmCopper)
                         .frame(width: 34, height: 34)
-                        .background(Circle().fill(Color(hex: "#C86B28").opacity(0.15)))
+                        .background(Circle().fill(Color.filmCopper.opacity(0.15)))
                 }
             }
             .disabled(isSaving || orderedSelected.count < 2)
@@ -119,66 +119,66 @@ struct SeamlessCarouselView: View {
                 let slideHeight = slideWidth * (5.0 / 4.0)
 
                 // Preview with page indicator
-                TabView(selection: $currentPreviewSlide) {
-                    ForEach(0..<slideCount, id: \.self) { index in
-                        slidePreview(index: index, totalSlides: slideCount, slideSize: CGSize(width: slideWidth, height: slideHeight))
-                            .frame(width: slideWidth, height: slideHeight)
-                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .shadow(color: Color(hex: "#C86B28").opacity(0.15), radius: 20, y: 8)
-                            .tag(index)
-                    }
-                }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .frame(height: slideHeight + 16)
-
-                // Custom page dots
-                HStack(spacing: 6) {
-                    ForEach(0..<slideCount, id: \.self) { index in
-                        Capsule()
-                            .fill(index == currentPreviewSlide ? Color(hex: "#C86B28") : Color.white.opacity(0.2))
-                            .frame(width: index == currentPreviewSlide ? 16 : 6, height: 6)
-                            .animation(.spring(response: 0.3), value: currentPreviewSlide)
-                    }
-                }
-
-                // Info label
-                Text("Swipe to preview slides • \(slideCount) slides from \(orderedSelected.count) photos")
-                    .font(.system(size: 10, weight: .medium))
-                    .foregroundColor(Color(hex: "#6A6A6A"))
-            } else {
-                // Empty state
-                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                    .fill(Color.white.opacity(0.03))
-                    .frame(height: 220)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 16, style: .continuous)
-                            .strokeBorder(
-                                LinearGradient(
-                                    colors: [Color(hex: "#C86B28").opacity(0.3), Color.clear],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ),
-                                lineWidth: 1
-                            )
-                    )
-                    .overlay(
-                        VStack(spacing: 12) {
-                            ZStack {
-                                Circle()
-                                    .fill(Color(hex: "#C86B28").opacity(0.1))
-                                    .frame(width: 56, height: 56)
-                                Image(systemName: "rectangle.split.3x1")
-                                    .font(.system(size: 22, weight: .light))
-                                    .foregroundColor(Color(hex: "#C86B28"))
-                            }
-                            Text("Select at least 2 photos")
-                                .font(.system(size: 13, weight: .medium))
-                                .foregroundColor(Color(hex: "#8A8A8A"))
-                            Text("Photos will be stitched into a seamless carousel")
-                                .font(.system(size: 10, weight: .regular))
-                                .foregroundColor(Color(hex: "#5A5A5A"))
+                    TabView(selection: $currentPreviewSlide) {
+                        ForEach(0..<slideCount, id: \.self) { index in
+                            slidePreview(index: index, totalSlides: slideCount, slideSize: CGSize(width: slideWidth, height: slideHeight))
+                                .frame(width: slideWidth, height: slideHeight)
+                                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                                .shadow(color: Color.filmCopper.opacity(0.15), radius: 20, y: 8)
+                                .tag(index)
                         }
-                    )
+                    }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .frame(height: slideHeight + 16)
+
+                    // Custom page dots
+                    HStack(spacing: 6) {
+                        ForEach(0..<slideCount, id: \.self) { index in
+                            Capsule()
+                                .fill(index == currentPreviewSlide ? Color.filmCopper : Color.filmBorderActive.opacity(0.5))
+                                .frame(width: index == currentPreviewSlide ? 16 : 6, height: 6)
+                                .animation(.spring(response: 0.3), value: currentPreviewSlide)
+                        }
+                    }
+
+                    // Info label
+                    Text("Swipe to preview slides • \(slideCount) slides from \(orderedSelected.count) photos")
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(Color.filmTertiary)
+                } else {
+                    // Empty state
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .fill(Color.filmSurface.opacity(0.3))
+                        .frame(height: 220)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .strokeBorder(
+                                    LinearGradient(
+                                        colors: [Color.filmCopper.opacity(0.3), Color.clear],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    ),
+                                    lineWidth: 1
+                                )
+                        )
+                        .overlay(
+                            VStack(spacing: 12) {
+                                ZStack {
+                                    Circle()
+                                        .fill(Color.filmCopper.opacity(0.1))
+                                        .frame(width: 56, height: 56)
+                                    Image(systemName: "rectangle.split.3x1")
+                                        .font(.system(size: 22, weight: .light))
+                                        .foregroundColor(Color.filmCopper)
+                                }
+                                Text("Select at least 2 photos")
+                                    .font(.system(size: 13, weight: .medium))
+                                    .foregroundColor(Color.filmSecondary)
+                                Text("Photos will be stitched into a seamless carousel")
+                                    .font(.system(size: 10, weight: .regular))
+                                    .foregroundColor(Color.filmTertiary)
+                            }
+                        )
             }
         }
     }
@@ -187,7 +187,7 @@ struct SeamlessCarouselView: View {
     private func slidePreview(index: Int, totalSlides: Int, slideSize: CGSize) -> some View {
         let images = orderedSelected.compactMap { loadedImages[$0] }
         if images.isEmpty {
-            Color(hex: "#1A1A1A")
+            Color.filmSurfaceSecondary
         } else {
             Canvas { context, size in
                 let stitchedWidth = size.width * CGFloat(totalSlides)
@@ -230,12 +230,12 @@ struct SeamlessCarouselView: View {
             HStack {
                 Text("SLIDES")
                     .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                    .foregroundColor(Color(hex: "#6A6A6A"))
+                    .foregroundColor(Color.filmTertiary)
                     .kerning(2)
                 Spacer()
                 Text("\(slideCount) slides")
                     .font(.system(size: 11, weight: .semibold))
-                    .foregroundColor(Color(hex: "#C86B28"))
+                    .foregroundColor(Color.filmCopper)
             }
 
             // Slider-style control
@@ -249,11 +249,11 @@ struct SeamlessCarouselView: View {
                     } label: {
                         Text("\(count)")
                             .font(.system(size: 12, weight: slideCount == count ? .bold : .medium, design: .rounded))
-                            .foregroundColor(slideCount == count ? .black : Color(hex: "#8A8A8A"))
+                            .foregroundColor(slideCount == count ? Color.filmBackground : Color.filmSecondary)
                             .frame(maxWidth: .infinity)
                             .frame(height: 32)
                             .background(
-                                Capsule().fill(slideCount == count ? Color(hex: "#C86B28") : Color.white.opacity(0.05))
+                                Capsule().fill(slideCount == count ? Color.filmCopper : Color.filmSurface.opacity(0.5))
                             )
                     }
                 }
@@ -262,7 +262,7 @@ struct SeamlessCarouselView: View {
         .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .fill(Color.white.opacity(0.03))
+                .fill(Color.filmSurface.opacity(0.3))
         )
     }
 
@@ -273,15 +273,15 @@ struct SeamlessCarouselView: View {
             HStack {
                 Text("PHOTOS")
                     .font(.system(size: 9, weight: .heavy, design: .monospaced))
-                    .foregroundColor(Color(hex: "#6A6A6A"))
+                    .foregroundColor(Color.filmTertiary)
                     .kerning(2)
 
                 if !selectedPhotos.isEmpty {
                     Text("\(orderedSelected.count)")
                         .font(.system(size: 10, weight: .bold, design: .rounded))
-                        .foregroundColor(.black)
+                        .foregroundColor(Color.filmBackground)
                         .frame(width: 20, height: 20)
-                        .background(Circle().fill(Color(hex: "#C86B28")))
+                        .background(Circle().fill(Color.filmCopper))
                 }
 
                 Spacer()
@@ -292,7 +292,7 @@ struct SeamlessCarouselView: View {
                     } label: {
                         Text("Clear")
                             .font(.system(size: 11, weight: .semibold))
-                            .foregroundColor(Color(hex: "#C86B28"))
+                            .foregroundColor(Color.filmCopper)
                     }
                 }
             }
@@ -311,26 +311,26 @@ struct SeamlessCarouselView: View {
                                 .aspectRatio(1, contentMode: .fill)
                                 .clipped()
                         } else {
-                            Color(hex: "#1A1A1A")
+                            Color.filmSurfaceSecondary
                                 .aspectRatio(1, contentMode: .fill)
                                 .overlay(
-                                    ProgressView().tint(Color(hex: "#4A4A4A"))
+                                    ProgressView().tint(Color.filmTertiary)
                                 )
                         }
 
                         if isSelected, let idx = selectionIndex {
                             Text("\(idx + 1)")
                                 .font(.system(size: 9, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
+                                .foregroundColor(Color.filmBackground)
                                 .frame(width: 18, height: 18)
-                                .background(Circle().fill(Color(hex: "#C86B28")))
+                                .background(Circle().fill(Color.filmCopper))
                                 .shadow(color: .black.opacity(0.3), radius: 4, y: 2)
                                 .padding(4)
                         }
 
                         if isSelected {
                             RoundedRectangle(cornerRadius: 6, style: .continuous)
-                                .strokeBorder(Color(hex: "#C86B28"), lineWidth: 2.5)
+                                .strokeBorder(Color.filmCopper, lineWidth: 2.5)
                         }
                     }
                     .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -356,15 +356,15 @@ struct SeamlessCarouselView: View {
         HStack(spacing: 8) {
             Image(systemName: "checkmark.circle.fill")
                 .font(.system(size: 16))
-                .foregroundColor(.green)
+                .foregroundColor(Color.filmSuccess)
             Text("\(slideCount) slides saved to Photos")
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundColor(.white)
+                .foregroundColor(Color.filmText)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 12)
         .background(
-            Capsule().fill(Color(hex: "#2A2A2A"))
+            Capsule().fill(Color.filmSurface)
                 .shadow(color: .black.opacity(0.3), radius: 10, y: 4)
         )
     }

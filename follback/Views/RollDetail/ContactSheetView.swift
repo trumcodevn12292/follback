@@ -45,34 +45,34 @@ struct ContactSheetView: View {
 
     var body: some View {
         ZStack {
-            Color(hex: "#0A0908").ignoresSafeArea()
+            Color.filmBackground.ignoresSafeArea()
 
             VStack(spacing: 0) {
                 HStack {
                     Button { UIImpactFeedbackGenerator(style: .light).impactOccurred(); dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.filmSecondary)
                             .frame(width: 36, height: 36)
-                            .background(Circle().fill(Color.white.opacity(0.1)))
+                            .background(Circle().fill(Color.filmSurface.opacity(0.5)))
                     }
                     Spacer()
                     Text("CONTACT SHEET")
                         .font(.system(size: 11, weight: .heavy, design: .monospaced))
-                        .foregroundColor(.white)
+                        .foregroundColor(Color.filmText)
                         .kerning(2)
                     Spacer()
                     Button { UIImpactFeedbackGenerator(style: .medium).impactOccurred(); saveContactSheet() } label: {
                         if isSaving {
                             ProgressView()
-                                .tint(.white)
+                                .tint(Color.filmSecondary)
                                 .frame(width: 36, height: 36)
                         } else {
                             Image(systemName: savedToPhotos ? "checkmark.circle.fill" : "square.and.arrow.down")
                                 .font(.system(size: 15, weight: .bold))
-                                .foregroundColor(savedToPhotos ? .green : .white)
+                                .foregroundColor(savedToPhotos ? .green : Color.filmText)
                                 .frame(width: 36, height: 36)
-                                .background(Circle().fill(Color.white.opacity(0.1)))
+                                .background(Circle().fill(Color.filmSurface.opacity(0.5)))
                         }
                     }
                     .disabled(isSaving || isLoading)
@@ -99,11 +99,11 @@ struct ContactSheetView: View {
                             .foregroundColor(.green)
                         Text("Saved to Photos")
                             .font(.system(size: 15, weight: .semibold))
-                            .foregroundColor(.white)
+                            .foregroundColor(Color.filmText)
                     }
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
-                    .background(Capsule().fill(Color(hex: "#2A2A2A")))
+                    .background(Capsule().fill(Color.filmSurface))
                     .padding(.bottom, 50)
                 }
                 .transition(.move(edge: .bottom).combined(with: .opacity))

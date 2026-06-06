@@ -18,11 +18,11 @@ struct ARGalleryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(hex: "#0A0908").ignoresSafeArea()
+                Color.filmBackground.ignoresSafeArea()
 
                 if isLoading {
                     ProgressView()
-                        .tint(Color(hex: "#C8BAA8"))
+                        .tint(Color.filmTertiary)
                 } else {
                     VStack(spacing: 0) {
                         ScrollView(showsIndicators: false) {
@@ -37,12 +37,12 @@ struct ARGalleryView: View {
                         }
 
                         Divider()
-                            .background(Color(hex: "#C8BAA8").opacity(0.2))
+                            .background(Color.filmBorder)
 
                         HStack(spacing: 12) {
                             Text("\(selectedFrames.count) \(L("selected"))")
                                 .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(Color(hex: "#9A8E7E"))
+                                .foregroundColor(Color.filmSecondary)
 
                             Spacer()
 
@@ -60,14 +60,14 @@ struct ARGalleryView: View {
                                             .font(.system(size: 13, weight: .medium))
                                     }
                                 }
-                                .foregroundColor(.white)
+                                .foregroundColor(Color.filmText)
                                 .padding(.horizontal, 20)
                                 .padding(.vertical, 12)
                                 .background(
                                     Capsule()
                                         .fill(selectedFrames.isEmpty
-                                            ? Color(hex: "#C8BAA8").opacity(0.2)
-                                            : Color(hex: "#C8BAA8"))
+                                            ? Color.filmTertiary.opacity(0.2)
+                                            : Color.filmTertiary)
                                 )
                             }
                             .disabled(selectedFrames.isEmpty)
@@ -84,9 +84,9 @@ struct ARGalleryView: View {
                     Button { dismiss() } label: {
                         Image(systemName: "xmark")
                             .font(.system(size: 14, weight: .bold))
-                            .foregroundColor(Color(hex: "#9A8E7E"))
+                            .foregroundColor(Color.filmSecondary)
                             .frame(width: 36, height: 36)
-                            .background(Circle().fill(Color.white.opacity(0.08)))
+                            .background(Circle().fill(Color.filmSurface.opacity(0.5)))
                     }
                 }
                 if !selectedFrames.isEmpty {
@@ -99,7 +99,7 @@ struct ARGalleryView: View {
                             }
                         }
                         .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color(hex: "#C8BAA8"))
+                        .foregroundColor(Color.filmTertiary)
                     }
                 }
             }
@@ -139,22 +139,22 @@ struct ARGalleryView: View {
                         .frame(height: 120)
                         .clipped()
                 } else {
-                    Color(hex: "#1C1408")
+                    Color.filmSurfaceSecondary
                         .frame(height: 120)
                         .overlay {
                             Image(systemName: "photo")
-                                .foregroundColor(Color(hex: "#9A8E7E").opacity(0.4))
+                                .foregroundColor(Color.filmTertiary.opacity(0.4))
                         }
                 }
 
                 if isSelected {
                     ZStack {
                         Circle()
-                            .fill(Color(hex: "#C8BAA8"))
+                            .fill(Color.filmTertiary)
                             .frame(width: 24, height: 24)
                         Image(systemName: "checkmark")
                             .font(.system(size: 12, weight: .bold))
-                            .foregroundColor(Color(hex: "#0A0908"))
+                            .foregroundColor(Color.filmBackground)
                     }
                     .padding(6)
                     .transition(.scale.combined(with: .opacity))
@@ -163,7 +163,7 @@ struct ARGalleryView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(isSelected ? Color(hex: "#C8BAA8") : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? Color.filmTertiary : Color.clear, lineWidth: 2)
             )
             .overlay(alignment: .bottomLeading) {
                 Text("#\(frame.number)")

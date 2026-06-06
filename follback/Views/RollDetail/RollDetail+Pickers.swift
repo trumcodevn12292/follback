@@ -268,37 +268,27 @@ extension RollDetailView {
     // MARK: - Date Picker Sheet
     var datePickerSheet: some View {
         NavigationStack {
-            VStack(spacing: 20) {
-                DatePicker("Shooting Date", selection: $editingDate, displayedComponents: .date)
-                    .datePickerStyle(.graphical)
-                    .tint(Color.filmAccent)
-                    .padding()
-
-                Button {
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    roll.startDate = editingDate
-                    try? modelContext.save()
-                    showDatePicker = false
-                } label: {
-                    Text("Save")
-                        .font(.system(size: 17, weight: .bold))
-                        .foregroundColor(Color.filmBackground)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                        .background(Capsule().fill(Color.filmAccent))
+            DatePicker("Shooting Date", selection: $editingDate, displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .tint(Color.filmAccent)
+                .padding()
+                .navigationTitle("Edit Date")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button("Cancel") { showDatePicker = false }
+                    }
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button("Save") {
+                            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                            roll.startDate = editingDate
+                            try? modelContext.save()
+                            showDatePicker = false
+                        }
+                    }
                 }
-                .padding(.horizontal, 20)
-            }
-            .background(Color.filmBackground.ignoresSafeArea())
-            .navigationTitle("Edit Date")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { showDatePicker = false }
-                }
-            }
         }
-        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.height(400)] : [.medium])
+        .presentationDetents([.height(420)])
     }
 
     // MARK: - Format Picker Sheet

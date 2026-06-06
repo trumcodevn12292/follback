@@ -2,19 +2,29 @@ import SwiftUI
 
 extension Color {
     // MARK: - FilmVault Cinematic Palette
-    // Rich, warm analog aesthetic with depth and sophistication
+    // Rich, warm analog aesthetic with depth and sophistication.
+    // All tokens are adaptive — they automatically switch between dark and
+    // light variants based on the current color scheme.
+    // Light palette uses warm paper-tone inspired by darkroom prints.
 
-    /// Primary background — deep charcoal with warm undertone
-    static let filmBackground = Color(hex: "#0A0908")
+    /// Create a color that resolves differently in dark and light mode.
+    static func adaptive(dark: String, light: String) -> Color {
+        Color(UIColor { traits in
+            UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light))
+        })
+    }
 
-    /// Card / elevated surface — warm dark
-    static let filmSurface = Color(hex: "#171412")
+    /// Primary background — deep charcoal (dark) / warm paper (light)
+    static let filmBackground = adaptive(dark: "#0A0908", light: "#FFFFFF")
+
+    /// Card / elevated surface
+    static let filmSurface = adaptive(dark: "#171412", light: "#FFFFFF")
 
     /// Secondary surface (inputs, inner cards)
-    static let filmSurfaceSecondary = Color(hex: "#0E0C0A")
+    static let filmSurfaceSecondary = adaptive(dark: "#0E0C0A", light: "#FFFFFF")
 
     /// Elevated surface for modals/popovers
-    static let filmSurfaceElevated = Color(hex: "#1E1A16")
+    static let filmSurfaceElevated = adaptive(dark: "#1E1A16", light: "#FFFFFF")
 
     /// Default accent hex (rich amber gold).
     static let defaultAccentHex = "#E8A832"
@@ -26,52 +36,52 @@ extension Color {
     }
 
     /// Secondary accent — deep warm gold
-    static let filmGold = Color(hex: "#C47F17")
+    static let filmGold = adaptive(dark: "#C47F17", light: "#92600F")
 
     /// Tertiary accent — rose copper
-    static let filmCopper = Color(hex: "#B87333")
+    static let filmCopper = adaptive(dark: "#B87333", light: "#8B5A26")
 
-    /// Primary text — warm pearl white
-    static let filmText = Color(hex: "#F5F0E8")
+    /// Primary text — warm pearl white (dark) / warm near-black (light)
+    static let filmText = adaptive(dark: "#F5F0E8", light: "#1A1410")
 
     /// Secondary text — warm gray
-    static let filmSecondary = Color(hex: "#B5A898")
+    static let filmSecondary = adaptive(dark: "#B5A898", light: "#5C4F42")
 
     /// Tertiary / muted text
-    static let filmTertiary = Color(hex: "#7A6E62")
+    static let filmTertiary = adaptive(dark: "#7A6E62", light: "#8A7B6E")
 
     /// Borders and dividers
-    static let filmBorder = Color(hex: "#2C2620")
+    static let filmBorder = adaptive(dark: "#2C2620", light: "#D5CCBE")
 
     /// Subtle border for hover/focus states
-    static let filmBorderActive = Color(hex: "#3D352C")
+    static let filmBorderActive = adaptive(dark: "#3D352C", light: "#C0B5A8")
 
     /// Empty / placeholder fill
-    static let filmSprocket = Color(hex: "#100E0B")
+    static let filmSprocket = adaptive(dark: "#100E0B", light: "#E8E2D8")
 
     /// Status / success — emerald
-    static let filmSuccess = Color(hex: "#34D399")
+    static let filmSuccess = adaptive(dark: "#34D399", light: "#059669")
 
     /// Status / warning — amber
-    static let filmWarning = Color(hex: "#FBBF24")
+    static let filmWarning = adaptive(dark: "#FBBF24", light: "#D97706")
 
     /// Status / error — soft red
-    static let filmError = Color(hex: "#F87171")
+    static let filmError = adaptive(dark: "#F87171", light: "#DC2626")
 
     /// Status / info — sky blue
-    static let filmInfo = Color(hex: "#60A5FA")
+    static let filmInfo = adaptive(dark: "#60A5FA", light: "#2563EB")
 
     /// Gradient start for aurora effects
-    static let filmGradientStart = Color(hex: "#E8A832")
+    static let filmGradientStart = adaptive(dark: "#E8A832", light: "#D4942E")
 
     /// Gradient mid
-    static let filmGradientMid = Color(hex: "#D97706")
+    static let filmGradientMid = adaptive(dark: "#D97706", light: "#B86405")
 
     /// Gradient end
-    static let filmGradientEnd = Color(hex: "#B87333")
+    static let filmGradientEnd = adaptive(dark: "#B87333", light: "#9E6328")
 
     /// Glass tint for glassmorphism
-    static let filmGlass = Color(hex: "#1A1612")
+    static let filmGlass = adaptive(dark: "#1A1612", light: "#FFFFFF")
 
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
