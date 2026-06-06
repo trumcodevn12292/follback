@@ -240,6 +240,8 @@ struct LightMeterView: View {
         .onDisappear { camera.stop() }
     }
 
+    @State private var showCalculator = false
+
     private var topBar: some View {
         HStack {
             Button {
@@ -258,6 +260,15 @@ struct LightMeterView: View {
                 .foregroundColor(.white)
             Spacer()
             Button {
+                showCalculator = true
+            } label: {
+                Image(systemName: "function")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.black.opacity(0.4)))
+            }
+            Button {
                 camera.toggleLock()
                 UIImpactFeedbackGenerator(style: .medium).impactOccurred()
             } label: {
@@ -266,6 +277,11 @@ struct LightMeterView: View {
                     .foregroundColor(camera.locked ? .yellow : .white)
                     .frame(width: 40, height: 40)
                     .background(Circle().fill(Color.black.opacity(0.4)))
+            }
+        }
+        .sheet(isPresented: $showCalculator) {
+            NavigationStack {
+                ExposureCalculatorView()
             }
         }
     }

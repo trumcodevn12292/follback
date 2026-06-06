@@ -4,9 +4,36 @@ enum FilmFormat: String, Codable, CaseIterable {
     case mm35 = "35mm"
     case mm120 = "120"
     case sheet4x5 = "4×5"
+    case sheet8x10 = "8×10"
     case aps = "APS"
-    
+
     var displayName: String { rawValue }
+
+    var isSheet: Bool {
+        switch self {
+        case .sheet4x5, .sheet8x10: return true
+        default: return false
+        }
+    }
+
+    var defaultCapacity: Int {
+        switch self {
+        case .mm35: return 36
+        case .mm120: return 12
+        case .sheet4x5: return 10
+        case .sheet8x10: return 10
+        case .aps: return 25
+        }
+    }
+
+    var capacityOptions: [Int] {
+        switch self {
+        case .mm35: return [12, 24, 36]
+        case .mm120: return [8, 10, 12, 16]
+        case .sheet4x5, .sheet8x10: return [1, 2, 5, 10, 25, 50]
+        case .aps: return [15, 25, 40]
+        }
+    }
 }
 
 enum RollStatus: String, Codable, CaseIterable {

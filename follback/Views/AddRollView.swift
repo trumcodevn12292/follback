@@ -622,21 +622,27 @@ struct AddRollView: View {
 
                     settingsDivider
 
-                    // Exposures
+                    // Exposures / Sheets
                     HStack {
-                        Text("Exposures")
+                        Text(format.isSheet ? L("Sheets") : L("Exposures"))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(Color.filmText)
                         Spacer()
                         Picker("", selection: $capacity) {
-                            Text("12").tag(12)
-                            Text("24").tag(24)
-                            Text("36").tag(36)
+                            ForEach(format.capacityOptions, id: \.self) { opt in
+                                Text("\(opt)").tag(opt)
+                            }
                         }
                         .tint(Color.filmSecondary)
                     }
                     .padding(.horizontal, 18)
                     .padding(.vertical, 14)
+                    .onChange(of: format) { _, newFormat in
+                        if !newFormat.capacityOptions.contains(capacity) {
+                            capacity = newFormat.defaultCapacity
+                        }
+                        if !newFormat.isSheet { isHalfFrame = false }
+                    }
 
                     if format == .mm35 {
                         settingsDivider

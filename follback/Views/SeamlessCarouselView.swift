@@ -3,6 +3,7 @@ import Photos
 
 struct SeamlessCarouselView: View {
     let roll: Roll
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     @Environment(\.dismiss) private var dismiss
     @State private var loadedImages: [Int: UIImage] = [:]
     @State private var selectedPhotos: Set<Int> = []
@@ -296,7 +297,7 @@ struct SeamlessCarouselView: View {
                 }
             }
 
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: 4), spacing: 3) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: hSizeClass == .regular ? 6 : 4), spacing: 3) {
                 ForEach(photoFrames, id: \.id) { frame in
                     let isSelected = selectedPhotos.contains(frame.number)
                     let selectionIndex = orderedSelected.firstIndex(of: frame.number)

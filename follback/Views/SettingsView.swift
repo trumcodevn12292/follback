@@ -5,6 +5,7 @@ import Kingfisher
 
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.horizontalSizeClass) private var hSizeClass
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
     @Query(sort: \Camera.name) var cameras: [Camera]
     @State private var appeared = false
@@ -534,7 +535,7 @@ struct SettingsView: View {
                     Spacer()
                 }
 
-                let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: 4)
+                let columns = Array(repeating: GridItem(.flexible(), spacing: 12), count: hSizeClass == .regular ? 6 : 4)
                 LazyVGrid(columns: columns, spacing: 14) {
                     ForEach(AccentOption.all) { option in
                         let isSelected = themeManager.accentHex.lowercased() == option.hex.lowercased()

@@ -208,7 +208,7 @@ struct RollDetailView: View {
                 },
                 slotsAvailable: emptySlotCount
             )
-            .presentationDetents([.height(280)])
+            .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.medium] : [.height(280)])
             .presentationDragIndicator(.visible)
         }
         .fullScreenCover(isPresented: $showCamera) {
@@ -393,9 +393,11 @@ struct RollDetailView: View {
 
                     infoChipView(
                         label: "Film format",
-                        value: roll.isHalfFrame
-                            ? "\(roll.filmFormat.displayName) · \(L("Half"))"
-                            : roll.filmFormat.displayName
+                        value: roll.filmFormat.isSheet
+                            ? "\(roll.filmFormat.displayName) · \(L("Sheet"))"
+                            : roll.isHalfFrame
+                                ? "\(roll.filmFormat.displayName) · \(L("Half"))"
+                                : roll.filmFormat.displayName
                     )
 
                     Divider()
@@ -1049,23 +1051,25 @@ struct RollDetailView: View {
         }
     }
 
-    // MARK: - Photo Grid (Filmer style - 3 column, edge-to-edge)
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
+    // MARK: - Photo Grid (Filmer style - edge-to-edge)
+    private var photoGridColumns: [GridItem] {
+        let count = hSizeClass == .regular ? 5 : 3
+        return Array(repeating: GridItem(.flexible(), spacing: 2), count: count)
+    }
+
     private var photoGrid: some View {
         let frames = (roll.frames ?? [])
             .filter { $0.photoAssetID != nil }
             .sorted { $0.number < $1.number }
-        let columns = [
-            GridItem(.flexible(), spacing: 2),
-            GridItem(.flexible(), spacing: 2),
-            GridItem(.flexible(), spacing: 2)
-        ]
 
         return VStack(spacing: 0) {
             if isSelectMode {
                 selectModeBar(frames: frames)
             }
 
-            LazyVGrid(columns: columns, spacing: 2) {
+            LazyVGrid(columns: photoGridColumns, spacing: 2) {
                 ForEach(frames, id: \.id) { frame in
                     GeometryReader { geo in
                         photoCell(frame: frame, size: geo.size.width)
@@ -1494,7 +1498,7 @@ struct RollDetailView: View {
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.height(400)] : [.medium])
     }
 
     // MARK: - Upload to Google Drive
@@ -2057,6 +2061,9 @@ private struct ShareController: UIViewControllerRepresentable {
             context.coordinator.hasPresented = false
             onComplete()
         }
+        if let popover = avc.popoverPresentationController {
+            popover.sourceView = uiViewController.view
+        }
         uiViewController.present(avc, animated: true)
     }
 
@@ -2272,20 +2279,26 @@ struct EditRollDetailsView: View {
 
                             Divider().background(Color.filmBorder.opacity(0.3))
 
-                            settingsRow("Exposures", value: "\(capacity)") {
+                            settingsRow(format.isSheet ? L("Sheets") : L("Exposures"), value: "\(capacity)") {
                                 Picker("", selection: $capacity) {
                                     if roll.isHalfFrame {
                                         Text("24").tag(24)
                                         Text("48").tag(48)
                                         Text("72").tag(72)
                                     } else {
-                                        Text("12").tag(12)
-                                        Text("24").tag(24)
-                                        Text("36").tag(36)
+                                        ForEach(format.capacityOptions, id: \.self) { opt in
+                                            Text("\(opt)").tag(opt)
+                                        }
                                     }
                                 }
                                 .pickerStyle(.menu)
                                 .tint(Color.filmAccent)
+                            }
+                            .onChange(of: format) { _, newFormat in
+                                if !newFormat.capacityOptions.contains(capacity) {
+                                    capacity = newFormat.defaultCapacity
+                                }
+                                if !newFormat.isSheet { roll.isHalfFrame = false }
                             }
 
                             Divider().background(Color.filmBorder.opacity(0.3))
