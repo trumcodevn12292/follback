@@ -9,8 +9,7 @@ FilmVault is a private iOS app for film photographers who want to log every roll
 | Feature | Description |
 |---|---|
 | **🎞️ Roll Tracking** | Log every roll with film stock, camera, lens, lab, and frame-by-frame notes. Track exposure, development date, and cost. |
-| **📷 Photo Import** | Import photos from your Photo Library or Google Drive. Link each photo to a specific frame. Copy or reference mode. |
-| **📸 Camera Database** | Browse a built-in database of 800+ cameras and lenses, or add custom entries with purchase price and details. |
+| **📷 Photo Import** | Import photos from your Photo Library, Camera, Files, or Google Drive. Link each photo to a specific frame. |
 | **🖤 Darkroom** | Built-in photo editor: brightness, contrast, saturation, temperature, grain, vignette, and more. |
 | **☀️ Light Meter** | Incident light metering with zone-based EV readings. Dial-based UI for aperture/shutter/ISO. |
 | **📊 Statistics** | Spending insights, roll counts, gear usage, and achievements. Unlock milestones as you shoot more. |
@@ -19,13 +18,13 @@ FilmVault is a private iOS app for film photographers who want to log every roll
 | **🗺️ Maps** | See where your frames were shot on an interactive MapKit view. Frame-level location editing. |
 | **⏰ Reminders** | Get notified when rolls need developing, gear sits idle, or you hit photography milestones. |
 | **🔒 Live Activity** | Show your current in-progress roll on the Lock Screen and Dynamic Island via WidgetKit. |
-| **🌍 Localization** | English, Vietnamese, Chinese, Japanese, Korean, Hindi, Arabic, Russian, Spanish (9 languages). |
+| **🌍 Localization** | 8 languages with in-app language picker + Follow System option. Runtime switching without restart. |
 
 ## Tech Stack
 
 - **SwiftUI** — Declarative UI with `@ObservableObject`, `@AppStorage`, `@Query`
 - **SwiftData** — First-party persistence with `@Model` macros and `#Index`
-- **Kingfisher** — Image caching and async loading for camera/film cover art
+- **Kingfisher** — Image caching and async loading for film cover art
 - **URLSession** — Networking for Google Drive API and LLab API
 - **UserNotifications** — Local notifications for reminders and LLab order status
 - **WidgetKit** — Lock Screen and Dynamic Island Live Activities
@@ -38,12 +37,12 @@ FilmVault is a private iOS app for film photographers who want to log every roll
 ```
 follback/
 ├── FilmVaultApp.swift                  # App entry point, SwiftData container setup
+├── PrivacyInfo.xcprivacy               # Privacy manifest (App Store requirement)
 │
-├── Models/                             # SwiftData models + API response models
+├── Models/                             # SwiftData models + data models
 │   ├── Roll.swift                      # Core roll model (film stock, frames, cost, lab)
 │   ├── Frame.swift                     # Individual frame (photo asset, number, notes)
 │   ├── Camera.swift                    # Camera model (make, model, lens mount)
-│   ├── CameraModel.swift               # Built-in camera database model
 │   ├── FilmStock.swift                 # Film stock model (ISO, format, brand)
 │   ├── FilmLab.swift                   # Lab model (name, location, notes)
 │   ├── CustomFilmModel.swift           # User-created film stock entries
@@ -56,11 +55,10 @@ follback/
 │   ├── LLabService.swift               # LLab API: auth, orders, polling, notifications
 │   ├── KeychainService.swift           # Secure token storage via Security framework
 │   ├── BackupService.swift             # JSON export/import for roll & camera data
-│   ├── LocalizationManager.swift       # In-app language switching (9 languages)
+│   ├── LocalizationManager.swift       # In-app language switching (8 languages)
 │   ├── ReminderService.swift           # UNNotification scheduling for reminders
 │   ├── LiveActivityManager.swift       # WidgetKit Live Activity management
-│   ├── WidgetDataService.swift         # Shared data for widget extension
-│   └── FilmerImageAuth.swift           # Image loading auth helpers
+│   └── WidgetDataService.swift         # Shared data for widget extension
 │
 ├── Views/                              # SwiftUI views
 │   ├── Components/                     # Reusable UI components
@@ -72,7 +70,7 @@ follback/
 │   │   ├── BarChartView.swift          # Spending/statistics bar chart
 │   │   ├── DialPicker.swift            # Light meter dial control
 │   │   ├── Color+Film.swift            # Custom color palette (filmSurface, filmAccent, etc.)
-│   │   └── ThemeProvider.swift         # Accent color theme management
+│   │   └── ThemeProvider.swift         # Accent color + locale & layout direction
 │   │
 │   ├── ARGallery/                      # AR photo gallery
 │   │   ├── ARGalleryView.swift         # AR gallery with photo walls
@@ -86,10 +84,9 @@ follback/
 │   ├── FrameViewerView.swift           # Full-screen frame photo viewer
 │   ├── CamerasView.swift               # Camera & lens library
 │   ├── AddCameraView.swift             # New camera entry form
-│   ├── CameraPickerView.swift          # Camera selection sheet
 │   ├── DarkroomView.swift              # Photo editing (brightness, curves, filters)
 │   ├── LightMeterView.swift            # Zone-based exposure meter
-│   ├── SettingsView.swift              # All settings: Drive, LLab, reminders, theme
+│   ├── SettingsView.swift              # All settings: Drive, LLab, reminders, theme, language
 │   ├── LLabOrderTrackerView.swift      # LLab login + order list with polling
 │   ├── StatisticsView.swift            # Charts, spending, achievements
 │   ├── RollsMapView.swift              # Map with frame location annotations
@@ -98,18 +95,16 @@ follback/
 │   ├── OnboardingView.swift            # First-launch onboarding
 │   └── ...                             # Additional support views
 │
-├── Assets.xcassets/                    # Images, app icons, accent colors
+├── Assets.xcassets/
 │   ├── AppIcon.appiconset/
-│   ├── AppIconSmall.imageset/
 │   ├── AccentColor.colorset/
-│   └── LLabLogo.imageset/              # LLab brand logo
+│   └── LLabLogo.imageset/
 │
-├── *.lproj/                            # Localized strings (9 languages)
+├── *.lproj/                            # Localized strings (8 languages)
 │   ├── en.lproj/
 │   ├── vi.lproj/
 │   ├── zh-Hans.lproj/
 │   ├── ja.lproj/
-│   ├── ko.lproj/
 │   ├── hi.lproj/
 │   ├── ar.lproj/
 │   ├── ru.lproj/
@@ -147,7 +142,6 @@ xcrun simctl launch <device-uuid> com.williamcachamwri.FilmVault
 
 Managed via Swift Package Manager:
 - [Kingfisher](https://github.com/onevcat/Kingfisher) — Image caching
-- [Lottie](https://github.com/airbnb/lottie-ios) — Animations (via build dependency)
 
 ## Architecture
 
@@ -156,7 +150,7 @@ Managed via Swift Package Manager:
 - **Models** are SwiftData `@Model` classes with `#Index` and `#Unique` for efficient queries.
 - **Services** are singletons (`GoogleDriveService`, `LLabService`, `ReminderManager`) that conform to `ObservableObject` and publish state.
 - **Views** observe services via `@ObservedObject` and use `@Query` for SwiftData fetch.
-- **Localization** uses `.strings` files per language, loaded dynamically via `LocalizationManager`.
+- **Localization** uses `.strings` files per language, loaded dynamically via `LocalizationManager` with runtime bundle swizzling — no app restart needed on language change.
 - **LLab API flow**: Guest token → user token → JWT-based auth, with 30s polling for order updates and push notifications on status changes.
 
 ## License

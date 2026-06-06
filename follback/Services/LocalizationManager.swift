@@ -55,7 +55,17 @@ final class LocalizationManager: ObservableObject {
     static let shared = LocalizationManager()
 
     static let key = "appLanguage"
+    static let followSystemKey = "followSystemLanguage"
     static let appGroup = "group.com.williamcachamwri.FilmVault"
+
+    @Published var isFollowingSystem: Bool {
+        didSet {
+            UserDefaults.standard.set(isFollowingSystem, forKey: Self.followSystemKey)
+            if isFollowingSystem {
+                updateToSystemLanguage()
+            }
+        }
+    }
 
     @Published var language: AppLanguage {
         didSet {
@@ -66,12 +76,40 @@ final class LocalizationManager: ObservableObject {
     }
 
     private init() {
-        let saved = UserDefaults.standard.string(forKey: Self.key)
-        let resolved = saved.flatMap(AppLanguage.init(rawValue:))
-            ?? LocalizationManager.systemDefault()
-        self.language = resolved
-        Bundle.setAppLanguage(resolved.rawValue)
-        Self.shareWithWidget(resolved.rawValue)
+        let followSystem = UserDefaults.standard.bool(forKey: Self.followSystemKey)
+        self.isFollowingSystem = followSystem
+
+        if followSystem {
+            let lang = LocalizationManager.systemDefault()
+            self.language = lang
+            Bundle.setAppLanguage(lang.rawValue)
+            Self.shareWithWidget(lang.rawValue)
+        } else {
+            let saved = UserDefaults.standard.string(forKey: Self.key)
+            let resolved = saved.flatMap(AppLanguage.init(rawValue:))
+                ?? LocalizationManager.systemDefault()
+            self.language = resolved
+            Bundle.setAppLanguage(resolved.rawValue)
+            Self.shareWithWidget(resolved.rawValue)
+        }
+
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(systemLocaleDidChange),
+            name: NSLocale.currentLocaleDidChangeNotification,
+            object: nil
+        )
+    }
+
+    @objc private func systemLocaleDidChange() {
+        guard isFollowingSystem else { return }
+        updateToSystemLanguage()
+    }
+
+    private func updateToSystemLanguage() {
+        let newLang = Self.systemDefault()
+        guard newLang != language else { return }
+        language = newLang
     }
 
     /// Mirror the chosen language into the shared App Group so the widget
@@ -110,9 +148,12 @@ func L(_ key: String, _ args: CVarArg...) -> String {
 }
 
 /// Locale matching the in-app selected language, so dates/numbers format in the
-/// chosen language instead of the device locale. Reads UserDefaults directly so
-/// it is safe to call from any context.
+/// chosen language instead of the device locale. When following system, returns
+/// the current system locale so date/number formatting matches the device.
 func appLocale() -> Locale {
+    if UserDefaults.standard.bool(forKey: LocalizationManager.followSystemKey) {
+        return Locale.current
+    }
     let code = UserDefaults.standard.string(forKey: LocalizationManager.key) ?? "en"
     return Locale(identifier: code)
 }

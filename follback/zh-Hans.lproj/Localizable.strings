@@ -382,3 +382,5 @@
 "Metered" = "已测光";
 "Factor" = "系数";
 "Corrected Time" = "修正时间";
+
+"FOLLOW_SYSTEM" = "跟随系统";

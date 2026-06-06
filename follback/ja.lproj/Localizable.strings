@@ -470,3 +470,5 @@
 "Metered" = "測光済み";
 "Factor" = "係数";
 "Corrected Time" = "補正時間";
+
+"FOLLOW_SYSTEM" = "システムに従う";

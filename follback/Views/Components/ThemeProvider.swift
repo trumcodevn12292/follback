@@ -66,11 +66,11 @@ struct ThemedRoot<Content: View>: View {
             .environmentObject(manager)
             .environmentObject(l10n)
             .environment(\.theme, manager)
-            .environment(\.locale, Locale(identifier: l10n.language.rawValue))
+            .environment(\.locale, l10n.isFollowingSystem ? Locale.current : Locale(identifier: l10n.language.rawValue))
             .environment(\.layoutDirection, l10n.language.isRTL ? .rightToLeft : .leftToRight)
             .tint(Color.filmAccent)
             .preferredColorScheme(manager.isDarkMode ? .dark : .light)
-            .id(manager.accentHex + (manager.isDarkMode ? "-d" : "-l") + "-" + l10n.language.rawValue)
+            .id(manager.accentHex + (manager.isDarkMode ? "-d" : "-l") + "-" + l10n.language.rawValue + (l10n.isFollowingSystem ? "-sys" : ""))
     }
 }
 

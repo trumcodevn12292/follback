@@ -593,8 +593,39 @@ struct SettingsView: View {
                 .kerning(0.8)
 
             VStack(spacing: 0) {
+                // Follow System
+                Button {
+                    selectFollowSystem()
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "globe")
+                            .font(.system(size: 20))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 26)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(L("FOLLOW_SYSTEM"))
+                                .font(.system(size: 16, weight: l10n.isFollowingSystem ? .semibold : .regular))
+                                .foregroundColor(Color.filmText)
+                            Text(systemLanguageName)
+                                .font(.system(size: 12))
+                                .foregroundColor(Color.filmTertiary)
+                        }
+                        Spacer()
+                        if l10n.isFollowingSystem {
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 15, weight: .bold))
+                                .foregroundColor(Color.filmAccent)
+                        }
+                    }
+                    .padding(.vertical, 13)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                Divider().background(Color.filmBorder.opacity(0.3))
+
                 ForEach(Array(AppLanguage.allCases.enumerated()), id: \.element.id) { index, lang in
-                    let isSelected = l10n.language == lang
+                    let isSelected = !l10n.isFollowingSystem && l10n.language == lang
                     Button {
                         selectLanguage(lang)
                     } label: {
@@ -633,8 +664,21 @@ struct SettingsView: View {
         .animation(.spring(response: 0.5, dampingFraction: 0.82).delay(0.05), value: appeared)
     }
 
+    private var systemLanguageName: String {
+        let code = Locale.current.language.languageCode?.identifier ?? "en"
+        let locale = Locale(identifier: code)
+        return locale.localizedString(forLanguageCode: code) ?? code.uppercased()
+    }
+
+    private func selectFollowSystem() {
+        guard !l10n.isFollowingSystem else { return }
+        l10n.isFollowingSystem = true
+        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+    }
+
     private func selectLanguage(_ lang: AppLanguage) {
         guard l10n.language != lang else { return }
+        l10n.isFollowingSystem = false
         l10n.language = lang
         UIImpactFeedbackGenerator(style: .light).impactOccurred()
     }
