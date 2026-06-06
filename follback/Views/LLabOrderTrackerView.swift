@@ -12,8 +12,35 @@ struct LLabOrderTrackerView: View {
     @State private var loginSuccess = false
     @FocusState private var focusedField: Field?
     @State private var pollingTask: Task<Void, Never>?
+    @State private var searchText = ""
+    @State private var filterStatus: String?
 
     private let pollInterval: TimeInterval = 30
+
+    private var filteredOrders: [LLabOrder] {
+        var result = lLab.orders
+        if !searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+            let q = searchText.lowercased()
+            result = result.filter {
+                $0.orderNumber.lowercased().contains(q)
+                || ($0.orderItems?.first?.filmType?.lowercased().contains(q) ?? false)
+                || ($0.scanner?.lowercased().contains(q) ?? false)
+            }
+        }
+        if let status = filterStatus {
+            result = result.filter { $0.status.lowercased() == status.lowercased() }
+        }
+        return result
+    }
+
+    private let statusFilters: [(String, String)] = [
+        (L("All"), ""),
+        (L("Processing"), "processing"),
+        (L("Pending"), "pending"),
+        (L("Done"), "done"),
+        (L("Expired"), "expired"),
+        (L("Canceled"), "canceled"),
+    ]
 
     enum Field { case email, password }
 
@@ -381,21 +408,11 @@ struct LLabOrderTrackerView: View {
                 .foregroundColor(Color.filmTertiary)
                 .kerning(0.8)
 
+            if !lLab.orders.isEmpty {
+                searchBar
+            }
+
             if lLab.isLoading && lLab.orders.isEmpty {
-                VStack(spacing: 12) {
-                    ProgressView()
-                        .tint(Color.filmAccent)
-                    Text(L("Loading orders..."))
-                        .font(.system(size: 14))
-                        .foregroundColor(Color.filmTertiary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 40)
-                .background(
-                    RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(Color.filmSurface)
-                )
-            } else if lLab.orders.isEmpty && lLab.pickupOrders.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "tray")
                         .font(.system(size: 32))
@@ -413,31 +430,34 @@ struct LLabOrderTrackerView: View {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(Color.filmSurface)
                 )
-            } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(lLab.orders.enumerated()), id: \.element.id) { index, order in
-                        orderRow(order)
-                        if index < lLab.orders.count - 1 {
-                            Divider().background(Color.filmBorder.opacity(0.3))
-                        }
-                    }
+            } else if filteredOrders.isEmpty {
+                VStack(spacing: 8) {
+                    Image(systemName: "magnifyingglass")
+                        .font(.system(size: 28))
+                        .foregroundColor(Color.filmTertiary)
+                    Text(L("No results"))
+                        .font(.system(size: 16, weight: .medium))
+                        .foregroundColor(Color.filmText)
+                    Text(L("Try a different search or filter"))
+                        .font(.system(size: 13))
+                        .foregroundColor(Color.filmTertiary)
                 }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 40)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
                         .fill(Color.filmSurface)
                 )
-
-                if !lLab.pickupOrders.isEmpty {
-                    Text(L("PICKUP ORDERS"))
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundColor(Color.filmTertiary)
-                        .kerning(0.8)
-                        .padding(.top, 8)
-
+            } else {
                     VStack(spacing: 0) {
-                        ForEach(Array(lLab.pickupOrders.enumerated()), id: \.element.id) { index, order in
-                            pickupOrderRow(order)
-                            if index < lLab.pickupOrders.count - 1 {
+                        ForEach(Array(filteredOrders.enumerated()), id: \.element.id) { index, order in
+                            NavigationLink {
+                                LLabOrderDetailView(order: order)
+                            } label: {
+                                orderRow(order)
+                            }
+                            .buttonStyle(ScaleButtonStyle())
+                            if index < filteredOrders.count - 1 {
                                 Divider().background(Color.filmBorder.opacity(0.3))
                             }
                         }
@@ -446,7 +466,97 @@ struct LLabOrderTrackerView: View {
                         RoundedRectangle(cornerRadius: 14, style: .continuous)
                             .fill(Color.filmSurface)
                     )
+
+                pickupOrdersSection
+            }
+        }
+    }
+
+    // MARK: - Search & Filter
+
+    private var searchBar: some View {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 14))
+                    .foregroundColor(Color.filmTertiary)
+                TextField(L("Search orders..."), text: $searchText)
+                    .font(.system(size: 15))
+                    .foregroundColor(Color.filmText)
+                    .autocapitalization(.none)
+                    .disableAutocorrection(true)
+                if !searchText.isEmpty {
+                    Button {
+                        searchText = ""
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                    .buttonStyle(.plain)
                 }
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color.filmSurfaceSecondary)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                            .stroke(Color.filmBorder, lineWidth: 0.5)
+                    )
+            )
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(statusFilters, id: \.1) { label, value in
+                        Button {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
+                                filterStatus = value.isEmpty ? nil : value
+                            }
+                        } label: {
+                            Text(label)
+                                .font(.system(size: 12, weight: .medium))
+                                .foregroundColor(filterStatus == value || (value.isEmpty && filterStatus == nil) ? .white : Color.filmSecondary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(filterStatus == value || (value.isEmpty && filterStatus == nil) ? Color.filmAccent : Color.filmSurface)
+                                )
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                                )
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+            }
+        }
+    }
+
+    private var pickupOrdersSection: some View {
+        Group {
+            if !lLab.pickupOrders.isEmpty {
+                Text(L("PICKUP ORDERS"))
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(Color.filmTertiary)
+                    .kerning(0.8)
+                    .padding(.top, 8)
+
+                VStack(spacing: 0) {
+                    ForEach(Array(lLab.pickupOrders.enumerated()), id: \.element.id) { index, order in
+                        pickupOrderRow(order)
+                        if index < lLab.pickupOrders.count - 1 {
+                            Divider().background(Color.filmBorder.opacity(0.3))
+                        }
+                    }
+                }
+                .background(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .fill(Color.filmSurface)
+                )
             }
         }
     }
@@ -572,3 +682,16 @@ struct LLabOrderTrackerView: View {
         return "\(formatter.string(from: NSNumber(value: amount)) ?? "\(amount)")₫"
     }
 }
+
+// MARK: - Button Style
+
+private struct ScaleButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.97 : 1)
+            .brightness(configuration.isPressed ? -0.03 : 0)
+            .animation(.spring(response: 0.3, dampingFraction: 0.7), value: configuration.isPressed)
+    }
+}
+
+

@@ -108,6 +108,16 @@ final class LLabService: ObservableObject {
         isLoading = false
     }
 
+    func fetchOrderDetail(id: String) async -> LLabOrder? {
+        guard let token = accessToken else { return nil }
+        guard let data = await fetchJSON(endpoint: "/v1/p/order/\(id)", token: token) else { return nil }
+        if let response = try? JSONDecoder().decode(LLabAPIResponse<LLabOrder>.self, from: data),
+           response.isSuccess, let order = response.data {
+            return order
+        }
+        return nil
+    }
+
     @MainActor
     private func fetchUser() async {
         guard let token = accessToken else { return }
@@ -180,7 +190,34 @@ final class LLabService: ObservableObject {
         var request = URLRequest(url: url)
         request.setValue(token, forHTTPHeaderField: "Authorization")
         request.timeoutInterval = 30
-        guard let (data, _) = try? await URLSession.shared.data(for: request) else { return nil }
+        guard let (data, response) = try? await URLSession.shared.data(for: request),
+              let httpResponse = response as? HTTPURLResponse else { return nil }
+
+        if httpResponse.statusCode == 401 {
+            let refreshed = await refreshAccessToken()
+            if refreshed, let newToken = accessToken {
+                var retryRequest = URLRequest(url: url)
+                retryRequest.setValue(newToken, forHTTPHeaderField: "Authorization")
+                retryRequest.timeoutInterval = 30
+                guard let (retryData, retryResponse) = try? await URLSession.shared.data(for: retryRequest),
+                      let retryHttpResponse = retryResponse as? HTTPURLResponse,
+                      retryHttpResponse.statusCode != 401 else {
+                    await MainActor.run {
+                        signOut()
+                        error = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại."
+                    }
+                    return nil
+                }
+                return retryData
+            } else {
+                await MainActor.run {
+                    signOut()
+                    error = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại."
+                }
+                return nil
+            }
+        }
+
         return data
     }
 
@@ -258,6 +295,28 @@ final class LLabService: ObservableObject {
         UNUserNotificationCenter.current().add(request)
     }
 
+    private func refreshAccessToken() async -> Bool {
+        guard let refresh = refreshToken, !refresh.isEmpty else { return false }
+
+        let endpoints = ["/v1/p/auth/refresh", "/v1/g/token/refresh"]
+
+        for endpoint in endpoints {
+            let body = ["refreshToken": refresh]
+            guard let bodyData = try? JSONSerialization.data(withJSONObject: body),
+                  let data = try? await postJSON(path: endpoint, body: bodyData, token: nil),
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let isSuccess = json["isSuccess"] as? Bool, isSuccess,
+                  let dataObj = json["data"] as? [String: Any],
+                  let token = dataObj["token"] as? String, !token.isEmpty else { continue }
+
+            accessToken = token
+            KeychainService.save(key: accessTokenKey, value: token)
+            return true
+        }
+
+        return false
+    }
+
     private func loadSavedCredentials() {
         accessToken = KeychainService.read(key: accessTokenKey)
         refreshToken = KeychainService.read(key: refreshTokenKey)
@@ -268,5 +327,11 @@ final class LLabService: ObservableObject {
         }
 
         isSignedIn = accessToken != nil && user != nil
+
+        if isSignedIn {
+            Task { @MainActor in
+                await self.fetchOrders()
+            }
+        }
     }
 }
