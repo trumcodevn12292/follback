@@ -42,7 +42,8 @@ struct FilmVaultApp: App {
     private var sharedModelContainer: ModelContainer = {
         do {
             return try ModelContainer(
-                for: Roll.self, Frame.self, Camera.self, CustomFilmModel.self
+                for: Roll.self, Frame.self, Camera.self, CustomFilmModel.self,
+                migrationPlan: FilmVaultMigrationPlan.self
             )
         } catch {
             fatalError("Failed to create ModelContainer: \(error)")

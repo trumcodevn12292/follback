@@ -47,23 +47,17 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		1F82E6E82FCEFA1300058D29 /* follback */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = follback;
-			sourceTree = "<group>";
-		};
-		WIDG00060000000000000001 /* FilmVaultWidget */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
-			path = FilmVaultWidget;
 			sourceTree = "<group>";
 		};
 		SHARED000000000000000001 /* Shared */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = Shared;
+			sourceTree = "<group>";
+		};
+		WIDG00060000000000000001 /* FilmVaultWidget */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = FilmVaultWidget;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -156,8 +150,8 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				WIDG00060000000000000001 /* FilmVaultWidget */,
 				SHARED000000000000000001 /* Shared */,
+				WIDG00060000000000000001 /* FilmVaultWidget */,
 			);
 			name = FilmVaultWidgetExtension;
 			productName = FilmVaultWidgetExtension;
@@ -182,7 +176,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "FilmVault" */;
+			buildConfigurationList = 1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "follback" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -385,11 +379,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
-				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -421,11 +415,11 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 48;
 				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				ENABLE_PREVIEWS = YES;
-				CODE_SIGN_ENTITLEMENTS = FilmVault.entitlements;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -456,12 +450,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				CODE_SIGN_ENTITLEMENTS = FilmVaultWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 48;
+				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = FilmVaultWidget-Info.plist;
+				INFOPLIST_FILE = "FilmVaultWidget-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -470,7 +464,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.48;
 				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -486,12 +480,12 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				CODE_SIGN_ENTITLEMENTS = FilmVaultWidgetExtension.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 48;
+				DEVELOPMENT_TEAM = RV2GXBQQP2;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = FilmVaultWidget-Info.plist;
+				INFOPLIST_FILE = "FilmVaultWidget-Info.plist";
 				INFOPLIST_KEY_CFBundleDisplayName = FilmVaultWidget;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
@@ -500,7 +494,7 @@
 					"@executable_path/Frameworks",
 					"@executable_path/../../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.0.48;
 				PRODUCT_BUNDLE_IDENTIFIER = com.williamcachamwri.FilmVault.widget;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -515,7 +509,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "FilmVault" */ = {
+		1F82E6E12FCEFA1300058D29 /* Build configuration list for PBXProject "follback" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				1F82E6F12FCEFA1500058D29 /* Debug */,
