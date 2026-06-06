@@ -17,6 +17,7 @@ struct SettingsView: View {
     @AppStorage("photoImportMode") private var photoImportModeRaw: String = PhotoImportMode.copy.rawValue
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
     @State private var showResetOnboardingAlert = false
+    @State private var showCopyrightInfo = false
     @ObservedObject private var driveService = GoogleDriveService.shared
     @ObservedObject private var lLab = LLabService.shared
     @ObservedObject private var reminderManager = ReminderManager.shared
@@ -88,6 +89,11 @@ struct SettingsView: View {
                     appeared = true
                 }
                 reminderManager.refreshAuthorizationStatus()
+            }
+            .sheet(isPresented: $showCopyrightInfo) {
+                CopyrightInfoView()
+                    .presentationDetents([.medium])
+                    .presentationDragIndicator(.visible)
             }
             .alert("Clear Cache", isPresented: $showClearCacheAlert) {
                 Button("Cancel", role: .cancel) { }
@@ -1101,20 +1107,26 @@ struct SettingsView: View {
                 Divider().background(Color.filmBorder.opacity(0.3))
 
                 // Copyright
-                HStack(spacing: 12) {
-                    Image(systemName: "c.circle")
-                        .font(.system(size: 15))
-                        .foregroundColor(Color.filmAccent)
-                        .frame(width: 24)
-                    Text("Copyright")
-                        .font(.system(size: 16, weight: .medium))
-                        .foregroundColor(Color.filmText)
-                    Spacer()
-                    Text("\(Calendar.current.component(.year, from: Date())) FilmVault")
-                        .font(.system(size: 13, weight: .medium))
-                        .foregroundColor(Color.filmTertiary)
+                Button {
+                    showCopyrightInfo = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "c.circle")
+                            .font(.system(size: 15))
+                            .foregroundColor(Color.filmAccent)
+                            .frame(width: 24)
+                        Text("Copyright")
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(Color.filmText)
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(Color.filmTertiary)
+                    }
+                    .padding(16)
+                    .contentShape(Rectangle())
                 }
-                .padding(16)
+                .buttonStyle(.plain)
             }
             .background(
                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -1178,6 +1190,84 @@ struct SettingsView: View {
             }
             calculateCacheSize()
         }
+    }
+}
+
+// MARK: - Copyright Info
+
+struct CopyrightInfoView: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            RoundedRectangle(cornerRadius: 2.5)
+                .fill(Color.gray.opacity(0.4))
+                .frame(width: 36, height: 5)
+                .padding(.top, 8)
+
+            VStack(spacing: 2) {
+                Image(systemName: "c.circle")
+                    .font(.system(size: 36))
+                    .foregroundColor(Color.filmAccent)
+                Text("FilmVault")
+                    .font(.system(size: 22, weight: .bold))
+                    .foregroundColor(Color.filmText)
+                    .padding(.top, 4)
+            }
+            .padding(.top, 16)
+
+            VStack(spacing: 0) {
+                infoRow(icon: "person.circle", title: "William Cachamwri")
+                Divider().padding(.leading, 52)
+                infoLink(icon: "link", title: "github.com/williamcachamwri", url: "https://github.com/williamcachamwri")
+                Divider().padding(.leading, 52)
+                infoLink(icon: "envelope.fill", title: "williamcachamwri@gmail.com", url: "mailto:williamcachamwri@gmail.com")
+                Divider().padding(.leading, 52)
+                infoLink(icon: "phone.fill", title: "+84 905 243 477", url: "tel:+84905243477")
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 20)
+
+            Spacer()
+        }
+        .background(Color.filmBackground)
+    }
+
+    private func infoRow(icon: String, title: String) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(Color.filmAccent)
+                .frame(width: 24)
+            Text(title)
+                .font(.system(size: 16, weight: .medium))
+                .foregroundColor(Color.filmText)
+            Spacer()
+        }
+        .padding(.vertical, 14)
+    }
+
+    private func infoLink(icon: String, title: String, url: String) -> some View {
+        Button {
+            guard let link = URL(string: url) else { return }
+            UIApplication.shared.open(link)
+        } label: {
+            HStack(spacing: 14) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(Color.filmAccent)
+                    .frame(width: 24)
+                Text(title)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(Color.filmAccent)
+                    .lineLimit(1)
+                Spacer()
+                Image(systemName: "arrow.up.forward.app")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(Color.filmTertiary)
+            }
+            .padding(.vertical, 14)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
