@@ -120,7 +120,6 @@ struct CameraPickerView: View {
             if let logoUrl = models.first?.fullBrandLogoUrl,
                let url = URL(string: logoUrl) {
                 KFImage(url)
-                    .requestModifier(FilmerImageAuth.shared.modifier)
                     .downsampling(size: CGSize(width: 80, height: 40))
                     .resizable()
                     .scaledToFit()
@@ -149,7 +148,6 @@ struct CameraPickerView: View {
                     if let coverUrl = model.fullCoverUrl,
                        let url = URL(string: coverUrl) {
                         KFImage(url)
-                            .requestModifier(FilmerImageAuth.shared.modifier)
                             .downsampling(size: CGSize(width: 112, height: 112))
                             .cacheOriginalImage()
                             .resizable()

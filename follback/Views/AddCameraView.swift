@@ -68,7 +68,6 @@ struct AddCameraView: View {
                    let coverUrlString = model.fullCoverUrl,
                    let coverURL = URL(string: coverUrlString) {
                     KFImage(coverURL)
-                        .requestModifier(FilmerImageAuth.shared.modifier)
                         .downsampling(size: CGSize(width: 144, height: 144))
                         .cacheOriginalImage()
                         .resizable()
@@ -109,7 +108,6 @@ struct AddCameraView: View {
                            let coverUrlString = model.fullCoverUrl,
                            let coverURL = URL(string: coverUrlString) {
                             KFImage(coverURL)
-                                .requestModifier(FilmerImageAuth.shared.modifier)
                                 .downsampling(size: CGSize(width: 88, height: 88))
                                 .cacheOriginalImage()
                                 .resizable()
@@ -270,7 +268,6 @@ struct AddCameraView: View {
                     if let coverUrlString = model.fullCoverUrl,
                        let coverURL = URL(string: coverUrlString) {
                         KFImage(coverURL)
-                            .requestModifier(FilmerImageAuth.shared.modifier)
                             .downsampling(size: CGSize(width: 100, height: 100))
                             .cacheOriginalImage()
                             .resizable()

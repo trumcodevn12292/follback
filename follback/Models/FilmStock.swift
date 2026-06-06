@@ -65,7 +65,7 @@ struct FilmStock: Identifiable, Hashable, Codable {
     }
 
     var githubCoverUrl: String? {
-        guard coverUrl != nil, !coverUrl!.isEmpty else { return nil }
+        guard let coverUrl, !coverUrl.isEmpty else { return nil }
         let fileName = "\(brand)_\(name)"
             .replacingOccurrences(of: " ", with: "_")
             .replacingOccurrences(of: "/", with: "_")

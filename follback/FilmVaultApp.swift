@@ -27,9 +27,6 @@ struct FilmVaultApp: App {
         WindowGroup {
             ContentView()
                 .withTheme()
-                .task {
-                    await FilmerImageAuth.shared.ensureToken()
-                }
                 .onAppear {
                     migrateDataIfNeeded()
                 }
@@ -42,9 +39,15 @@ struct FilmVaultApp: App {
         }
     }
 
-    private var sharedModelContainer = try! ModelContainer(
-        for: Roll.self, Frame.self, Camera.self, CustomFilmModel.self
-    )
+    private var sharedModelContainer: ModelContainer = {
+        do {
+            return try ModelContainer(
+                for: Roll.self, Frame.self, Camera.self, CustomFilmModel.self
+            )
+        } catch {
+            fatalError("Failed to create ModelContainer: \(error)")
+        }
+    }()
 
     private func migrateDataIfNeeded() {
         let context = sharedModelContainer.mainContext

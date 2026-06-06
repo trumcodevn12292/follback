@@ -3,6 +3,7 @@ import SwiftData
 import Shimmer
 import Combine
 import CoreMotion
+import AVFoundation
 
 struct RollsView: View {
     @Query(sort: \Roll.createdAt, order: .reverse) var rolls: [Roll]
@@ -173,6 +174,7 @@ struct RollsView: View {
                 Button {
                     showAddSheet = true
                     UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                    playShutterSound()
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: "plus")
@@ -681,6 +683,15 @@ struct RollsView: View {
         modelContext.insert(newRoll)
         try? modelContext.save()
         NotificationCenter.default.post(name: .widgetDataDidChange, object: nil)
+    }
+
+    private func playShutterSound() {
+        guard let url = Bundle.main.url(forResource: "notification", withExtension: "caf") else { return }
+        var player: AVAudioPlayer?
+        player = try? AVAudioPlayer(contentsOf: url)
+        player?.volume = 1.0
+        player?.play()
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) { _ = player }
     }
 }
 

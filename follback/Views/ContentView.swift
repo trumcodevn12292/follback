@@ -3,6 +3,7 @@ import SwiftData
 import Combine
 import UIKit
 import WidgetKit
+import AVFoundation
 
 struct ContentView: View {
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding = false
@@ -74,6 +75,7 @@ struct ContentView: View {
             .onReceive(NotificationCenter.default.publisher(for: .quickActionNewRoll)) { _ in
                 selectedTab = 0
                 showNewRoll = true
+                playShutterSound()
             }
             .onReceive(NotificationCenter.default.publisher(for: .quickActionSettings)) { _ in
                 selectedTab = 4
@@ -121,6 +123,15 @@ struct ContentView: View {
         WidgetDeepLink.shared.pendingRollID = idString
     }
 
+    private func playShutterSound() {
+        guard let url = Bundle.main.url(forResource: "notification", withExtension: "caf") else { return }
+        var player: AVAudioPlayer?
+        player = try? AVAudioPlayer(contentsOf: url)
+        player?.volume = 1.0
+        player?.play()
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) { _ = player }
+    }
+
     private func updateWidgetData() {
         let descriptor = FetchDescriptor<Roll>()
         guard let rolls = try? modelContext.fetch(descriptor) else { return }
@@ -147,6 +158,7 @@ struct ContentView: View {
         case "newRoll":
             selectedTab = 0
             showNewRoll = true
+            playShutterSound()
         case "startTracking":
             updateWidgetData()
         default:
