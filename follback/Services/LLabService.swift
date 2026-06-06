@@ -284,7 +284,7 @@ final class LLabService: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = L("Order #%@ is ready!", order.orderNumber)
         content.body = L("Your film order at LLab is complete. Time to pick it up!")
-        content.sound = .default
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
         let request = UNNotificationRequest(

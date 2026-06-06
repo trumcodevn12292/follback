@@ -142,7 +142,7 @@ final class ReminderManager: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
 
         let comps = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: fireDate)
         let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
@@ -234,7 +234,7 @@ final class ReminderManager: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = "FilmVault Test"
         content.body = "If you see this, notifications are working!"
-        content.sound = .default
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
 
         let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 3, repeats: false)
         let request = UNNotificationRequest(
@@ -249,7 +249,7 @@ final class ReminderManager: ObservableObject {
         let content = UNMutableNotificationContent()
         content.title = title
         content.body = body
-        content.sound = .default
+        content.sound = UNNotificationSound(named: UNNotificationSoundName("notification.caf"))
 
         var comps = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: Date())
         comps.second = comps.second.map { $0 + 2 }
