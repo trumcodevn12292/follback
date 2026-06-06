@@ -439,3 +439,34 @@
 "%d frames with location" = "位置情報あり %d コマ";
 "%d rolls with location" = "位置情報あり %d 本";
 "Duplicate" = "複製";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "シート";
+"Sheets" = "シート";
+"Exposure Calculator" = "露出計算機";
+"EV" = "EV";
+"Zone" = "ゾーン";
+"Reciprocity" = "相反則";
+"Shutter" = "シャッター";
+"Exposure Value (EV)" = "露出値 (EV)";
+"at ISO %d" = "ISO %d";
+"EQUIVALENT PAIRS" = "等価ペア";
+"Meter reading" = "測光値";
+"+%d stop over (↑ %@)" = "+%d ストップ増 (↑ %@)";
+"%d stop under (↓ %@)" = "%d ストップ減 (↓ %@)";
+"Zone System" = "ゾーンシステム";
+"Place your key tone on a zone, then adjust exposure accordingly." = "キートーンをゾーンに配置し、露出を調整します。";
+"Meter Reading (EV)" = "測光値 (EV)";
+"Film ISO" = "フィルムISO";
+"Selected Zone %@" = "選択ゾーン %@";
+"Target EV: %@" = "目標EV: %@";
+"Color Negative" = "カラーネガ";
+"B&W" = "モノクロ";
+"E-6 (Slide)" = "E-6 (スライド)";
+"Reciprocity Failure" = "相反則不軌";
+"Long exposures need extra time since film doesn't react linearly to light." = "長時間露光ではフィルムが光に直線的に反応しないため、追加時間が必要です。";
+"Film Type" = "フィルム種類";
+"Metered Time" = "測光時間";
+"Metered" = "測光済み";
+"Factor" = "係数";
+"Corrected Time" = "補正時間";

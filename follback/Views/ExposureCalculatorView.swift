@@ -12,7 +12,7 @@ struct ExposureCalculatorView: View {
 
         var label: String {
             switch self {
-            case .ev: return "EV"
+            case .ev: return L("EV")
             case .zone: return L("Zone")
             case .reciprocity: return L("Reciprocity")
             }
@@ -326,7 +326,7 @@ private struct ReciprocityView: View {
             switch self {
             case .color: return L("Color Negative")
             case .bw: return L("B&W")
-            case .e6: return "E-6 (Slide)"
+            case .e6: return L("E-6 (Slide)")
             }
         }
     }

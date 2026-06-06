@@ -377,3 +377,34 @@
 "%d film(s)" = "%d film(s)";
 "Order #%@ is ready!" = "Order #%@ is ready!";
 "Your film order at LLab is complete. Time to pick it up!" = "Your film order at LLab is complete. Time to pick it up!";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "Sheet";
+"Sheets" = "Sheets";
+"Exposure Calculator" = "Exposure Calculator";
+"EV" = "EV";
+"Zone" = "Zone";
+"Reciprocity" = "Reciprocity";
+"Shutter" = "Shutter";
+"Exposure Value (EV)" = "Exposure Value (EV)";
+"at ISO %d" = "at ISO %d";
+"EQUIVALENT PAIRS" = "EQUIVALENT PAIRS";
+"Meter reading" = "Meter reading";
+"+%d stop over (↑ %@)" = "+%d stop over (↑ %@)";
+"%d stop under (↓ %@)" = "%d stop under (↓ %@)";
+"Zone System" = "Zone System";
+"Place your key tone on a zone, then adjust exposure accordingly." = "Place your key tone on a zone, then adjust exposure accordingly.";
+"Meter Reading (EV)" = "Meter Reading (EV)";
+"Film ISO" = "Film ISO";
+"Selected Zone %@" = "Selected Zone %@";
+"Target EV: %@" = "Target EV: %@";
+"Color Negative" = "Color Negative";
+"B&W" = "B&W";
+"E-6 (Slide)" = "E-6 (Slide)";
+"Reciprocity Failure" = "Reciprocity Failure";
+"Long exposures need extra time since film doesn't react linearly to light." = "Long exposures need extra time since film doesn't react linearly to light.";
+"Film Type" = "Film Type";
+"Metered Time" = "Metered Time";
+"Metered" = "Metered";
+"Factor" = "Factor";
+"Corrected Time" = "Corrected Time";

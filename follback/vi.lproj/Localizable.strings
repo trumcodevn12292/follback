@@ -465,3 +465,34 @@
 "%d film(s)" = "%d cuộn phim";
 "Order #%@ is ready!" = "Đơn hàng #%@ đã sẵn sàng!";
 "Your film order at LLab is complete. Time to pick it up!" = "Đơn hàng rửa phim tại LLab đã hoàn tất. Đến lấy phim thôi!";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "Tấm";
+"Sheets" = "Tấm";
+"Exposure Calculator" = "Máy tính phơi sáng";
+"EV" = "EV";
+"Zone" = "Vùng";
+"Reciprocity" = "Tương hỗ";
+"Shutter" = "Tốc độ";
+"Exposure Value (EV)" = "Giá trị phơi sáng (EV)";
+"at ISO %d" = "ở ISO %d";
+"EQUIVALENT PAIRS" = "CẶP TƯƠNG ĐƯƠNG";
+"Meter reading" = "Đo sáng";
+"+%d stop over (↑ %@)" = "+%d khẩu trên (↑ %@)";
+"%d stop under (↓ %@)" = "%d khẩu dưới (↓ %@)";
+"Zone System" = "Hệ thống vùng";
+"Place your key tone on a zone, then adjust exposure accordingly." = "Đặt tông màu chính vào một vùng, sau đó điều chỉnh phơi sáng tương ứng.";
+"Meter Reading (EV)" = "Đo sáng (EV)";
+"Film ISO" = "ISO phim";
+"Selected Zone %@" = "Vùng đã chọn %@";
+"Target EV: %@" = "EV mục tiêu: %@";
+"Color Negative" = "Âm bản màu";
+"B&W" = "Trắng đen";
+"E-6 (Slide)" = "E-6 (Slide)";
+"Reciprocity Failure" = "Lỗi tương hỗ";
+"Long exposures need extra time since film doesn't react linearly to light." = "Phơi sáng lâu cần thêm thời gian vì phim không phản ứng tuyến tính với ánh sáng.";
+"Film Type" = "Loại phim";
+"Metered Time" = "Thời gian đo";
+"Metered" = "Đã đo";
+"Factor" = "Hệ số";
+"Corrected Time" = "Thời gian hiệu chỉnh";

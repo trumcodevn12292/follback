@@ -351,3 +351,34 @@
 "%d frames with location" = "%d 个带位置的帧";
 "%d rolls with location" = "%d 个带位置的胶卷";
 "Duplicate" = "复制";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "页片";
+"Sheets" = "页片";
+"Exposure Calculator" = "曝光计算器";
+"EV" = "EV";
+"Zone" = "区域";
+"Reciprocity" = "互易";
+"Shutter" = "快门";
+"Exposure Value (EV)" = "曝光值 (EV)";
+"at ISO %d" = "ISO %d 时";
+"EQUIVALENT PAIRS" = "等效组合";
+"Meter reading" = "测光读数";
+"+%d stop over (↑ %@)" = "+%d 档过度 (↑ %@)";
+"%d stop under (↓ %@)" = "%d 档不足 (↓ %@)";
+"Zone System" = "区域系统";
+"Place your key tone on a zone, then adjust exposure accordingly." = "将关键色调放在某个区域，然后相应地调整曝光。";
+"Meter Reading (EV)" = "测光读数 (EV)";
+"Film ISO" = "胶片 ISO";
+"Selected Zone %@" = "所选区域 %@";
+"Target EV: %@" = "目标 EV: %@";
+"Color Negative" = "彩色负片";
+"B&W" = "黑白";
+"E-6 (Slide)" = "E-6 (正片)";
+"Reciprocity Failure" = "互易律失效";
+"Long exposures need extra time since film doesn't react linearly to light." = "长时间曝光需要额外时间，因为胶片对光的反应不是线性的。";
+"Film Type" = "胶片类型";
+"Metered Time" = "测光时间";
+"Metered" = "已测光";
+"Factor" = "系数";
+"Corrected Time" = "修正时间";

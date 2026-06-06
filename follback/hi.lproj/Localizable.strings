@@ -438,3 +438,34 @@
 "%d frames with location" = "%d फ्रेम स्थान सहित";
 "%d rolls with location" = "%d रोल स्थान सहित";
 "Duplicate" = "डुप्लिकेट";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "शीट";
+"Sheets" = "शीट";
+"Exposure Calculator" = "एक्सपोज़र कैलकुलेटर";
+"EV" = "EV";
+"Zone" = "ज़ोन";
+"Reciprocity" = "पारस्परिकता";
+"Shutter" = "शटर";
+"Exposure Value (EV)" = "एक्सपोज़र वैल्यू (EV)";
+"at ISO %d" = "ISO %d पर";
+"EQUIVALENT PAIRS" = "समतुल्य जोड़े";
+"Meter reading" = "मीटर रीडिंग";
+"+%d stop over (↑ %@)" = "+%d स्टॉप ओवर (↑ %@)";
+"%d stop under (↓ %@)" = "%d स्टॉप अंडर (↓ %@)";
+"Zone System" = "ज़ोन सिस्टम";
+"Place your key tone on a zone, then adjust exposure accordingly." = "अपने मुख्य टोन को एक ज़ोन पर रखें, फिर उसके अनुसार एक्सपोज़र एडजस्ट करें।";
+"Meter Reading (EV)" = "मीटर रीडिंग (EV)";
+"Film ISO" = "फ़िल्म ISO";
+"Selected Zone %@" = "चयनित ज़ोन %@";
+"Target EV: %@" = "लक्ष्य EV: %@";
+"Color Negative" = "रंग नेगेटिव";
+"B&W" = "B&W";
+"E-6 (Slide)" = "E-6 (स्लाइड)";
+"Reciprocity Failure" = "पारस्परिकता विफलता";
+"Long exposures need extra time since film doesn't react linearly to light." = "लंबे एक्सपोज़र को अतिरिक्त समय चाहिए क्योंकि फ़िल्म प्रकाश के प्रति रैखिक रूप से प्रतिक्रिया नहीं करती।";
+"Film Type" = "फ़िल्म प्रकार";
+"Metered Time" = "मापा गया समय";
+"Metered" = "मापा गया";
+"Factor" = "गुणक";
+"Corrected Time" = "सुधारा गया समय";

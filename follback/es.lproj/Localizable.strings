@@ -438,3 +438,34 @@
 "%d frames with location" = "%d fotogramas con ubicación";
 "%d rolls with location" = "%d carretes con ubicación";
 "Duplicate" = "Duplicar";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "Placa";
+"Sheets" = "Placas";
+"Exposure Calculator" = "Calculadora de exposición";
+"EV" = "EV";
+"Zone" = "Zona";
+"Reciprocity" = "Reciprocidad";
+"Shutter" = "Velocidad";
+"Exposure Value (EV)" = "Valor de exposición (VE)";
+"at ISO %d" = "a ISO %d";
+"EQUIVALENT PAIRS" = "PARES EQUIVALENTES";
+"Meter reading" = "Lectura del fotómetro";
+"+%d stop over (↑ %@)" = "+%d paso más (↑ %@)";
+"%d stop under (↓ %@)" = "%d paso menos (↓ %@)";
+"Zone System" = "Sistema de zonas";
+"Place your key tone on a zone, then adjust exposure accordingly." = "Coloca tu tono clave en una zona y ajusta la exposición según corresponda.";
+"Meter Reading (EV)" = "Lectura del fotómetro (VE)";
+"Film ISO" = "ISO de la película";
+"Selected Zone %@" = "Zona seleccionada %@";
+"Target EV: %@" = "VE objetivo: %@";
+"Color Negative" = "Negativo color";
+"B&W" = "ByN";
+"E-6 (Slide)" = "E-6 (Diapositiva)";
+"Reciprocity Failure" = "Fallo de reciprocidad";
+"Long exposures need extra time since film doesn't react linearly to light." = "Las exposiciones largas necesitan más tiempo porque la película no reacciona linealmente a la luz.";
+"Film Type" = "Tipo de película";
+"Metered Time" = "Tiempo medido";
+"Metered" = "Medido";
+"Factor" = "Factor";
+"Corrected Time" = "Tiempo corregido";

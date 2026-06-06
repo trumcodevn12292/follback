@@ -52,6 +52,7 @@ struct RollDetailView: View {
     @State private var showFilmPicker = false
     @State private var showDatePicker = false
     @State private var showCameraPicker = false
+    @State private var showFormatPicker = false
     @State private var editingDate: Date = Date()
     @AppStorage("lastImportSource") private var lastImportSource: String = "library"
     @ObservedObject private var driveService = GoogleDriveService.shared
@@ -265,6 +266,9 @@ struct RollDetailView: View {
         .sheet(isPresented: $showCameraPicker) {
             cameraPickerSheet
         }
+        .sheet(isPresented: $showFormatPicker) {
+            formatPickerSheet
+        }
     }
 
     private var formattedShootingDate: String {
@@ -391,14 +395,19 @@ struct RollDetailView: View {
                             }
                         }
 
-                    infoChipView(
-                        label: "Film format",
-                        value: roll.filmFormat.isSheet
-                            ? "\(roll.filmFormat.displayName) · \(L("Sheet"))"
-                            : roll.isHalfFrame
-                                ? "\(roll.filmFormat.displayName) · \(L("Half"))"
-                                : roll.filmFormat.displayName
-                    )
+                    Button {
+                        showFormatPicker = true
+                    } label: {
+                        infoChipView(
+                            label: "Film format",
+                            value: roll.filmFormat.isSheet
+                                ? "\(roll.filmFormat.displayName) · \(L("Sheet"))"
+                                : roll.isHalfFrame
+                                    ? "\(roll.filmFormat.displayName) · \(L("Half"))"
+                                    : roll.filmFormat.displayName
+                        )
+                    }
+                    .buttonStyle(.plain)
 
                     Divider()
                         .frame(height: 40)
@@ -1499,6 +1508,58 @@ struct RollDetailView: View {
             }
         }
         .presentationDetents(UIDevice.current.userInterfaceIdiom == .pad ? [.height(400)] : [.medium])
+    }
+
+    // MARK: - Format Picker Sheet
+    private var formatPickerSheet: some View {
+        NavigationStack {
+            ScrollView(showsIndicators: false) {
+                LazyVStack(alignment: .leading, spacing: 0) {
+                    ForEach(FilmFormat.allCases, id: \.rawValue) { format in
+                        Button {
+                            roll.format = format.rawValue
+                            if !format.isSheet { roll.isHalfFrame = false }
+                            if !format.capacityOptions.contains(roll.capacity) {
+                                roll.capacity = format.defaultCapacity
+                            }
+                            roll.updatedAt = Date()
+                            try? modelContext.save()
+                            showFormatPicker = false
+                        } label: {
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(format.displayName)
+                                        .font(.system(size: 15, weight: .medium))
+                                        .foregroundColor(Color.filmText)
+                                    Text(format.isSheet ? L("Sheet") : "")
+                                        .font(.system(size: 12))
+                                        .foregroundColor(Color.filmTertiary)
+                                }
+                                Spacer()
+                                if roll.filmFormat == format {
+                                    Image(systemName: "checkmark")
+                                        .foregroundColor(Color.filmAccent)
+                                }
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                        }
+                        .buttonStyle(.plain)
+                        Divider().background(Color.filmBorder.opacity(0.2))
+                            .padding(.horizontal, 16)
+                    }
+                }
+            }
+            .background(Color.filmBackground.ignoresSafeArea())
+            .navigationTitle(L("Format"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(L("Cancel")) { showFormatPicker = false }
+                }
+            }
+        }
+        .presentationDetents([.medium, .large])
     }
 
     // MARK: - Upload to Google Drive

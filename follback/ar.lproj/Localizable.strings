@@ -437,3 +437,34 @@
 "%d frames with location" = "%d إطارًا مع الموقع";
 "%d rolls with location" = "%d فيلمًا مع الموقع";
 "Duplicate" = "نسخ";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "ورقة";
+"Sheets" = "ورقات";
+"Exposure Calculator" = "حاسبة التعريض";
+"EV" = "EV";
+"Zone" = "منطقة";
+"Reciprocity" = "المعاملة بالمثل";
+"Shutter" = "الغالق";
+"Exposure Value (EV)" = "قيمة التعريض (EV)";
+"at ISO %d" = "عند ISO %d";
+"EQUIVALENT PAIRS" = "أزواج مكافئة";
+"Meter reading" = "قراءة المقياس";
+"+%d stop over (↑ %@)" = "+%d توقف زيادة (↑ %@)";
+"%d stop under (↓ %@)" = "%d توقف نقصان (↓ %@)";
+"Zone System" = "نظام المناطق";
+"Place your key tone on a zone, then adjust exposure accordingly." = "ضع نغمتك الرئيسية على منطقة، ثم اضبط التعريض وفقًا لذلك.";
+"Meter Reading (EV)" = "قراءة المقياس (EV)";
+"Film ISO" = "ISO الفيلم";
+"Selected Zone %@" = "المنطقة المحددة %@";
+"Target EV: %@" = "EV المستهدف: %@";
+"Color Negative" = "نيغاتيف ملون";
+"B&W" = "أبيض وأسود";
+"E-6 (Slide)" = "E-6 (شريحة)";
+"Reciprocity Failure" = "فشل المعاملة بالمثل";
+"Long exposures need extra time since film doesn't react linearly to light." = "التعريض الطويل يحتاج وقتًا إضافيًا لأن الفيلم لا يستجيب خطيًا للضوء.";
+"Film Type" = "نوع الفيلم";
+"Metered Time" = "الوقت المقاس";
+"Metered" = "تم القياس";
+"Factor" = "العامل";
+"Corrected Time" = "الوقت المصحح";

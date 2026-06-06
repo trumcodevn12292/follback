@@ -440,3 +440,34 @@
 "%d frames with location" = "%d кадров с местоположением";
 "%d rolls with location" = "%d плёнок с местоположением";
 "Duplicate" = "Дублировать";
+
+/* Added: Exposure calculator & sheet film */
+"Sheet" = "Лист";
+"Sheets" = "Листы";
+"Exposure Calculator" = "Калькулятор экспозиции";
+"EV" = "EV";
+"Zone" = "Зона";
+"Reciprocity" = "Реципрокность";
+"Shutter" = "Выдержка";
+"Exposure Value (EV)" = "Экспозиционное число (EV)";
+"at ISO %d" = "при ISO %d";
+"EQUIVALENT PAIRS" = "ЭКВИВАЛЕНТНЫЕ ПАРЫ";
+"Meter reading" = "Показания экспонометра";
+"+%d stop over (↑ %@)" = "+%d стопов пересвета (↑ %@)";
+"%d stop under (↓ %@)" = "%d стопов недосвета (↓ %@)";
+"Zone System" = "Зонная система";
+"Place your key tone on a zone, then adjust exposure accordingly." = "Поместите ключевой тон в зону и откорректируйте экспозицию соответственно.";
+"Meter Reading (EV)" = "Показания экспонометра (EV)";
+"Film ISO" = "ISO плёнки";
+"Selected Zone %@" = "Выбранная зона %@";
+"Target EV: %@" = "Целевое EV: %@";
+"Color Negative" = "Цветной негатив";
+"B&W" = "Ч/Б";
+"E-6 (Slide)" = "E-6 (Слайд)";
+"Reciprocity Failure" = "Эффект Шварцшильда";
+"Long exposures need extra time since film doesn't react linearly to light." = "Длинные выдержки требуют дополнительного времени, так как плёнка реагирует на свет нелинейно.";
+"Film Type" = "Тип плёнки";
+"Metered Time" = "Замеренное время";
+"Metered" = "Замерено";
+"Factor" = "Коэффициент";
+"Corrected Time" = "Скорректированное время";
