@@ -6,8 +6,14 @@ struct RollsUniverseView: View {
     @Binding var navPath: NavigationPath
 
     private let columns = 4
-    private let cardSize: CGFloat = 76
-    private let spacing: CGFloat = 16
+    private let cardSize: CGFloat = 80
+    private let spacing: CGFloat = 20
+
+    @State private var stars: [StarPosition] = []
+    @State private var cardPositions: [UUID: CGPoint] = [:]
+    @State private var draggedCardId: UUID?
+    @State private var dragOffset: CGSize = .zero
+    @State private var cardScales: [UUID: CGFloat] = [:]
 
     private var gridSize: (cols: Int, rows: Int) {
         let cols = min(columns, max(1, rolls.count))
@@ -25,33 +31,30 @@ struct RollsUniverseView: View {
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
+        .onAppear {
+            stars = (0..<40).map { _ in
+                StarPosition(
+                    x: CGFloat.random(in: 0...1),
+                    y: CGFloat.random(in: 0...1),
+                    size: CGFloat.random(in: 1...2.5),
+                    baseAlpha: Double.random(in: 0.3...0.8),
+                    phase: Double.random(in: 0...(2 * .pi)),
+                    speed: Double.random(in: 0.15...0.4)
+                )
+            }
+        }
     }
 
     // MARK: - Starfield
 
     private var starfield: some View {
-        let stars = (0..<60).map { _ in
-            StarPosition(
-                x: CGFloat.random(in: 0...1),
-                y: CGFloat.random(in: 0...1),
-                size: CGFloat.random(in: 1...2.5),
-                opacity: Double.random(in: 0.3...0.9),
-                phase: Double.random(in: 0...(2 * .pi)),
-                speed: Double.random(in: 0.5...2.0)
-            )
-        }
-
-        return TimelineView(.animation(minimumInterval: 0.05)) { timeline in
-            let t = timeline.date.timeIntervalSinceReferenceDate
-            Canvas { context, size in
-                for star in stars {
-                    let twinkle = sin(t * star.speed + star.phase) * 0.5 + 0.5
-                    let alpha = star.opacity * (0.5 + twinkle * 0.5)
-                    context.fill(
-                        Path(ellipseIn: CGRect(x: star.x * size.width, y: star.y * size.height, width: star.size, height: star.size)),
-                        with: .color(.white.opacity(alpha))
-                    )
-                }
+        Canvas { context, size in
+            for star in stars {
+                let alpha = star.baseAlpha
+                context.fill(
+                    Path(ellipseIn: CGRect(x: star.x * size.width, y: star.y * size.height, width: star.size, height: star.size)),
+                    with: .color(.white.opacity(alpha))
+                )
             }
         }
         .allowsHitTesting(false)
@@ -78,15 +81,45 @@ struct RollsUniverseView: View {
                 let baseX = originX + CGFloat(col) * (cardSize + spacing)
                 let baseY = originY + CGFloat(row) * (cardSize + spacing)
 
-                let driftX = sin(time * 0.25 + phase) * 18
-                let driftY = cos(time * 0.20 + phase * 1.3) * 14
-                let rotation = sin(time * 0.12 + phase * 0.7) * 4
-                let scale = 1.0 + sin(time * 0.18 + phase * 0.9) * 0.04
+                let settled = cardPositions[roll.id] ?? CGPoint(x: baseX, y: baseY)
+                let isDragged = draggedCardId == roll.id
+
+                let driftX = sin(time * 0.15 + phase) * 14
+                let driftY = cos(time * 0.12 + phase * 1.3) * 10
+                let rotation = sin(time * 0.08 + phase * 0.7) * 3
+                let scale = isDragged ? (cardScales[roll.id] ?? 1.15) : (1.0 + sin(time * 0.10 + phase * 0.9) * 0.03)
+
+                let posX = isDragged ? settled.x + driftX + dragOffset.width : settled.x + driftX
+                let posY = isDragged ? settled.y + driftY + dragOffset.height : settled.y + driftY
 
                 floatingCard(roll: roll, size: cardSize)
                     .scaleEffect(scale)
+                    .shadow(color: .black.opacity(isDragged ? 0.45 : 0.2), radius: isDragged ? 18 : 6, y: isDragged ? 8 : 3)
                     .rotationEffect(.degrees(rotation))
-                    .position(x: baseX + driftX, y: baseY + driftY)
+                    .position(x: posX, y: posY)
+                    .gesture(
+                        DragGesture(minimumDistance: 3)
+                            .onChanged { value in
+                                if draggedCardId == nil {
+                                    draggedCardId = roll.id
+                                    withAnimation(.spring(response: 0.2)) {
+                                        cardScales[roll.id] = 1.15
+                                    }
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                }
+                                dragOffset = value.translation
+                            }
+                            .onEnded { value in
+                                let newX = settled.x + value.translation.width
+                                let newY = settled.y + value.translation.height
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                    cardPositions[roll.id] = CGPoint(x: newX, y: newY)
+                                    cardScales[roll.id] = 1.0
+                                }
+                                draggedCardId = nil
+                                dragOffset = .zero
+                            }
+                    )
                     .onTapGesture {
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         navPath.append(roll)
@@ -129,7 +162,6 @@ struct RollsUniverseView: View {
                 RoundedRectangle(cornerRadius: 10, style: .continuous)
                     .stroke(Color.filmBorder, lineWidth: 0.5)
             )
-            .shadow(color: .black.opacity(0.25), radius: 8, y: 4)
     }
 
     // MARK: - Helpers
@@ -146,7 +178,7 @@ private struct StarPosition {
     let x: CGFloat
     let y: CGFloat
     let size: CGFloat
-    let opacity: Double
+    let baseAlpha: Double
     let phase: Double
     let speed: Double
 }
