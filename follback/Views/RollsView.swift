@@ -28,6 +28,7 @@ struct RollsView: View {
     @State private var rollBaseFrames: [UUID: CGRect] = [:]
     @StateObject private var physics = RollPhysicsEngine()
     @State private var navPath = NavigationPath()
+    @State private var showUniverse = false
     @ObservedObject private var deepLink = WidgetDeepLink.shared
 
     // A roll can belong to several filter tabs at once:
@@ -144,58 +145,68 @@ struct RollsView: View {
     var body: some View {
         NavigationStack(path: $navPath) {
             ZStack(alignment: .bottom) {
-                ScrollView(showsIndicators: false) {
-                    VStack(spacing: 20) {
+                if showUniverse {
+                    VStack(spacing: 0) {
                         headerSection
-
-                        if showSearch {
-                            searchBar
-                        }
-
-                        filterSection
-
-                        if activeAdvancedCount > 0 {
-                            activeFilterSummary
-                        }
-
-                        if rolls.isEmpty && !isLoading {
-                            emptyState
-                        } else if isLoading {
-                            shimmerContent
-                        } else {
-                            rollList
-                        }
+                            .padding(.top, 8)
+                        RollsUniverseView(rolls: filteredRolls, navPath: $navPath)
                     }
-                    .padding(.top, 8)
-                    .padding(.bottom, 80)
+                } else {
+                    ScrollView(showsIndicators: false) {
+                        VStack(spacing: 20) {
+                            headerSection
+
+                            if showSearch {
+                                searchBar
+                            }
+
+                            filterSection
+
+                            if activeAdvancedCount > 0 {
+                                activeFilterSummary
+                            }
+
+                            if rolls.isEmpty && !isLoading {
+                                emptyState
+                            } else if isLoading {
+                                shimmerContent
+                            } else {
+                                rollList
+                            }
+                        }
+                        .padding(.top, 8)
+                        .padding(.bottom, 80)
+                    }
                 }
 
                 // Floating "+ New Roll" button
-                Button {
-                    showAddSheet = true
-                    UIImpactFeedbackGenerator(style: .medium).impactOccurred()
-                    playShutterSound()
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 15, weight: .bold))
-                        Text("New Roll")
-                            .font(.system(size: 16, weight: .semibold))
+                if !showUniverse {
+                    Button {
+                        showAddSheet = true
+                        UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+                        playShutterSound()
+                    } label: {
+                        HStack(spacing: 8) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 15, weight: .bold))
+                            Text("New Roll")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(Color.filmText)
+                        .padding(.horizontal, 28)
+                        .padding(.vertical, 14)
+                        .background(
+                            Capsule()
+                                .fill(Color.filmSurface)
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.filmBorder, lineWidth: 0.5)
+                                )
+                        )
                     }
-                    .foregroundColor(Color.filmText)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 14)
-                    .background(
-                        Capsule()
-                            .fill(Color.filmSurface)
-                            .overlay(
-                                Capsule()
-                                    .stroke(Color.filmBorder, lineWidth: 0.5)
-                            )
-                    )
+                    .buttonStyle(.plain)
+                    .padding(.bottom, 16)
                 }
-                .buttonStyle(.plain)
-                .padding(.bottom, 16)
             }
             .navigationTitle("")
             .toolbarBackground(.hidden, for: .navigationBar)
@@ -251,6 +262,7 @@ struct RollsView: View {
                 openPendingRollIfNeeded()
             }
             .onReceive(NotificationCenter.default.publisher(for: .deviceDidShake)) { _ in
+                guard !showUniverse else { return }
                 triggerShakeAnimation()
             }
             .onChange(of: physics.mode) { _, newMode in
@@ -372,6 +384,23 @@ struct RollsView: View {
             Spacer()
 
             HStack(spacing: 10) {
+                Button {
+                    withAnimation(.spring(response: 0.4, dampingFraction: 0.8)) {
+                        showUniverse.toggle()
+                    }
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                } label: {
+                    Image(systemName: showUniverse ? "square.grid.2x2" : "sparkle")
+                        .font(.system(size: 15, weight: .semibold))
+                        .foregroundColor(showUniverse ? Color.filmAccent : Color.filmText)
+                        .frame(width: 36, height: 36)
+                        .background(
+                            Circle()
+                                .fill(showUniverse ? Color.filmAccent.opacity(0.15) : Color.filmSurface)
+                        )
+                }
+                .buttonStyle(.plain)
+
                 Button {
                     showFilterSheet = true
                     UIImpactFeedbackGenerator(style: .light).impactOccurred()
