@@ -93,7 +93,7 @@ struct RollsMapView: View {
         Binding(
             get: {
                 if let roll = selectedRoll { return .roll(roll) }
-                if let frame = selectedFrame { return .frame(frame, frame.roll!) }
+                if let frame = selectedFrame, let roll = frame.roll { return .frame(frame, roll) }
                 return nil
             },
             set: { newValue in
@@ -296,7 +296,11 @@ struct RollsMapView: View {
     // MARK: - Frame Editor Sheet
 
     private func frameEditorSheet(_ frame: Frame) -> some View {
-        let roll = frame.roll!
+        guard let roll = frame.roll else {
+            return NavigationStack {
+                Text("Error loading frame")
+            }
+        }
         return NavigationStack {
             FrameEditorView(roll: roll, frame: frame, currentNumber: frame.number)
         }
