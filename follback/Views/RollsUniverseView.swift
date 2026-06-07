@@ -1,7 +1,7 @@
 import SwiftUI
 import Kingfisher
 
-private struct CardConfig: Identifiable {
+private struct CardConfig {
     let id: UUID
     let roll: Roll
     var basePos: CGPoint
@@ -19,78 +19,141 @@ struct RollsUniverseView: View {
     @State private var stars: [StarPosition] = []
     @State private var configs: [CardConfig] = []
     @State private var cardPositions: [UUID: CGPoint] = [:]
+    @State private var cardImages: [UUID: UIImage] = [:]
+
+    // Drag state
     @State private var draggedCardId: UUID?
     @State private var dragOffset: CGSize = .zero
-    @State private var cardScales: [UUID: CGFloat] = [:]
+    @State private var dragStartSettled: CGPoint = .zero
+    @State private var dragScale: CGFloat = 1.0
+    @State private var draggedCardStartLocation: CGPoint = .zero
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 0.016)) { timeline in
             let time = timeline.date.timeIntervalSinceReferenceDate
-
-            ZStack {
-                Canvas { context, size in
-                    for star in stars {
-                        context.fill(
-                            Path(ellipseIn: CGRect(x: star.x * size.width, y: star.y * size.height, width: star.size, height: star.size)),
-                            with: .color(.white.opacity(star.baseAlpha))
-                        )
-                    }
-                }
-
-                ForEach(configs) { config in
-                    let settled = cardPositions[config.id] ?? config.basePos
-                    let isDragged = draggedCardId == config.id
-
-                    let driftX = sin(time * 0.15 + config.phase) * 14
-                    let driftY = cos(time * 0.12 + config.phase * 1.3) * 10
-                    let rotation = sin(time * 0.08 + config.phase * 0.7) * 3
-                    let scale = isDragged ? (cardScales[config.id] ?? 1.15) : (1.0 + sin(time * 0.10 + config.phase * 0.9) * 0.03)
-
-                    let offsetX = driftX + (isDragged ? dragOffset.width : 0)
-                    let offsetY = driftY + (isDragged ? dragOffset.height : 0)
-
-                    floatingCard(roll: config.roll)
-                        .scaleEffect(scale)
-                        .shadow(color: .black.opacity(isDragged ? 0.45 : 0.2), radius: isDragged ? 18 : 6, y: isDragged ? 8 : 3)
-                        .rotationEffect(.degrees(rotation))
-                        .position(x: settled.x, y: settled.y)
-                        .offset(x: offsetX, y: offsetY)
-                        .gesture(
-                            DragGesture(minimumDistance: 3)
-                                .onChanged { value in
-                                    if draggedCardId == nil {
-                                        draggedCardId = config.id
-                                        withAnimation(.spring(response: 0.2)) {
-                                            cardScales[config.id] = 1.15
-                                        }
-                                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                    }
-                                    dragOffset = value.translation
+            canvasContent(time: time)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .gesture(
+                    DragGesture(minimumDistance: 0, coordinateSpace: .local)
+                        .onChanged { value in
+                            if draggedCardId == nil {
+                                if let config = cardAt(point: value.startLocation, time: time) {
+                                    draggedCardId = config.id
+                                    dragStartSettled = cardPositions[config.id] ?? config.basePos
+                                    draggedCardStartLocation = value.startLocation
+                                    dragScale = 1.15
+                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
                                 }
-                                .onEnded { value in
-                                    let newX = settled.x + value.translation.width
-                                    let newY = settled.y + value.translation.height
-                                    cardPositions[config.id] = CGPoint(x: newX, y: newY)
-                                    withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                        cardScales[config.id] = 1.0
-                                    }
-                                    draggedCardId = nil
-                                    dragOffset = .zero
-                                }
-                        )
-                        .onTapGesture {
-                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                            navPath.append(config.roll)
+                            }
+                            if draggedCardId != nil {
+                                dragOffset = CGSize(
+                                    width: value.location.x - draggedCardStartLocation.x,
+                                    height: value.location.y - draggedCardStartLocation.y
+                                )
+                            }
                         }
-                }
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .onEnded { value in
+                            guard let id = draggedCardId else { return }
+                            let distance = sqrt(value.translation.width * value.translation.width + value.translation.height * value.translation.height)
+
+                            if distance < 5 {
+                                if let config = configs.first(where: { $0.id == id }) {
+                                    navPath.append(config.roll)
+                                }
+                            } else {
+                                let newX = dragStartSettled.x + value.translation.width
+                                let newY = dragStartSettled.y + value.translation.height
+                                cardPositions[id] = CGPoint(x: newX, y: newY)
+                            }
+
+                            draggedCardId = nil
+                            dragOffset = .zero
+                            dragScale = 1.0
+                        }
+                )
         }
         .onAppear {
             setupStars()
             setupConfigs()
+            loadImages()
         }
-        .onChange(of: rolls.count) { _, _ in setupConfigs() }
+        .onChange(of: rolls.count) { _, _ in
+            setupConfigs()
+            loadImages()
+        }
+    }
+
+    private func canvasContent(time: TimeInterval) -> some View {
+        Canvas { context, size in
+            for star in stars {
+                context.fill(
+                    Path(ellipseIn: CGRect(x: star.x * size.width, y: star.y * size.height, width: star.size, height: star.size)),
+                    with: .color(.white.opacity(star.baseAlpha))
+                )
+            }
+
+            for config in configs {
+                let settled = cardPositions[config.id] ?? config.basePos
+                let isDragged = draggedCardId == config.id
+
+                let driftX = sin(time * 0.15 + config.phase) * 14
+                let driftY = cos(time * 0.12 + config.phase * 1.3) * 10
+
+                let posX = settled.x + driftX + (isDragged ? dragOffset.width : 0)
+                let posY = settled.y + driftY + (isDragged ? dragOffset.height : 0)
+
+                let half = cardSize / 2
+                let rect = CGRect(x: posX - half, y: posY - half, width: cardSize, height: cardSize)
+                let cardPath = RoundedRectangle(cornerRadius: 10, style: .continuous).path(in: rect)
+
+                // Shadow
+                let shadowPath = RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .path(in: CGRect(x: posX - half + 4, y: posY - half + 6, width: cardSize, height: cardSize))
+                context.fill(shadowPath, with: .color(.black.opacity(isDragged ? 0.35 : 0.18)))
+
+                // Card background
+                context.fill(cardPath, with: .color(Color.filmSurface))
+
+                // Card image
+                if let uiImage = cardImages[config.id] {
+                    let sc = isDragged ? dragScale : (1.0 + sin(time * 0.10 + config.phase * 0.9) * 0.03)
+                    context.drawLayer { ctx in
+                        let angleDeg = isDragged ? 0 : sin(time * 0.08 + config.phase * 0.7)
+                        ctx.translateBy(x: rect.midX, y: rect.midY)
+                        ctx.rotate(by: Angle(degrees: angleDeg))
+                        ctx.scaleBy(x: sc, y: sc)
+                        ctx.translateBy(x: -rect.midX, y: -rect.midY)
+                        ctx.clip(to: cardPath)
+                        ctx.draw(Image(uiImage: uiImage), in: rect)
+                    }
+                }
+
+                // Border
+                context.stroke(cardPath, with: .color(Color.filmBorder), lineWidth: 0.5)
+
+                // Drag overlay
+                if isDragged {
+                    context.fill(cardPath, with: .color(.black.opacity(0.06)))
+                }
+            }
+        }
+    }
+
+    // MARK: - Hit Testing
+
+    private func cardAt(point: CGPoint, time: TimeInterval) -> CardConfig? {
+        for config in configs.reversed() {
+            let settled = cardPositions[config.id] ?? config.basePos
+            let driftX = sin(time * 0.15 + config.phase) * 14
+            let driftY = cos(time * 0.12 + config.phase * 1.3) * 10
+            let cx = settled.x + driftX
+            let cy = settled.y + driftY
+            let half = cardSize / 2 + 6
+            if abs(point.x - cx) <= half && abs(point.y - cy) <= half {
+                return config
+            }
+        }
+        return nil
     }
 
     // MARK: - Setup
@@ -135,43 +198,20 @@ struct RollsUniverseView: View {
         }
     }
 
-    // MARK: - Card
-
-    private func floatingCard(roll: Roll) -> some View {
-        let stock = matchingFilmStock(for: roll)
-        let coverUrl = stock?.githubCoverUrl
-
-        return RoundedRectangle(cornerRadius: 10, style: .continuous)
-            .fill(Color.filmSurface)
-            .frame(width: cardSize, height: cardSize)
-            .overlay(
-                Group {
-                    if let url = coverUrl, let imageUrl = URL(string: url) {
-                        KFImage(imageUrl)
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: cardSize, height: cardSize)
-                            .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-                    } else {
-                        VStack(spacing: 4) {
-                            Image(systemName: "film")
-                                .font(.system(size: 18, weight: .light))
-                                .foregroundColor(Color.filmTertiary)
-                            Text(String(roll.filmName.prefix(8)))
-                                .font(.system(size: 8, weight: .medium))
-                                .foregroundColor(Color.filmSecondary)
-                                .lineLimit(1)
-                        }
+    private func loadImages() {
+        for config in configs {
+            guard cardImages[config.id] == nil else { continue }
+            let stock = matchingFilmStock(for: config.roll)
+            guard let urlString = stock?.githubCoverUrl, let url = URL(string: urlString) else { continue }
+            KingfisherManager.shared.retrieveImage(with: url) { result in
+                if case .success(let value) = result {
+                    Task { @MainActor in
+                        cardImages[config.id] = value.image
                     }
                 }
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .stroke(Color.filmBorder, lineWidth: 0.5)
-            )
+            }
+        }
     }
-
-    // MARK: - Helpers
 
     private func matchingFilmStock(for roll: Roll) -> FilmStock? {
         FilmStock.allStocks.first { stock in
