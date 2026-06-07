@@ -297,13 +297,11 @@ struct RollsMapView: View {
 
     private func frameEditorSheet(_ frame: Frame) -> some View {
         guard let roll = frame.roll else {
-            return NavigationStack {
-                Text("Error loading frame")
-            }
+            return AnyView(Text("Error loading frame"))
         }
-        return NavigationStack {
+        return AnyView(NavigationStack {
             FrameEditorView(roll: roll, frame: frame, currentNumber: frame.number)
-        }
+        })
     }
 }
 
