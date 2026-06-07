@@ -89,41 +89,41 @@ struct RollsUniverseView: View {
                 let rotation = sin(time * 0.08 + phase * 0.7) * 3
                 let scale = isDragged ? (cardScales[roll.id] ?? 1.15) : (1.0 + sin(time * 0.10 + phase * 0.9) * 0.03)
 
-                let posX = isDragged ? settled.x + driftX + dragOffset.width : settled.x + driftX
-                let posY = isDragged ? settled.y + driftY + dragOffset.height : settled.y + driftY
+                let posX = settled.x + driftX + dragOffset.width
+                let posY = settled.y + driftY + dragOffset.height
 
                 floatingCard(roll: roll, size: cardSize)
                     .scaleEffect(scale)
                     .shadow(color: .black.opacity(isDragged ? 0.45 : 0.2), radius: isDragged ? 18 : 6, y: isDragged ? 8 : 3)
                     .rotationEffect(.degrees(rotation))
                     .position(x: posX, y: posY)
-                    .gesture(
-                        DragGesture(minimumDistance: 3)
-                            .onChanged { value in
-                                if draggedCardId == nil {
-                                    draggedCardId = roll.id
-                                    withAnimation(.spring(response: 0.2)) {
-                                        cardScales[roll.id] = 1.15
+                            .gesture(
+                                DragGesture(minimumDistance: 3)
+                                    .onChanged { value in
+                                        if draggedCardId == nil {
+                                            draggedCardId = roll.id
+                                            withAnimation(.spring(response: 0.2)) {
+                                                cardScales[roll.id] = 1.15
+                                            }
+                                            UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                        }
+                                        dragOffset = value.translation
                                     }
-                                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                                }
-                                dragOffset = value.translation
+                                    .onEnded { value in
+                                        let newX = settled.x + value.translation.width
+                                        let newY = settled.y + value.translation.height
+                                        cardPositions[roll.id] = CGPoint(x: newX, y: newY)
+                                        withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
+                                            cardScales[roll.id] = 1.0
+                                        }
+                                        draggedCardId = nil
+                                        dragOffset = .zero
+                                    }
+                            )
+                            .onTapGesture {
+                                UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                                navPath.append(roll)
                             }
-                            .onEnded { value in
-                                let newX = settled.x + value.translation.width
-                                let newY = settled.y + value.translation.height
-                                withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
-                                    cardPositions[roll.id] = CGPoint(x: newX, y: newY)
-                                    cardScales[roll.id] = 1.0
-                                }
-                                draggedCardId = nil
-                                dragOffset = .zero
-                            }
-                    )
-                    .onTapGesture {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
-                        navPath.append(roll)
-                    }
             }
         }
     }

@@ -379,6 +379,8 @@ struct RollsView: View {
                     .font(.system(size: 22, weight: .black))
                     .foregroundColor(Color.filmText)
                     .kerning(1.5)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.5)
             }
 
             Spacer()
